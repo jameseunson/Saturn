@@ -28,21 +28,27 @@ struct TopStoriesView: View {
                             }
                     }
                 }
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
+                ListLoadingView()
             }
             .navigationDestination(for: Story.self) { story in
-                StoryDetailView(story: story)
-                    .environmentObject(StoryDetailViewModel(story: story))
+                let viewModel = StoryDetailViewModel(story: story)
+                StoryDetailView(story: story, viewModel: viewModel)
                     .navigationTitle(story.title)
             }
             .refreshable {
                 await viewModel.refreshStories()
             }
             .listStyle(.plain)
+        }
+    }
+}
+
+struct ListLoadingView: View {
+    var body: some View {
+        HStack {
+            Spacer()
+            ProgressView()
+            Spacer()
         }
     }
 }

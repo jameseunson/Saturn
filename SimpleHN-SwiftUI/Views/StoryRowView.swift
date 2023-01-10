@@ -17,7 +17,7 @@ struct StoryRowView: View {
             VStack(alignment: .leading) {
                 Text(story.title)
                     .font(.title3)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.primary)
                 HStack {
                     if let url = story.url,
                     let host = url.host {

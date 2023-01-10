@@ -6,40 +6,72 @@
 //
 
 import Foundation
+import SwiftUI
 
 final class StoryDetailViewModel: ViewModel {
-    @Published var comments: LoadableResource<[Comment]> = .loading
+//    @Published var comments: LoadableResource<[CommentViewModel]> = .loading
+    @Published var comments: Array<CommentViewModel> = []
+    
+    var loadingState: LoadingState = .initialLoad
     
     let story: Story
     let apiManager = APIManager()
     
-    var commentLoadQueue = [Int]()
+    let initialCommentLoadLimit = 5
+    var commentsLoaded = 0
+    var topLevelComments = [CommentViewModel]()
     
     init(story: Story) {
         self.story = story
     }
     
     override func didBecomeActive() {
-        if case .loading = comments {
+        if case .initialLoad = loadingState {
             loadComments()
         }
     }
     
     func loadComments() {
         guard let kids = story.kids else { return }
-        commentLoadQueue.append(contentsOf: kids)
         
-        guard let commentId = commentLoadQueue.first else {
-            return
+        for kid in kids {
+            traverse(kid)
         }
-        
-        let comment = apiManager.loadComment(id: commentId)
-        comment.sink { _ in
+    }
+    
+    func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
+        apiManager.loadComment(id: rootCommentId)
+            .receive(on: DispatchQueue.global())
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    print(error)
+                }
             
         } receiveValue: { comment in
-            print(comment)
+            let viewModel = CommentViewModel(comment: comment,
+                                             indendation: indentation,
+                                             parent: parent)
+            if let parent {
+                parent.children.append(viewModel)
+            } else {
+                self.topLevelComments.append(viewModel)
+            }
+            self.commentsLoaded += 1
+            DispatchQueue.main.async {
+                self.comments.append(viewModel)
+                print(self.comments.count)
+            }
+            
+            if let kids = comment.kids {
+                for kid in kids {
+                    self.traverse(kid, parent: viewModel, indentation: indentation + 1)
+                }
+            }
         }
         .store(in: &disposeBag)
-
+    }
+    
+    func refreshComments() {
+        
     }
 }

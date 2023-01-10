@@ -33,6 +33,8 @@
 		1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC16296BDAC200D4D86E /* Comment.swift */; };
 		1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC18296BF8A200D4D86E /* SafariView.swift */; };
 		1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */; };
+		1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */; };
+		1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABA296D667500870A50 /* ActivityViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +76,8 @@
 		1A5DBC16296BDAC200D4D86E /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		1A5DBC18296BF8A200D4D86E /* SafariView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowView.swift; sourceTree = "<group>"; };
+		1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
+		1A873ABA296D667500870A50 /* ActivityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +136,8 @@
 		1A5DBBB3296933BA00D4D86E /* SimpleHN-SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				1A873AB9296D666A00870A50 /* Utilities */,
+				1A873AB8296D444400870A50 /* Managers */,
 				1A5DBC15296BDAB400D4D86E /* View Models */,
 				1A5DBC14296BDAAC00D4D86E /* Models */,
 				1A5DBC0B296AAF6700D4D86E /* Views */,
@@ -139,8 +145,6 @@
 				1A5DBBB4296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift */,
 				1A5DBBB8296933BB00D4D86E /* Assets.xcassets */,
 				1A5DBBBA296933BB00D4D86E /* Preview Content */,
-				1A5DBC032969548E00D4D86E /* APIManager.swift */,
-				1A5DBC07296AA67300D4D86E /* LoadingView.swift */,
 				1A5DBC10296BD44D00D4D86E /* BaseUtils.swift */,
 			);
 			path = "SimpleHN-SwiftUI";
@@ -174,7 +178,7 @@
 		1A5DBC0B296AAF6700D4D86E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				1A5DBC18296BF8A200D4D86E /* SafariView.swift */,
+				1A5DBC07296AA67300D4D86E /* LoadingView.swift */,
 				1A5DBBB6296933BA00D4D86E /* TopStoriesView.swift */,
 				1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */,
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
@@ -187,6 +191,7 @@
 			children = (
 				1A5DBC12296BD46600D4D86E /* Story.swift */,
 				1A5DBC16296BDAC200D4D86E /* Comment.swift */,
+				1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -198,6 +203,23 @@
 				1A5DBC0E296BD43800D4D86E /* StoryDetailViewModel.swift */,
 			);
 			path = "View Models";
+			sourceTree = "<group>";
+		};
+		1A873AB8296D444400870A50 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				1A5DBC032969548E00D4D86E /* APIManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		1A873AB9296D666A00870A50 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				1A873ABA296D667500870A50 /* ActivityViewController.swift */,
+				1A5DBC18296BF8A200D4D86E /* SafariView.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -347,6 +369,7 @@
 				1A5DBC06296A892B00D4D86E /* TopStoriesViewModel.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
+				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1A5DBBB7296933BA00D4D86E /* TopStoriesView.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailViewModel.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
@@ -354,6 +377,7 @@
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
+				1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */,
 				1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */,
 				1A5DBC13296BD46600D4D86E /* Story.swift in Sources */,
 			);

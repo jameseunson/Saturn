@@ -10,18 +10,33 @@ import SwiftUI
 
 struct StoryDetailView: View {
     let story: Story
-    @EnvironmentObject var viewModel: StoryDetailViewModel
-    
+    @StateObject var viewModel: StoryDetailViewModel
     @State private var isShowingSafariView = false
+    
+    let formatter = RelativeDateTimeFormatter()
+    @State var isShareVisible: Bool = false
     
     var body: some View {
         VStack {
             List {
                 Section {
-                    if case let .loaded(comments) = viewModel.comments {
-                        
+                    if viewModel.comments.count == 0 {
+                        ListLoadingView()
                     } else {
-                        ProgressView()
+                        ForEach(viewModel.comments) { comment in
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text(comment.by)
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Spacer()
+                                    Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
+                                        .font(.caption)
+                                }
+                                Divider()
+                                Text(comment.comment.text)
+                            }
+                        }
                     }
                 } header: {
                     StoryRowView(story: story)
@@ -35,9 +50,30 @@ struct StoryDetailView: View {
             .onAppear {
                 viewModel.activate()
             }
-            
-            Spacer()
+            .refreshable {
+                await viewModel.refreshComments()
+            }
         }
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    isShareVisible = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $isShareVisible, content: {
+            if let url = story.url {
+                let sheet = ActivityViewController(itemsToShare: [url])
+                    .ignoresSafeArea()
+                if #available(iOS 16, *) {
+                    sheet.presentationDetents([.medium])
+                } else {
+                    sheet
+                }
+            }
+        })
         .sheet(isPresented: $isShowingSafariView) {
             if let url = story.url {
                 SafariView(url: url)
