@@ -35,6 +35,9 @@
 		1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */; };
 		1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */; };
 		1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABA296D667500870A50 /* ActivityViewController.swift */; };
+		1A873ABD296E767B00870A50 /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABC296E767B00870A50 /* UserView.swift */; };
+		1A873ABF296E76B200870A50 /* CommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABE296E76B200870A50 /* CommentView.swift */; };
+		1A873AC5296E94CA00870A50 /* Sweep in Frameworks */ = {isa = PBXBuildFile; productRef = 1A873AC4296E94CA00870A50 /* Sweep */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +81,8 @@
 		1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowView.swift; sourceTree = "<group>"; };
 		1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
 		1A873ABA296D667500870A50 /* ActivityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
+		1A873ABC296E767B00870A50 /* UserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserView.swift; sourceTree = "<group>"; };
+		1A873ABE296E76B200870A50 /* CommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentView.swift; sourceTree = "<group>"; wrapsLines = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +96,7 @@
 				1A5DBBFA2969422900D4D86E /* FirebaseDatabase in Frameworks */,
 				1A5DBBF62969422900D4D86E /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				1A5DBBFE2969422900D4D86E /* FirebaseFirestore in Frameworks */,
+				1A873AC5296E94CA00870A50 /* Sweep in Frameworks */,
 				1A5DBC002969422900D4D86E /* FirebaseFirestoreCombine-Community in Frameworks */,
 				1A5DBC022969422900D4D86E /* FirebaseFirestoreSwift in Frameworks */,
 			);
@@ -182,6 +188,8 @@
 				1A5DBBB6296933BA00D4D86E /* TopStoriesView.swift */,
 				1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */,
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
+				1A873ABC296E767B00870A50 /* UserView.swift */,
+				1A873ABE296E76B200870A50 /* CommentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -247,6 +255,7 @@
 				1A5DBBFD2969422900D4D86E /* FirebaseFirestore */,
 				1A5DBBFF2969422900D4D86E /* FirebaseFirestoreCombine-Community */,
 				1A5DBC012969422900D4D86E /* FirebaseFirestoreSwift */,
+				1A873AC4296E94CA00870A50 /* Sweep */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* SimpleHN-SwiftUI.app */;
@@ -322,6 +331,7 @@
 			mainGroup = 1A5DBBA8296933BA00D4D86E;
 			packageReferences = (
 				1A5DBBF22969422800D4D86E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				1A873AC3296E94CA00870A50 /* XCRemoteSwiftPackageReference "Sweep" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -373,8 +383,10 @@
 				1A5DBBB7296933BA00D4D86E /* TopStoriesView.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailViewModel.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
+				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
+				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
 				1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */,
@@ -716,6 +728,14 @@
 				minimumVersion = 9.0.0;
 			};
 		};
+		1A873AC3296E94CA00870A50 /* XCRemoteSwiftPackageReference "Sweep" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/Sweep";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -758,6 +778,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A5DBBF22969422800D4D86E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestoreSwift;
+		};
+		1A873AC4296E94CA00870A50 /* Sweep */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A873AC3296E94CA00870A50 /* XCRemoteSwiftPackageReference "Sweep" */;
+			productName = Sweep;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

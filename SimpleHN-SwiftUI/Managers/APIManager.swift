@@ -47,8 +47,8 @@ final class APIManager {
         return retrieve(from: "v0/item/\(id)")
             .tryMap { response in
                 let jsonData = try JSONSerialization.data(withJSONObject: response)
-                let story = try JSONDecoder().decode(T.self, from: jsonData)
-                return story
+                let object = try JSONDecoder().decode(T.self, from: jsonData)
+                return object
             }
             .eraseToAnyPublisher()
     }
@@ -70,6 +70,7 @@ final class APIManager {
                 promise(.success(value))
             }
         }
+        .timeout(.seconds(5), scheduler: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 }

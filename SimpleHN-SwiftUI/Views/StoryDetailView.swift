@@ -13,37 +13,41 @@ struct StoryDetailView: View {
     @StateObject var viewModel: StoryDetailViewModel
     @State private var isShowingSafariView = false
     
-    let formatter = RelativeDateTimeFormatter()
     @State var isShareVisible: Bool = false
+    @State var isUserVisible: Bool = false
     
     var body: some View {
         VStack {
+            NavigationLink(destination: UserView(), isActive: $isUserVisible) {
+                EmptyView()
+            }
+            .hidden()
             List {
-                Section {
-                    if viewModel.comments.count == 0 {
-                        ListLoadingView()
-                    } else {
-                        ForEach(viewModel.comments) { comment in
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text(comment.by)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                    Spacer()
-                                    Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
-                                        .font(.caption)
-                                }
-                                Divider()
-                                Text(comment.comment.text)
-                            }
-                        }
-                    }
-                } header: {
+                VStack {
                     StoryRowView(story: story)
                         .padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
                         .onTapGesture {
                             isShowingSafariView = true
                         }
+                    Divider()
+                }
+                
+                if viewModel.comments.count == 0 {
+                    ListLoadingView()
+                        .listRowSeparator(.hidden)
+                    
+                } else {
+                    ForEach(viewModel.comments) { comment in
+                        CommentView(comment: comment) { comment in
+                            isUserVisible = true
+                            
+                        } onTapOptions: { comment in
+                            print("test")
+                            
+                        } onTapHeader: { comment in
+                            print("test")
+                        }
+                    }
                 }
             }
             .listStyle(.plain)

@@ -100,6 +100,15 @@
       }
     },
     {
+      "identity" : "sweep",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JohnSundell/Sweep",
+      "state" : {
+        "branch" : "master",
+        "revision" : "801c2878e4c6c5baf32fe132e1f3f3af6f9fd1b0"
+      }
+    },
+    {
       "identity" : "swift-protobuf",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",

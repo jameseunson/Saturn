@@ -38,6 +38,15 @@ struct TopStoriesView: View {
             .refreshable {
                 await viewModel.refreshStories()
             }
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        // TODO:
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                }
+            }
             .listStyle(.plain)
         }
     }
