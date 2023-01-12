@@ -42,6 +42,10 @@ final class APIManager {
         return retrieveObject(id: id)
     }
     
+    func loadUser(id: Int) -> AnyPublisher<User, Error> {
+        return retrieveObject(id: id)
+    }
+    
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")

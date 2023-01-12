@@ -9,17 +9,22 @@ import Foundation
 import SwiftUI
 import UIKit
 
+enum CommentExpandedState {
+    case expanded
+    case collapsed
+    case hidden
+}
+
 final class StoryDetailViewModel: ViewModel {
-//    @Published var comments: LoadableResource<[CommentViewModel]> = .loading
     @Published var comments: Array<CommentViewModel> = []
+    @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     
-    var loadingState: LoadingState = .initialLoad
+    private let story: Story
+    private let apiManager = APIManager()
     
-    let story: Story
-    let apiManager = APIManager()
-    
-    @Published var commentsLoaded = 0
-    var topLevelComments = [CommentViewModel]()
+    @Published private var commentsLoaded = 0
+    private var topLevelComments = [CommentViewModel]()
+    private var loadingState: LoadingState = .initialLoad
     
     init(story: Story) {
         self.story = story
@@ -50,8 +55,31 @@ final class StoryDetailViewModel: ViewModel {
         }
     }
     
+    func refreshComments() {
+        
+    }
+    
+    func updateExpanded(_ expanded: Dictionary<CommentViewModel, CommentExpandedState>, for comment: CommentViewModel, _ set: CommentExpandedState) {
+        commentsExpanded = expanded
+        
+        var queue = Array<CommentViewModel>()
+        queue.append(contentsOf: comment.children)
+        
+        while(!queue.isEmpty) {
+            let comment = queue.removeFirst()
+            queue.insert(contentsOf: comment.children, at: 0)
+            
+            if set == .collapsed {
+                commentsExpanded[comment] = .hidden
+            } else {
+                commentsExpanded[comment] = .expanded
+            }
+        }
+    }
+    
+    // MARK: -
     /// Visit each leaf and create a view model, appending to the parent's `children` property
-    func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
+    private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
         apiManager.loadComment(id: rootCommentId)
             .receive(on: DispatchQueue.global())
             .sink { completion in
@@ -71,7 +99,9 @@ final class StoryDetailViewModel: ViewModel {
             } else {
                 self.topLevelComments.append(viewModel)
             }
+            
             DispatchQueue.main.async {
+                self.commentsExpanded[viewModel] = .expanded
                 self.commentsLoaded += 1
             }
             
@@ -86,7 +116,7 @@ final class StoryDetailViewModel: ViewModel {
     
     /// Once the comments are loaded, walk the tree and construct a flat representation
     /// for display as a list
-    func flatten() -> [CommentViewModel] {
+    private func flatten() -> [CommentViewModel] {
         var queue = Array<CommentViewModel>()
         queue.append(contentsOf: topLevelComments)
         
@@ -100,9 +130,5 @@ final class StoryDetailViewModel: ViewModel {
         }
         
         return flat
-    }
-    
-    func refreshComments() {
-        
     }
 }

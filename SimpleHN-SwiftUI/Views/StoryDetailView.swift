@@ -12,6 +12,7 @@ struct StoryDetailView: View {
     let story: Story
     @StateObject var viewModel: StoryDetailViewModel
     @State private var isShowingSafariView = false
+    @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     
     @State var isShareVisible: Bool = false
     @State var isUserVisible: Bool = false
@@ -22,7 +23,7 @@ struct StoryDetailView: View {
                 EmptyView()
             }
             .hidden()
-            List {
+            ScrollView {
                 VStack {
                     StoryRowView(story: story)
                         .padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
@@ -31,26 +32,29 @@ struct StoryDetailView: View {
                         }
                     Divider()
                 }
+                .padding(10)
                 
                 if viewModel.comments.count == 0 {
                     ListLoadingView()
                         .listRowSeparator(.hidden)
+                        .padding(10)
                     
                 } else {
                     ForEach(viewModel.comments) { comment in
-                        CommentView(comment: comment) { comment in
+                        CommentView(expanded: binding(for: comment),
+                                    comment: comment) { comment in
                             isUserVisible = true
                             
                         } onTapOptions: { comment in
                             print("test")
                             
-                        } onTapHeader: { comment in
-                            print("test")
+                        } onToggleExpanded: { comment, expanded in
+                            self.viewModel.updateExpanded(commentsExpanded, for: comment, expanded)
                         }
+                        .padding(10)
                     }
                 }
             }
-            .listStyle(.plain)
             .onAppear {
                 viewModel.activate()
             }
@@ -83,6 +87,17 @@ struct StoryDetailView: View {
                 SafariView(url: url)
                     .ignoresSafeArea()
             }
+        }
+        .onReceive(viewModel.$commentsExpanded) { output in
+            commentsExpanded = output
+        }
+    }
+    
+    func binding(for comment: CommentViewModel) -> Binding<CommentExpandedState> {
+        return Binding {
+            return self.commentsExpanded[comment] ?? .expanded
+        } set: {
+            self.commentsExpanded[comment] = $0
         }
     }
 }

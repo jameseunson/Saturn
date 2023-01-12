@@ -38,6 +38,10 @@
 		1A873ABD296E767B00870A50 /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABC296E767B00870A50 /* UserView.swift */; };
 		1A873ABF296E76B200870A50 /* CommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABE296E76B200870A50 /* CommentView.swift */; };
 		1A873AC5296E94CA00870A50 /* Sweep in Frameworks */ = {isa = PBXBuildFile; productRef = 1A873AC4296E94CA00870A50 /* Sweep */; };
+		1A873AC7296F921C00870A50 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AC6296F921C00870A50 /* User.swift */; };
+		1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AC8296FCD1600870A50 /* SettingsView.swift */; };
+		1A873ACB296FCD4800870A50 /* CommentTextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */; };
+		1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACC296FCD5B00870A50 /* SearchView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +87,10 @@
 		1A873ABA296D667500870A50 /* ActivityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
 		1A873ABC296E767B00870A50 /* UserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserView.swift; sourceTree = "<group>"; };
 		1A873ABE296E76B200870A50 /* CommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentView.swift; sourceTree = "<group>"; wrapsLines = 0; };
+		1A873AC6296F921C00870A50 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		1A873AC8296FCD1600870A50 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentTextProcessor.swift; sourceTree = "<group>"; };
+		1A873ACC296FCD5B00870A50 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -190,6 +198,8 @@
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
 				1A873ABC296E767B00870A50 /* UserView.swift */,
 				1A873ABE296E76B200870A50 /* CommentView.swift */,
+				1A873AC8296FCD1600870A50 /* SettingsView.swift */,
+				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -200,6 +210,7 @@
 				1A5DBC12296BD46600D4D86E /* Story.swift */,
 				1A5DBC16296BDAC200D4D86E /* Comment.swift */,
 				1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */,
+				1A873AC6296F921C00870A50 /* User.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -217,6 +228,7 @@
 			isa = PBXGroup;
 			children = (
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
+				1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -376,13 +388,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* TopStoriesViewModel.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
+				1A873ACB296FCD4800870A50 /* CommentTextProcessor.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
+				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1A5DBBB7296933BA00D4D86E /* TopStoriesView.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailViewModel.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
+				1A873AC7296F921C00870A50 /* User.swift in Sources */,
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,

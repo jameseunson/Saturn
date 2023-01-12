@@ -39,6 +39,13 @@ struct TopStoriesView: View {
                 await viewModel.refreshStories()
             }
             .toolbar {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        // TODO:
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
                         // TODO:
