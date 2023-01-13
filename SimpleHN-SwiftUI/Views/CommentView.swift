@@ -18,6 +18,8 @@ struct CommentView: View {
     let onTapOptions: (CommentViewModel) -> Void
     let onToggleExpanded: (CommentViewModel, CommentExpandedState) -> Void
     
+    @State var displayingSafariURL: URL?
+    
     var body: some View {
         if expanded == .hidden {
             EmptyView()
@@ -39,14 +41,19 @@ struct CommentView: View {
                             Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
                                 .font(.body)
                                 .foregroundColor(.gray)
-                            Button {
-                                onTapOptions(comment)
-                            } label: {
-                                Image(systemName: "ellipsis")
+                            if expanded == .expanded {
+                                Button {
+                                    onTapOptions(comment)
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .font(.body)
+                                        .foregroundColor(.gray)
+                                }
+                            } else {
+                                Image(systemName: "chevron.down")
                                     .font(.body)
                                     .foregroundColor(.gray)
                             }
-
                         }
                         if expanded == .collapsed {
                             Rectangle()
@@ -65,6 +72,14 @@ struct CommentView: View {
                     if expanded == .expanded {
                         Text(comment.comment.text)
                             .font(.body)
+                            .environment(\.openURL, OpenURLAction { url in
+                                if url.host == "news.ycombinator.com" {
+                                    // TODO:
+                                } else {
+                                    displayingSafariURL = url
+                                }
+                                return .handled
+                            })
                     }
                 }
             }
@@ -76,6 +91,20 @@ struct CommentView: View {
             }
             .buttonStyle(PlainButtonStyle())
             .frame(height: expanded == .expanded ? nil : 20)
+            .sheet(isPresented: displayingSafariViewBinding()) {
+                if let displayingSafariURL {
+                    SafariView(url: displayingSafariURL)
+                        .ignoresSafeArea()
+                }
+            }
+        }
+    }
+    
+    func displayingSafariViewBinding() -> Binding<Bool> {
+        Binding {
+            displayingSafariURL != nil
+        } set: { value in
+            if !value { displayingSafariURL = nil }
         }
     }
     

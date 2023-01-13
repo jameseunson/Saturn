@@ -1,5 +1,5 @@
 //
-//  TopStoriesViewModel.swift
+//  TopStoriesInteractor.swift
 //  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 8/1/2023.
@@ -9,7 +9,7 @@ import Combine
 import Foundation
 import SwiftUI
 
-final class TopStoriesViewModel: ViewModel {
+final class TopStoriesInteractor: Interactor {
     @Published var canLoadMore: Bool = true
     
     let apiManager = APIManager()

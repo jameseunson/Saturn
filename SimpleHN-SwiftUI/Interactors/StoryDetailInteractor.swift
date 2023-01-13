@@ -1,10 +1,11 @@
 //
-//  StoryDetailViewModel.swift
+//  StoryDetailInteractor.swift
 //  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 9/1/2023.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 import UIKit
@@ -15,48 +16,104 @@ enum CommentExpandedState {
     case hidden
 }
 
-final class StoryDetailViewModel: ViewModel {
+final class StoryDetailInteractor: Interactor {
     @Published var comments: Array<CommentViewModel> = []
     @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
+    @Published var readyToLoadMore: Bool = false
+    @Published var commentsRemainingToLoad: Bool = true
     
     private let story: Story
     private let apiManager = APIManager()
     
     @Published private var commentsLoaded = 0
+    @Published private var currentlyLoadingComment: CommentViewModel?
+    
     private var topLevelComments = [CommentViewModel]()
-    private var loadingState: LoadingState = .initialLoad
+    private var loadedTopLevelComments = [Int]()
     
     init(story: Story) {
         self.story = story
     }
     
     override func didBecomeActive() {
-        if case .initialLoad = loadingState {
-            loadComments()
-        }
+        loadComments()
         
         /// Workaround for the fact that we have no idea when loading is complete
         /// and the backend always returns fewer comments than is indicated by
         /// `descendants` on the Story model
         $commentsLoaded
-            .debounce(for: .seconds(1), scheduler: RunLoop.main)
-            .prefix(1)
             .sink { _ in
                 self.comments = self.flatten()
         }
         .store(in: &disposeBag)
+        
+        $currentlyLoadingComment
+            .compactMap { $0 }
+            .flatMap { comment in
+                if comment.comment.kids != nil {
+                    return self.$commentsLoaded
+                        .debounce(for: .seconds(1), scheduler: RunLoop.main)
+                        .map { _ in () }
+                        .eraseToAnyPublisher()
+                } else {
+                    return Just(())
+                        .eraseToAnyPublisher()
+                }
+            }
+            .receive(on: RunLoop.main)
+            .sink { _ in
+                self.currentlyLoadingComment = nil
+                self.readyToLoadMore = true
+            }
+            .store(in: &disposeBag)
     }
     
     func loadComments() {
-        guard let kids = story.kids else { return }
+        guard let kids = story.kids,
+              let firstKid = kids.first else { return }
         
-        for kid in kids {
-            traverse(kid)
+        traverse(firstKid)
+        loadedTopLevelComments.append(firstKid)
+        
+        if loadedTopLevelComments.count == kids.count {
+            commentsRemainingToLoad = false
         }
     }
     
-    func refreshComments() {
+    func loadMoreComments() {
+        guard let kids = story.kids else { return }
         
+        var nextKidToLoad: Int?
+        for kid in kids {
+            if loadedTopLevelComments.contains(kid) {
+                continue
+            } else {
+                nextKidToLoad = kid
+                break
+            }
+        }
+        
+        if let nextKidToLoad {
+            traverse(nextKidToLoad)
+            loadedTopLevelComments.append(nextKidToLoad)
+        }
+        if loadedTopLevelComments.count == kids.count {
+            commentsRemainingToLoad = false
+        }
+    }
+    
+    func refreshComments() async {
+        Task {
+            DispatchQueue.main.async { [weak self] in
+                self?.comments.removeAll()
+                self?.commentsExpanded.removeAll()
+            }
+            
+            topLevelComments.removeAll()
+            loadedTopLevelComments.removeAll()
+            
+            loadComments()
+        }
     }
     
     func updateExpanded(_ expanded: Dictionary<CommentViewModel, CommentExpandedState>, for comment: CommentViewModel, _ set: CommentExpandedState) {
@@ -98,6 +155,9 @@ final class StoryDetailViewModel: ViewModel {
                 parent.children.append(viewModel)
             } else {
                 self.topLevelComments.append(viewModel)
+                DispatchQueue.main.async {
+                    self.currentlyLoadingComment = viewModel
+                }
             }
             
             DispatchQueue.main.async {

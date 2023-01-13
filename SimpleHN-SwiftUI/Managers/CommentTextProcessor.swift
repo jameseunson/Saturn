@@ -11,83 +11,58 @@ import UIKit
 final class CommentTextProcessor {
     static func processCommentText(_ input: String) throws -> AttributedString {
         var outputString = input
+        
+        /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
         outputString = outputString.replacingOccurrences(of: "<p>", with: "\n\n")
         outputString = outputString.replacingOccurrences(of: "&gt;", with: ">")
         outputString = outputString.replacingOccurrences(of: "&#x27;", with: "'")
         outputString = outputString.replacingOccurrences(of: "&quot;", with: "\"")
         outputString = outputString.replacingOccurrences(of: "&#x2F;", with: "/")
         
-        var attrStri = NSMutableAttributedString(string: outputString)
-        
         /// Handle italics
-        applyFormatting(ss: outputString.substrings(between: "<i>", and: "</i>"),
-                        attrStri: &attrStri,
-                        attr: [.font: UIFont.preferredFont(forTextStyle: .body).italic])
-        attrStri.removeAllOccurrences(of: "<i>")
-        attrStri.removeAllOccurrences(of: "</i>")
-        
+        outputString = outputString.replacingOccurrences(of: "<i>", with: "_")
+        outputString = outputString.replacingOccurrences(of: "</i>", with: "_")
+
         /// Handle bold
-        applyFormatting(ss: outputString.substrings(between: "<b>", and: "</b>"),
-                        attrStri: &attrStri,
-                        attr: [.font: UIFont.preferredFont(forTextStyle: .body).bold])
-        attrStri.removeAllOccurrences(of: "<b>")
-        attrStri.removeAllOccurrences(of: "</b>")
+        outputString = outputString.replacingOccurrences(of: "<b>", with: "**")
+        outputString = outputString.replacingOccurrences(of: "</b>", with: "**")
         
-//        /// Handle quotes
-//        applyFormatting(ss: outputString.substrings(between: "> ", and: "\n\n"),
-//                        attrStri: &attrStri,
-//                        attr: [.foregroundColor: UIColor.gray])
+        /// Handle code blocks
+        outputString = outputString.replacingOccurrences(of: "<pre><code>", with: "```\n")
+        outputString = outputString.replacingOccurrences(of: "</code></pre>", with: "\n```\n")
         
-        return try AttributedString(attrStri, including: \.uiKit)
-    }
-    
-    static func applyFormatting(ss: [Substring], attrStri: inout NSMutableAttributedString, attr: [NSAttributedString.Key: Any]) {
-        for s in ss {
-            let range = attrStri.mutableString.range(of: String(s))
-            if range.location == NSNotFound {
+        /// NOTE: This is not exhaustive, some less commonly used formatting still breaks
+        // TODO: Fix # for code blocks
+        
+        /// Replace html link with markdown link
+        let linkRegex = /<a href="(.*?)"(.*?)>(.*?)<\/a>/
+        let linkMatches = outputString.matches(of: linkRegex)
+        for linkMatch in linkMatches {
+            let markdownLink = "[\(linkMatch.output.3)](\(linkMatch.output.1))"
+            outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
+        }
+        
+        guard let markdownData = outputString.data(using: .utf8) else {
+            throw APIManagerError.generic
+        }
+        
+        /// Inspired by https://github.com/frankrausch/AttributedStringStyledMarkdown
+        /// Adds grey styling to block quotes and adds proper line breaks, which AttributedString strips for no apparent reason
+        var s = try AttributedString(markdown: markdownData, options: .init(allowsExtendedAttributes: true, interpretedSyntax: .full, failurePolicy: .returnPartiallyParsedIfPossible, languageCode: "en"))
+        for (intentBlock, intentRange) in s.runs[AttributeScopes.FoundationAttributes.PresentationIntentAttribute.self].reversed() {
+            guard let intentBlock else {
                 continue
             }
-            attrStri.addAttributes(attr, range: range)
-        }
-    }
-}
-
-extension NSMutableAttributedString {
-    func removeAllOccurrences(of string: String) {
-        while(true) {
-            let range = self.mutableString.range(of: string)
-            if range.location == NSNotFound {
-                break
+            for intent in intentBlock.components {
+                if intent.kind == .blockQuote {
+                    s[intentRange].foregroundColor = .secondaryLabel
+                }
+                if intentRange.lowerBound != s.startIndex {
+                    s.characters.insert(contentsOf: "\n\n", at: intentRange.lowerBound)
+                }
             }
-            self.replaceCharacters(in: range, with: "")
         }
-    }
-}
-
-extension UIFont {
-    var bold: UIFont {
-        return with(.traitBold)
-    }
-
-    var italic: UIFont {
-        return with(.traitItalic)
-    }
-
-    var boldItalic: UIFont {
-        return with([.traitBold, .traitItalic])
-    }
-
-    func with(_ traits: UIFontDescriptor.SymbolicTraits...) -> UIFont {
-        guard let descriptor = self.fontDescriptor.withSymbolicTraits(UIFontDescriptor.SymbolicTraits(traits).union(self.fontDescriptor.symbolicTraits)) else {
-            return self
-        }
-        return UIFont(descriptor: descriptor, size: 0)
-    }
-
-    func without(_ traits: UIFontDescriptor.SymbolicTraits...) -> UIFont {
-        guard let descriptor = self.fontDescriptor.withSymbolicTraits(self.fontDescriptor.symbolicTraits.subtracting(UIFontDescriptor.SymbolicTraits(traits))) else {
-            return self
-        }
-        return UIFont(descriptor: descriptor, size: 0)
+        
+        return s
     }
 }

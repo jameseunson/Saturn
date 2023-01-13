@@ -28,7 +28,7 @@ struct SimpleHN_SwiftUIApp: App {
             TabView {
                 NavigationStack {
                     TopStoriesView()
-                        .environmentObject(TopStoriesViewModel())
+                        .environmentObject(TopStoriesInteractor())
                         .navigationTitle("Top")
                         .navigationBarTitleDisplayMode(.inline)
                 }

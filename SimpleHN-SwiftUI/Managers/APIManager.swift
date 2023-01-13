@@ -17,9 +17,6 @@ final class APIManager {
         let stories = ids.map { return self.loadStory(id: $0) }
         return Publishers.MergeMany(stories)
             .collect()
-            .map { stories in
-                return stories
-            }
             .eraseToAnyPublisher()
     }
     
@@ -42,17 +39,44 @@ final class APIManager {
         return retrieveObject(id: id)
     }
     
-    func loadUser(id: Int) -> AnyPublisher<User, Error> {
-        return retrieveObject(id: id)
+    func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error> {
+        retrieve(from: "v0/item/\(id)")
+            .tryMap { response -> (Int, String) in
+                guard let dict = response as? Dictionary<String, Any>,
+                      let type = dict["type"] as? String,
+                      let id = dict["id"] as? Int else {
+                    throw APIManagerError.generic
+                }
+                return (id, type)
+            }
+            .flatMap { id, type -> AnyPublisher<UserItem, Error> in
+                if type == "story" {
+                    return self.loadStory(id: id).map { UserItem.story($0) }.eraseToAnyPublisher()
+                    
+                } else if type == "comment" {
+                    return self.loadComment(id: id).map { UserItem.comment($0) }.eraseToAnyPublisher()
+                    
+                } else {
+                    // TODO: Handle other types
+                    return Empty().eraseToAnyPublisher()
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func loadUser(id: String) -> AnyPublisher<User, Error> {
+        return retrieve(from: "v0/user/\(id)")
+            .tryMap { response in
+                return try self.decodeResponse(response)
+            }
+            .eraseToAnyPublisher()
     }
     
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
             .tryMap { response in
-                let jsonData = try JSONSerialization.data(withJSONObject: response)
-                let object = try JSONDecoder().decode(T.self, from: jsonData)
-                return object
+                return try self.decodeResponse(response)
             }
             .eraseToAnyPublisher()
     }
@@ -77,8 +101,19 @@ final class APIManager {
         .timeout(.seconds(5), scheduler: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
+    
+    private func decodeResponse<T: Codable>(_ response: Any) throws -> T {
+        let jsonData = try JSONSerialization.data(withJSONObject: response)
+        let object = try JSONDecoder().decode(T.self, from: jsonData)
+        return object
+    }
 }
 
 enum APIManagerError: Error {
     case generic
+}
+
+enum UserItem {
+    case comment(Comment)
+    case story(Story)
 }

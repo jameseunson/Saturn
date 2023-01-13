@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TopStoriesView: View {
-    @EnvironmentObject var viewModel: TopStoriesViewModel
+    @EnvironmentObject var viewModel: TopStoriesInteractor
     
     var body: some View {
         if case .initialLoad = viewModel.loadingState {
@@ -20,7 +20,7 @@ struct TopStoriesView: View {
             List {
                 ForEach(viewModel.stories) { story in
                     NavigationLink(value: story) {
-                        StoryRowView(story: story)
+                        StoryRowView(story: StoryRowViewModel(story: story))
                             .onAppear {
                                 if story == viewModel.stories.last {
                                     viewModel.loadNextPage()
@@ -31,8 +31,8 @@ struct TopStoriesView: View {
                 ListLoadingView()
             }
             .navigationDestination(for: Story.self) { story in
-                let viewModel = StoryDetailViewModel(story: story)
-                StoryDetailView(story: story, viewModel: viewModel)
+                let interactor = StoryDetailInteractor(story: story)
+                StoryDetailView(story: story, interactor: interactor)
                     .navigationTitle(story.title)
             }
             .refreshable {
@@ -72,6 +72,6 @@ struct ListLoadingView: View {
 struct TopStoriesView_Previews: PreviewProvider {
     static var previews: some View {
         TopStoriesView()
-            .environmentObject(TopStoriesViewModel())
+            .environmentObject(TopStoriesInteractor())
     }
 }

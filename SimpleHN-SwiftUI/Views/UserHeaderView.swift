@@ -1,31 +1,40 @@
 //
-//  StoryRowView.swift
+//  UserHeaderView.swift
 //  SimpleHN-SwiftUI
 //
-//  Created by James Eunson on 9/1/2023.
+//  Created by James Eunson on 13/1/2023.
 //
 
 import Foundation
 import SwiftUI
 
-struct StoryRowView: View {
-    let formatter = RelativeDateTimeFormatter()
-    let story: StoryRowViewModel
+struct UserHeaderView: View {
+    let user: UserViewModel
+    @Binding var displayingSafariURL: URL?
     
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(story.title)
+                Text(user.id)
                     .font(.title3)
                     .foregroundColor(Color.primary)
-                Text(story.subtitle)
+                Text(user.created)
                     .font(.callout)
                     .foregroundColor(.gray)
+                if let about = user.about {
+                    Text(about)
+                        .font(.callout)
+                        .foregroundColor(.gray)
+                        .environment(\.openURL, OpenURLAction { url in
+                            displayingSafariURL = url
+                            return .handled
+                        })
+                }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 6) {
                 HStack {
-                    Text(String(story.score))
+                    Text(String(user.karma))
                         .font(.callout)
                         .foregroundColor(Color.accentColor)
                     Image(systemName: "arrow.up.square.fill")
@@ -34,7 +43,7 @@ struct StoryRowView: View {
                         .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                 }
                 HStack {
-                    Text(String(story.comments))
+                    Text(String(user.submissions))
                         .font(.callout)
                         .foregroundColor(Color.gray)
                     Image(systemName: "text.bubble.fill")

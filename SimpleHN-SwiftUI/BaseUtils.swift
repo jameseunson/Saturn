@@ -21,7 +21,7 @@ enum LoadingState {
     case failed
 }
 
-open class ViewModel: ObservableObject {
+open class Interactor: ObservableObject {
     var disposeBag = Set<AnyCancellable>()
     deinit {
         disposeBag.forEach { $0.cancel() }
