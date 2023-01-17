@@ -75,9 +75,18 @@ final class APIManager {
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
-            .tryMap { response in
-                return try self.decodeResponse(response)
+            .tryMap { response -> T? in
+                do {
+                    return try self.decodeResponse(response)
+                    
+                } catch APIManagerError.deleted {
+                    return nil /// Don't trigger an error if the response is empty, just ignore
+                    
+                } catch let error {
+                    throw error
+                }
             }
+            .compactMap { $0 }
             .eraseToAnyPublisher()
     }
     
@@ -103,6 +112,11 @@ final class APIManager {
     }
     
     private func decodeResponse<T: Codable>(_ response: Any) throws -> T {
+        if let dict = response as? Dictionary<String, Any>,
+           dict.keys.contains("deleted") {
+            throw APIManagerError.deleted
+        }
+        
         let jsonData = try JSONSerialization.data(withJSONObject: response)
         let object = try JSONDecoder().decode(T.self, from: jsonData)
         return object
@@ -111,6 +125,7 @@ final class APIManager {
 
 enum APIManagerError: Error {
     case generic
+    case deleted
 }
 
 enum UserItem {

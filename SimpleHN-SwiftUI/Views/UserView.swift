@@ -13,8 +13,8 @@ enum UserSegment: Int {
     case submissions
 }
 
-enum UserItemViewModel: Identifiable {
-    var id: ObjectIdentifier {
+enum UserItemViewModel: Identifiable, Equatable {
+    var id: Int {
         switch self {
         case let .comment(comment):
             return comment.id
@@ -34,32 +34,44 @@ struct UserView: View {
     @State var displayingSafariURL: URL?
     @State var items: [UserItemViewModel] = []
     
+    /// Infinite scroll
+    @State private var readyToLoadMore = false
+    @State private var itemsRemainingToLoad = false
+    
     var body: some View {
         if let user {
-            ScrollView {
+            InfiniteScrollView(loader: interactor,
+                               readyToLoadMore: $readyToLoadMore,
+                               itemsRemainingToLoad: $itemsRemainingToLoad) {
+                
                 UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL)
                     .padding([.leading, .trailing])
 
                 Divider()
                 
                 ForEach(items) { item in
-                    switch item {
-                    case let .comment(comment):
-                        CommentView(expanded: .constant(.expanded), comment: comment) { comment in
-                            
-                        } onTapOptions: { comment in
-                            
-                        } onToggleExpanded: { comment, expanded in
-                            
-                        }
-                        .padding([.trailing, .leading, .bottom])
-
-                    case let .story(story):
-                        StoryRowView(story: story)
+                    VStack {
+                        switch item {
+                        case let .comment(comment):
+                            CommentView(expanded: .constant(.expanded), comment: comment) { comment in
+                                
+                            } onTapOptions: { comment in
+                                
+                            } onToggleExpanded: { comment, expanded in
+                                
+                            }
                             .padding([.trailing, .leading, .bottom])
+
+                        case let .story(story):
+                            Divider()
+                            StoryRowView(story: story)
+                                .padding([.trailing, .leading, .bottom])
+                        }
                     }
                 }
-                ListLoadingView()
+                if itemsRemainingToLoad {
+                    ListLoadingView()
+                }
             }
             .sheet(isPresented: displayingSafariViewBinding()) {
                 if let displayingSafariURL {
@@ -68,7 +80,16 @@ struct UserView: View {
                 }
             }
             .onReceive(interactor.$items) { output in
-                self.items = output
+                items = output
+            }
+            .onReceive(interactor.$readyToLoadMore, perform: { output in
+                readyToLoadMore = output
+            })
+            .onReceive(interactor.$itemsRemainingToLoad, perform: { output in
+                itemsRemainingToLoad = output
+            })
+            .refreshable {
+                await interactor.refreshUser()
             }
 
         } else {

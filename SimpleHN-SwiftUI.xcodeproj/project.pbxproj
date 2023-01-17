@@ -47,6 +47,10 @@
 		1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD229713BB300870A50 /* UserInteractor.swift */; };
 		1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD42971435B00870A50 /* UserViewModel.swift */; };
 		1A873AD72971461A00870A50 /* UserHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD62971461A00870A50 /* UserHeaderView.swift */; };
+		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
+		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
+		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
+		1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +104,10 @@
 		1A873AD229713BB300870A50 /* UserInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInteractor.swift; sourceTree = "<group>"; };
 		1A873AD42971435B00870A50 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		1A873AD62971461A00870A50 /* UserHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHeaderView.swift; sourceTree = "<group>"; };
+		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
+		1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteScrollView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -211,6 +219,8 @@
 				1A873AC8296FCD1600870A50 /* SettingsView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1A873AD62971461A00870A50 /* UserHeaderView.swift */,
+				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
+				1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -231,6 +241,7 @@
 				1A5DBC05296A892B00D4D86E /* TopStoriesInteractor.swift */,
 				1A5DBC0E296BD43800D4D86E /* StoryDetailInteractor.swift */,
 				1A873AD229713BB300870A50 /* UserInteractor.swift */,
+				1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */,
 			);
 			path = Interactors;
 			sourceTree = "<group>";
@@ -238,6 +249,7 @@
 		1A873AB8296D444400870A50 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				1AE4A993297526AB00D0B0D3 /* Settings.swift */,
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
 				1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */,
 			);
@@ -411,6 +423,7 @@
 			files = (
 				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
+				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* TopStoriesInteractor.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A873ACB296FCD4800870A50 /* CommentTextProcessor.swift in Sources */,
@@ -423,6 +436,7 @@
 				1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
 				1A873AC7296F921C00870A50 /* User.swift in Sources */,
+				1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */,
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
@@ -433,6 +447,8 @@
 				1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */,
 				1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */,
 				1A5DBC13296BD46600D4D86E /* Story.swift in Sources */,
+				1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */,
+				1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

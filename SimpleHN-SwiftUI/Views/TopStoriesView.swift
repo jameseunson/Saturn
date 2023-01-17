@@ -8,22 +8,23 @@
 import SwiftUI
 
 struct TopStoriesView: View {
-    @EnvironmentObject var viewModel: TopStoriesInteractor
+    @ObservedObject var interactor = TopStoriesInteractor()
+    @State var isSettingsVisible: Bool = false
     
     var body: some View {
-        if case .initialLoad = viewModel.loadingState {
+        if case .initialLoad = interactor.loadingState {
             LoadingView()
             .onAppear {
-                viewModel.activate()
+                interactor.activate()
             }
         } else {
             List {
-                ForEach(viewModel.stories) { story in
+                ForEach(interactor.stories) { story in
                     NavigationLink(value: story) {
                         StoryRowView(story: StoryRowViewModel(story: story))
                             .onAppear {
-                                if story == viewModel.stories.last {
-                                    viewModel.loadNextPage()
+                                if story == interactor.stories.last {
+                                    interactor.loadNextPage()
                                 }
                             }
                     }
@@ -36,12 +37,12 @@ struct TopStoriesView: View {
                     .navigationTitle(story.title)
             }
             .refreshable {
-                await viewModel.refreshStories()
+                await interactor.refreshStories()
             }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
-                        // TODO:
+                        isSettingsVisible = true
                     } label: {
                         Image(systemName: "gear")
                     }
@@ -54,7 +55,33 @@ struct TopStoriesView: View {
                     }
                 }
             }
+            .sheet(isPresented: $isSettingsVisible, content: {
+                SettingsNavigationView(isSettingsVisible: $isSettingsVisible)
+            })
             .listStyle(.plain)
+        }
+    }
+}
+
+struct SettingsNavigationView: View {
+    @Binding var isSettingsVisible: Bool
+    
+    var body: some View {
+        NavigationStack {
+            SettingsView()
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            isSettingsVisible = false
+                        } label: {
+                            Text("Done")
+                                .fontWeight(.medium)
+                        }
+
+                    }
+                }
         }
     }
 }

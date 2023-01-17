@@ -25,17 +25,7 @@ struct SimpleHN_SwiftUIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                NavigationStack {
-                    TopStoriesView()
-                        .environmentObject(TopStoriesInteractor())
-                        .navigationTitle("Top")
-                        .navigationBarTitleDisplayMode(.inline)
-                }
-                .tabItem {
-                    Label("Top", systemImage: "list.dash")
-                }
-            }
+            RootView()
         }
     }
 }

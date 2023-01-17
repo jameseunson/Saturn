@@ -35,13 +35,21 @@ final class CommentTextProcessor {
         // TODO: Fix # for code blocks
         
         /// Replace html link with markdown link
+        processLinks(&outputString)
+        
+        return try parseMarkdown(outputString)
+    }
+    
+    static func processLinks(_ outputString: inout String) {
         let linkRegex = /<a href="(.*?)"(.*?)>(.*?)<\/a>/
         let linkMatches = outputString.matches(of: linkRegex)
         for linkMatch in linkMatches {
             let markdownLink = "[\(linkMatch.output.3)](\(linkMatch.output.1))"
             outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
         }
-        
+    }
+    
+    static func parseMarkdown(_ outputString: String) throws -> AttributedString {
         guard let markdownData = outputString.data(using: .utf8) else {
             throw APIManagerError.generic
         }

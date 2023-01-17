@@ -16,7 +16,7 @@ enum CommentExpandedState {
     case hidden
 }
 
-final class StoryDetailInteractor: Interactor {
+final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published var comments: Array<CommentViewModel> = []
     @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     @Published var readyToLoadMore: Bool = false
@@ -80,7 +80,7 @@ final class StoryDetailInteractor: Interactor {
         }
     }
     
-    func loadMoreComments() {
+    func loadMoreItems() {
         guard let kids = story.kids else { return }
         
         var nextKidToLoad: Int?

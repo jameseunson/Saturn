@@ -32,14 +32,12 @@ final class TopStoriesInteractor: Interactor {
             return
         case .loaded, .failed:
             loadingState = .loadingMore
-        default:
+        case .initialLoad:
+            // fallthrough
             break
         }
         
-        apiManager.loadTopStoryIds()
-            .handleEvents(receiveOutput: { ids in
-                self.storyIds.append(contentsOf: ids)
-            })
+        getStoryIds()
             .flatMap { ids -> AnyPublisher<[Story], Error> in
                 /// Calculate page offsets
                 let pageStart = self.currentPage * self.pageLength
@@ -64,7 +62,42 @@ final class TopStoriesInteractor: Interactor {
             .store(in: &disposeBag)
     }
     
-    func refreshStories() {
-        
+    func getStoryIds() -> AnyPublisher<[Int], Error> {
+        Future { [weak self] promise in
+            guard let self else { return }
+            
+            if self.storyIds.isEmpty {
+                self.apiManager.loadTopStoryIds()
+                    .handleEvents(receiveOutput: { ids in
+                        if self.storyIds.isEmpty {
+                            self.storyIds.append(contentsOf: ids)
+                        }
+                    })
+                    .sink { completion in
+                        if case let .failure(error) = completion {
+                            promise(.failure(error))
+                        }
+                    } receiveValue: { ids in
+                        promise(.success(ids))
+                    }
+                    .store(in: &self.disposeBag)
+            } else {
+                promise(.success(self.storyIds))
+            }
+            
+        }.eraseToAnyPublisher()
+    }
+    
+    func refreshStories() async {
+        Task {
+            self.storyIds.removeAll(keepingCapacity: true)
+            self.stories.removeAll(keepingCapacity: true)
+            self.currentPage = 0
+            
+            DispatchQueue.main.async {
+                self.loadingState = .initialLoad
+            }
+            loadNextPage()
+        }
     }
 }
