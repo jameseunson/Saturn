@@ -14,11 +14,24 @@ struct CommentView: View {
     let formatter = RelativeDateTimeFormatter()
     let comment: CommentViewModel
     
-    let onTapUser: (CommentViewModel) -> Void
     let onTapOptions: (CommentViewModel) -> Void
-    let onToggleExpanded: (CommentViewModel, CommentExpandedState) -> Void
+    let onTapUser: ((String) -> Void)?
+    let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
     
     @State var displayingSafariURL: URL?
+    @State var displayingInternalStoryId: Int?
+    
+    init(expanded: Binding<CommentExpandedState>,
+         comment: CommentViewModel,
+         onTapOptions: @escaping (CommentViewModel) -> Void,
+         onTapUser: ((String) -> Void)? = nil,
+         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil) {
+        _expanded = expanded
+        self.comment = comment
+        self.onTapOptions = onTapOptions
+        self.onTapUser = onTapUser
+        self.onToggleExpanded = onToggleExpanded
+    }
     
     var body: some View {
         if expanded == .hidden {
@@ -35,7 +48,9 @@ struct CommentView: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(Color.accentColor)
                                 .onTapGesture {
-                                    onTapUser(comment)
+                                    if let onTapUser {
+                                        onTapUser(comment.by)
+                                    }
                                 }
                             Spacer()
                             Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
@@ -64,7 +79,9 @@ struct CommentView: View {
                                     withAnimation {
                                         toggleExpanded()
                                     }
-                                    onToggleExpanded(comment, expanded)
+                                    if let onToggleExpanded {
+                                        onToggleExpanded(comment, expanded)
+                                    }
                                 }
                         }
                     }
@@ -73,8 +90,15 @@ struct CommentView: View {
                         Text(comment.comment.text)
                             .font(.body)
                             .environment(\.openURL, OpenURLAction { url in
-                                if url.host == "news.ycombinator.com" {
-                                    // TODO:
+                                if let idMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/item\?id=([0-9]+)/),
+                                   let idMatchInt = Int(idMatch.output.1) {
+                                    displayingInternalStoryId = idMatchInt
+                                    
+                                } else if let userMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/user\?id=([a-zA-Z0-9]+)/),
+                                          let onTapUser {
+                                    let userId = userMatch.output.1
+                                    onTapUser(String(userId))
+                                    
                                 } else {
                                     displayingSafariURL = url
                                 }
@@ -87,7 +111,9 @@ struct CommentView: View {
                 withAnimation {
                     toggleExpanded()
                 }
-                onToggleExpanded(comment, expanded)
+                if let onToggleExpanded {
+                    onToggleExpanded(comment, expanded)
+                }
             }
             .buttonStyle(PlainButtonStyle())
             .frame(height: expanded == .expanded ? nil : 20)
@@ -95,6 +121,14 @@ struct CommentView: View {
                 if let displayingSafariURL {
                     SafariView(url: displayingSafariURL)
                         .ignoresSafeArea()
+                }
+            }
+            .navigationDestination(isPresented: displayingInternalStoryIdBinding()) {
+                if let displayingInternalStoryId {
+                    let interactor = StoryDetailInteractor(storyId: displayingInternalStoryId)
+                    StoryDetailView(interactor: interactor)
+                } else {
+                    EmptyView()
                 }
             }
         }
@@ -105,6 +139,14 @@ struct CommentView: View {
             displayingSafariURL != nil
         } set: { value in
             if !value { displayingSafariURL = nil }
+        }
+    }
+    
+    func displayingInternalStoryIdBinding() -> Binding<Bool> {
+        Binding {
+            displayingInternalStoryId != nil
+        } set: { value in
+            if !value { displayingInternalStoryId = nil }
         }
     }
     

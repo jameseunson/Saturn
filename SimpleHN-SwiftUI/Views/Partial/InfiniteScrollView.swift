@@ -56,7 +56,7 @@ struct InfiniteScrollView<Content>: View where Content: View {
             return
         }
         let adjustedHeight = contentHeight - UIScreen.main.bounds.size.height
-        if max(0, offset) > max(0, adjustedHeight) {
+        if offset > adjustedHeight {
             loader.loadMoreItems()
             readyToLoadMore = false
         }

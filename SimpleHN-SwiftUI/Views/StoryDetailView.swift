@@ -9,7 +9,8 @@ import Foundation
 import SwiftUI
 
 struct StoryDetailView: View {
-    let story: Story
+    @State var story: Story?
+    
     @StateObject var interactor: StoryDetailInteractor
     @State private var isShowingSafariView = false
     @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
@@ -22,43 +23,49 @@ struct StoryDetailView: View {
     @State private var commentsRemainingToLoad = false
     
     var body: some View {
-        InfiniteScrollView(loader: interactor,
-                           readyToLoadMore: $readyToLoadMore,
-                           itemsRemainingToLoad: $commentsRemainingToLoad) {
-            
-            StoryRowView(story: StoryRowViewModel(story: story))
-                .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
-                .onTapGesture {
-                    isShowingSafariView = true
+        ZStack {
+            if let story {
+                InfiniteScrollView(loader: interactor,
+                                   readyToLoadMore: $readyToLoadMore,
+                                   itemsRemainingToLoad: $commentsRemainingToLoad) {
+                    
+                    StoryRowView(story: StoryRowViewModel(story: story))
+                        .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
+                        .onTapGesture {
+                            isShowingSafariView = true
+                        }
+                    Divider()
+                    
+                    if interactor.comments.count == 0 {
+                        ListLoadingView()
+                            .listRowSeparator(.hidden)
+                            .padding(10)
+                        
+                    } else {
+                        ForEach(interactor.comments) { comment in
+                            CommentView(expanded: binding(for: comment), comment: comment) { comment in
+                                print("test")
+                                
+                            } onTapUser: { user in
+                                selectedUser = user
+                                
+                            } onToggleExpanded: { comment, expanded in
+                                self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
+                            }
+                            .padding(10)
+                        }
+                        if commentsRemainingToLoad {
+                            ListLoadingView()
+                        }
+                    }
                 }
-            Divider()
-            
-            if interactor.comments.count == 0 {
-                ListLoadingView()
-                    .listRowSeparator(.hidden)
-                    .padding(10)
+                .refreshable {
+                    await interactor.refreshComments()
+                }
                 
             } else {
-                ForEach(interactor.comments) { comment in
-                    CommentView(expanded: binding(for: comment),
-                                comment: comment) { comment in
-                        selectedUser = comment.by
-                        
-                    } onTapOptions: { comment in
-                        print("test")
-                        
-                    } onToggleExpanded: { comment, expanded in
-                        self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
-                    }
-                    .padding(10)
-                }
-                if commentsRemainingToLoad {
-                    ListLoadingView()
-                }
+                LoadingView()
             }
-        }
-        .refreshable {
-            await interactor.refreshComments()
         }
         .onAppear {
             interactor.activate()
@@ -68,6 +75,9 @@ struct StoryDetailView: View {
         })
         .onReceive(interactor.$commentsRemainingToLoad, perform: { output in
             commentsRemainingToLoad = output
+        })
+        .onReceive(interactor.$story, perform: { output in
+            self.story = output
         })
         .navigationDestination(isPresented: displayingUserBinding()) {
             if let selectedUser {
@@ -87,7 +97,7 @@ struct StoryDetailView: View {
             }
         }
         .sheet(isPresented: $isShareVisible, content: {
-            if let url = story.url {
+            if let url = story?.url {
                 let sheet = ActivityViewController(itemsToShare: [url])
                     .ignoresSafeArea()
                 if #available(iOS 16, *) {
@@ -98,7 +108,7 @@ struct StoryDetailView: View {
             }
         })
         .sheet(isPresented: $isShowingSafariView) {
-            if let url = story.url {
+            if let url = story?.url {
                 SafariView(url: url)
                     .ignoresSafeArea()
             }

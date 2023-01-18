@@ -51,6 +51,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 /// Calculate page offsets
                 let pageStart = self.currentPage * self.pageLength
                 let pageEnd = ((self.currentPage + 1) * self.pageLength)
+                
+                // TODO: Fix BUG, Fatal error: Array index is out of range
                 let idsPage = Array(self.submittedIds[pageStart..<pageEnd])
                 
                 let stories = idsPage.map { return self.apiManager.loadUserItem(id: $0) }

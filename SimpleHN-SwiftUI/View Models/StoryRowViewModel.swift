@@ -35,6 +35,27 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.comments = story.descendants ?? 0
     }
     
+    init(searchItem: SearchItem) {
+        self.id = searchItem.objectID
+        self.title = searchItem.title
+        
+        var subtitleComponents = [String]()
+        
+        if let url = searchItem.url,
+           let host = url.host {
+            subtitleComponents.append(host)
+            subtitleComponents.append(" · ")
+        }
+        subtitleComponents.append(searchItem.author)
+        subtitleComponents.append(" · ")
+        subtitleComponents.append(RelativeDateTimeFormatter().localizedString(for: searchItem.createdAt, relativeTo: Date()))
+        
+        self.subtitle = subtitleComponents.joined()
+        
+        self.score = searchItem.points
+        self.comments = searchItem.numComments
+    }
+    
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {
         return lhs.id == rhs.id &&
                lhs.title == rhs.title &&

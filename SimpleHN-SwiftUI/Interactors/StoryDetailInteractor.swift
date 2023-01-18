@@ -21,18 +21,26 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     @Published var readyToLoadMore: Bool = false
     @Published var commentsRemainingToLoad: Bool = true
-    
-    private let story: Story
-    private let apiManager = APIManager()
+    @Published var story: Story?
     
     @Published private var commentsLoaded = 0
     @Published private var currentlyLoadingComment: CommentViewModel?
     
+    private var storyId: Int?
+    private let apiManager = APIManager()
+    
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
     
+    /// Entry from StoriesView, we already have a `Story` object
     init(story: Story) {
         self.story = story
+    }
+    
+    /// Entry from search results or intercepting internal links like news.ycombinator.com/item?id=1234
+    /// where we don't yet have a full `Story` object, and it must be loaded as part of the interactor startup
+    init(storyId: Int) {
+        self.storyId = storyId
     }
     
     override func didBecomeActive() {
@@ -66,10 +74,24 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 self.readyToLoadMore = true
             }
             .store(in: &disposeBag)
+        
+        if let storyId {
+            apiManager.loadStory(id: storyId)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        print(error)
+                    }
+                    
+                } receiveValue: { story in
+                    self.story = story
+                    self.loadComments()
+                }
+                .store(in: &disposeBag)
+        }
     }
     
     func loadComments() {
-        guard let kids = story.kids,
+        guard let kids = story?.kids,
               let firstKid = kids.first else { return }
         
         traverse(firstKid)
@@ -81,7 +103,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func loadMoreItems() {
-        guard let kids = story.kids else { return }
+        guard let kids = story?.kids else { return }
         
         var nextKidToLoad: Int?
         for kid in kids {

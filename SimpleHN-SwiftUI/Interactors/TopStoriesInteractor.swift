@@ -1,5 +1,5 @@
 //
-//  TopStoriesInteractor.swift
+//  StoriesInteractor.swift
 //  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 8/1/2023.
@@ -9,16 +9,21 @@ import Combine
 import Foundation
 import SwiftUI
 
-final class TopStoriesInteractor: Interactor {
+final class StoriesInteractor: Interactor {
     @Published var canLoadMore: Bool = true
     
     let apiManager = APIManager()
     let pageLength = 10
+    let type: StoryListType
     
     var currentPage: Int = 0
     var storyIds = [Int]()
     @Published var stories = [Story]()
     @Published var loadingState: LoadingState = .initialLoad
+    
+    init(type: StoryListType) {
+        self.type = type
+    }
     
     override func didBecomeActive() {
         if case .initialLoad = loadingState {
@@ -45,7 +50,7 @@ final class TopStoriesInteractor: Interactor {
                 let idsPage = Array(ids[pageStart..<pageEnd])
                 
                 /// Begin load
-                return self.apiManager.loadTopStories(ids: idsPage)
+                return self.apiManager.loadStories(ids: idsPage)
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -67,7 +72,7 @@ final class TopStoriesInteractor: Interactor {
             guard let self else { return }
             
             if self.storyIds.isEmpty {
-                self.apiManager.loadTopStoryIds()
+                self.apiManager.loadStoryIds(type: self.type)
                     .handleEvents(receiveOutput: { ids in
                         if self.storyIds.isEmpty {
                             self.storyIds.append(contentsOf: ids)

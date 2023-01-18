@@ -9,19 +9,20 @@ import Combine
 import Foundation
 import FirebaseCore
 import Firebase
+import FirebaseDatabase
 
 final class APIManager {
     let ref: DatabaseReference! = Database.database(url: "https://hacker-news.firebaseio.com").reference()
 
-    func loadTopStories(ids: [Int]) -> AnyPublisher<[Story], Error> {
+    func loadStories(ids: [Int]) -> AnyPublisher<[Story], Error> {
         let stories = ids.map { return self.loadStory(id: $0) }
         return Publishers.MergeMany(stories)
             .collect()
             .eraseToAnyPublisher()
     }
     
-    func loadTopStoryIds() -> AnyPublisher<Array<Int>, Error> {
-        return retrieve(from: "v0/topstories")
+    func loadStoryIds(type: StoryListType) -> AnyPublisher<Array<Int>, Error> {
+        return retrieve(from: type.path)
             .tryMap { response in
                 guard let ids = response as? Array<Int> else {
                     throw APIManagerError.generic
@@ -131,4 +132,24 @@ enum APIManagerError: Error {
 enum UserItem {
     case comment(Comment)
     case story(Story)
+}
+
+enum StoryListType {
+    case top
+    case new
+    case show
+    case ask
+    
+    var path: String {
+        switch self {
+        case .top:
+            return "v0/topstories"
+        case .new:
+            return "v0/newstories"
+        case .show:
+            return "v0/showstories"
+        case .ask:
+            return "v0/askstories"
+        }
+    }
 }

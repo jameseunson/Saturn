@@ -9,6 +9,7 @@ import Combine
 import Foundation
 
 enum LoadableResource<T: Codable> {
+    case notLoading
     case loading
     case loaded(response: T)
     case failed

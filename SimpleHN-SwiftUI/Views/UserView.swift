@@ -8,11 +8,6 @@
 import Foundation
 import SwiftUI
 
-enum UserSegment: Int {
-    case comments
-    case submissions
-}
-
 enum UserItemViewModel: Identifiable, Equatable {
     var id: Int {
         switch self {
@@ -54,11 +49,7 @@ struct UserView: View {
                         switch item {
                         case let .comment(comment):
                             CommentView(expanded: .constant(.expanded), comment: comment) { comment in
-                                
-                            } onTapOptions: { comment in
-                                
-                            } onToggleExpanded: { comment, expanded in
-                                
+                                print("didTapOptions")
                             }
                             .padding([.trailing, .leading, .bottom])
 
