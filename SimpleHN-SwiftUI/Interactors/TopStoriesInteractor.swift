@@ -46,7 +46,7 @@ final class StoriesInteractor: Interactor {
             .flatMap { ids -> AnyPublisher<[Story], Error> in
                 /// Calculate page offsets
                 let pageStart = self.currentPage * self.pageLength
-                let pageEnd = ((self.currentPage + 1) * self.pageLength)
+                let pageEnd = min(((self.currentPage + 1) * self.pageLength), ids.count)
                 let idsPage = Array(ids[pageStart..<pageEnd])
                 
                 /// Begin load

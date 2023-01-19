@@ -16,6 +16,10 @@ struct Comment: Identifiable, Hashable, Codable {
     let text: AttributedString
     let time: Date
     
+    var url: URL? {
+        return URL(string: "https://news.ycombinator.com/item?id=\(id)")
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(Int.self, forKey: .id)

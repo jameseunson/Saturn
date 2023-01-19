@@ -26,7 +26,12 @@ struct UserHeaderView: View {
                         .font(.callout)
                         .foregroundColor(.gray)
                         .environment(\.openURL, OpenURLAction { url in
-                            displayingSafariURL = url
+                            // https://stackoverflow.com/questions/15226545/ios-email-address-validation
+                            if let _ = url.absoluteString.firstMatch(of: /[A-Z0-9a-z]+([._%+-]{1}[A-Z0-9a-z]+)*@[A-Z0-9a-z]+([.-]{1}[A-Z0-9a-z]+)*(\\.[A-Za-z]{2,4}){0,1}/) {
+                                UIApplication.shared.open(url)
+                            } else {
+                                displayingSafariURL = url
+                            }
                             return .handled
                         })
                 }

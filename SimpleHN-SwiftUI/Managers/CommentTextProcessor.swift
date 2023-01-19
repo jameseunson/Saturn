@@ -12,7 +12,17 @@ final class CommentTextProcessor {
     static func processCommentText(_ input: String) throws -> AttributedString {
         var outputString = input
         
+        if outputString.contains("reading too much into it") {
+            print(outputString)
+        }
+        
         /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
+        /// HN formatting has lots of quirks (for one, it's *not* valid html nor valid markdown) and AttributedString handling of even
+        /// valid markdown is somewhat broken, so we can work around it here
+        outputString = outputString.replacingOccurrences(of: "<p>* ", with: "\n\n•\t")
+        outputString = outputString.replacingOccurrences(of: "<p>- ", with: "\n\n•\t")
+        processOrdinalListItems(&outputString)
+        
         outputString = outputString.replacingOccurrences(of: "<p>", with: "\n\n")
         outputString = outputString.replacingOccurrences(of: "&gt;", with: ">")
         outputString = outputString.replacingOccurrences(of: "&#x27;", with: "'")
@@ -40,12 +50,23 @@ final class CommentTextProcessor {
         return try parseMarkdown(outputString)
     }
     
+    /// Convert <a href="http://google.com">asdf</a> to [asdf](http://google.com)
     static func processLinks(_ outputString: inout String) {
         let linkRegex = /<a href="(.*?)"(.*?)>(.*?)<\/a>/
         let linkMatches = outputString.matches(of: linkRegex)
         for linkMatch in linkMatches {
             let markdownLink = "[\(linkMatch.output.3)](\(linkMatch.output.1))"
             outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
+        }
+    }
+    
+    /// Convert '<p>3.' to '\n\n3.\t'
+    static func processOrdinalListItems(_ outputString: inout String) {
+        let ordinalListItemRegex = /<p>([0-9]+)\.\s+/
+        let ordinalListItemMatches = outputString.matches(of: ordinalListItemRegex)
+        for ordinalListItemMatch in ordinalListItemMatches {
+            let ordinalListItemString = "\n\n\(ordinalListItemMatch.output.1)\t"
+            outputString = outputString.replacingOccurrences(of: ordinalListItemMatch.output.0, with: ordinalListItemString)
         }
     }
     

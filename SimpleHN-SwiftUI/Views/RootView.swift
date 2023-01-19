@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 struct RootView: View {
+    @StateObject var interactor = RootInteractor()
+    
     var body: some View {
         TabView {
             NavigationStack {
@@ -43,6 +45,9 @@ struct RootView: View {
             .tabItem {
                 Label("Ask", systemImage: "text.bubble")
             }
+        }
+        .onAppear {
+            interactor.activate()
         }
     }
 }

@@ -12,6 +12,7 @@ import Firebase
 import FirebaseDatabase
 
 final class APIManager {
+    let cache = APIResponseCache()
     let ref: DatabaseReference! = Database.database(url: "https://hacker-news.firebaseio.com").reference()
 
     func loadStories(ids: [Int]) -> AnyPublisher<[Story], Error> {
@@ -129,27 +130,3 @@ enum APIManagerError: Error {
     case deleted
 }
 
-enum UserItem {
-    case comment(Comment)
-    case story(Story)
-}
-
-enum StoryListType {
-    case top
-    case new
-    case show
-    case ask
-    
-    var path: String {
-        switch self {
-        case .top:
-            return "v0/topstories"
-        case .new:
-            return "v0/newstories"
-        case .show:
-            return "v0/showstories"
-        case .ask:
-            return "v0/askstories"
-        }
-    }
-}

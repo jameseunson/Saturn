@@ -31,7 +31,6 @@ final class SearchInteractor: Interactor {
                 self.results = .loaded(response: hits)
             }
             .store(in: &disposeBag)
-
     }
     
     func searchQueryChanged(_ query: String) {

@@ -33,6 +33,8 @@ struct UserView: View {
     @State private var readyToLoadMore = false
     @State private var itemsRemainingToLoad = false
     
+    @State var selectedCommentToShare: CommentViewModel?
+    
     var body: some View {
         if let user {
             InfiniteScrollView(loader: interactor,
@@ -49,7 +51,9 @@ struct UserView: View {
                         switch item {
                         case let .comment(comment):
                             CommentView(expanded: .constant(.expanded), comment: comment) { comment in
-                                print("didTapOptions")
+                                selectedCommentToShare = comment
+                            } onToggleExpanded: { comment, expanded in
+                                print(comment)
                             }
                             .padding([.trailing, .leading, .bottom])
 
@@ -70,6 +74,13 @@ struct UserView: View {
                         .ignoresSafeArea()
                 }
             }
+            .sheet(isPresented: isShareVisible(), content: {
+                if let url = selectedCommentToShare?.comment.url {
+                    let sheet = ActivityViewController(itemsToShare: [url])
+                        .ignoresSafeArea()
+                    sheet.presentationDetents([.medium])
+                }
+            })
             .onReceive(interactor.$items) { output in
                 items = output
             }
@@ -104,6 +115,14 @@ struct UserView: View {
             displayingSafariURL != nil
         } set: { value in
             if !value { displayingSafariURL = nil }
+        }
+    }
+    
+    func isShareVisible() -> Binding<Bool> {
+        Binding {
+            selectedCommentToShare != nil
+        } set: { value in
+            if !value { selectedCommentToShare = nil }
         }
     }
 }

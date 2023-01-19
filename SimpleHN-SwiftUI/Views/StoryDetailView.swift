@@ -15,12 +15,17 @@ struct StoryDetailView: View {
     @State private var isShowingSafariView = false
     @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     
-    @State var isShareVisible: Bool = false
-    @State var selectedUser: String? = nil
+    @State var selectedShareItem: StoryDetailShareItem?
+    @State var selectedUser: String?
+    @State var displayingInternalStoryId: Int?
+    @State var selectedComment: CommentViewModel?
     
     /// Infinite scroll
     @State private var readyToLoadMore = false
     @State private var commentsRemainingToLoad = false
+    
+    /// NSUserActivity - handoff
+    static let userActivity = "com.JEON.SimpleHN.read-story"
     
     var body: some View {
         ZStack {
@@ -44,24 +49,28 @@ struct StoryDetailView: View {
                     } else {
                         ForEach(interactor.comments) { comment in
                             CommentView(expanded: binding(for: comment), comment: comment) { comment in
-                                print("test")
+                                selectedComment = comment
                                 
                             } onTapUser: { user in
                                 selectedUser = user
                                 
                             } onToggleExpanded: { comment, expanded in
                                 self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
+                                
+                            } onTapStoryId: { storyId in
+                                self.displayingInternalStoryId = storyId
                             }
                             .padding(10)
                         }
+                        
                         if commentsRemainingToLoad {
                             ListLoadingView()
                         }
                     }
                 }
-                .refreshable {
-                    await interactor.refreshComments()
-                }
+               .refreshable {
+                   await interactor.refreshComments()
+               }
                 
             } else {
                 LoadingView()
@@ -69,6 +78,7 @@ struct StoryDetailView: View {
         }
         .onAppear {
             interactor.activate()
+            UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(named: "AccentColor")
         }
         .onReceive(interactor.$readyToLoadMore, perform: { output in
             readyToLoadMore = output
@@ -87,24 +97,39 @@ struct StoryDetailView: View {
                 EmptyView()
             }
         }
+        .navigationDestination(isPresented: displayingInternalStoryIdBinding()) {
+            if let displayingInternalStoryId {
+                StoryDetailView(interactor: StoryDetailInteractor(storyId: displayingInternalStoryId))
+            } else {
+                EmptyView()
+            }
+        }
+        .confirmationDialog("User", isPresented: displayingCommentSheet(), actions: {
+            if let selectedComment {
+                Button(selectedComment.by) {
+                    selectedUser = selectedComment.by
+                }
+                Button("Share Comment") {
+                    selectedShareItem = .comment(selectedComment)
+                }
+            }
+        })
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    isShareVisible = true
+                    if let story {
+                        selectedShareItem = .story(story)
+                    }
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
             }
         }
-        .sheet(isPresented: $isShareVisible, content: {
-            if let url = story?.url {
+        .sheet(isPresented: isShareVisible(), content: {
+            if let url = selectedShareItem?.url {
                 let sheet = ActivityViewController(itemsToShare: [url])
                     .ignoresSafeArea()
-                if #available(iOS 16, *) {
-                    sheet.presentationDetents([.medium])
-                } else {
-                    sheet
-                }
+                sheet.presentationDetents([.medium])
             }
         })
         .sheet(isPresented: $isShowingSafariView) {
@@ -116,8 +141,15 @@ struct StoryDetailView: View {
         .onReceive(interactor.$commentsExpanded) { output in
             commentsExpanded = output
         }
+        .userActivity(StoryDetailView.userActivity) { activity in
+            if let story,
+               let url = URL(string: "https://news.ycombinator.com/item?id=\(story.id)") {
+                activity.webpageURL = url
+                activity.becomeCurrent()
+            }
+        }
     }
-
+    
     /// Binding that creates CommentExpandedState state for every individual comment
     /// Passed to CommentView
     func binding(for comment: CommentViewModel) -> Binding<CommentExpandedState> {
@@ -133,6 +165,30 @@ struct StoryDetailView: View {
             selectedUser != nil
         } set: { value in
             if !value { selectedUser = nil }
+        }
+    }
+    
+    func displayingInternalStoryIdBinding() -> Binding<Bool> {
+        Binding {
+            displayingInternalStoryId != nil
+        } set: { value in
+            if !value { displayingInternalStoryId = nil }
+        }
+    }
+    
+    func displayingCommentSheet() -> Binding<Bool> {
+        Binding {
+            selectedComment != nil
+        } set: { value in
+            if !value { selectedComment = nil }
+        }
+    }
+    
+    func isShareVisible() -> Binding<Bool> {
+        Binding {
+            selectedShareItem != nil
+        } set: { value in
+            if !value { selectedShareItem = nil }
         }
     }
 }

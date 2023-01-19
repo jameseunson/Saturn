@@ -17,20 +17,22 @@ struct CommentView: View {
     let onTapOptions: (CommentViewModel) -> Void
     let onTapUser: ((String) -> Void)?
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
+    let onTapStoryId: ((Int) -> Void)?
     
     @State var displayingSafariURL: URL?
-    @State var displayingInternalStoryId: Int?
     
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
          onTapOptions: @escaping (CommentViewModel) -> Void,
          onTapUser: ((String) -> Void)? = nil,
-         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil) {
+         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil,
+         onTapStoryId: ((Int) -> Void)? = nil) {
         _expanded = expanded
         self.comment = comment
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
+        self.onTapStoryId = onTapStoryId
     }
     
     var body: some View {
@@ -38,8 +40,16 @@ struct CommentView: View {
             EmptyView()
         } else {
             HStack {
-                Spacer()
-                    .frame(width: CGFloat(comment.indendation) * 20)
+                if comment.indendation > 0 {
+                    Spacer()
+                        .frame(width: CGFloat(comment.indendation) * 20)
+                    
+                    RoundedRectangle(cornerSize: .init(width: 1, height: 1))
+                        .frame(width: 2)
+                        .foregroundColor(.gray)
+                        .padding(.trailing, 5)
+                }
+                
                 VStack(alignment: .leading) {
                     ZStack {
                         HStack {
@@ -90,9 +100,12 @@ struct CommentView: View {
                         Text(comment.comment.text)
                             .font(.body)
                             .environment(\.openURL, OpenURLAction { url in
+                                // TODO: Fix bug with woodruffw post
+                                
                                 if let idMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/item\?id=([0-9]+)/),
-                                   let idMatchInt = Int(idMatch.output.1) {
-                                    displayingInternalStoryId = idMatchInt
+                                   let idMatchInt = Int(idMatch.output.1),
+                                   let onTapStoryId {
+                                    onTapStoryId(idMatchInt)
                                     
                                 } else if let userMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/user\?id=([a-zA-Z0-9]+)/),
                                           let onTapUser {
@@ -123,14 +136,6 @@ struct CommentView: View {
                         .ignoresSafeArea()
                 }
             }
-            .navigationDestination(isPresented: displayingInternalStoryIdBinding()) {
-                if let displayingInternalStoryId {
-                    let interactor = StoryDetailInteractor(storyId: displayingInternalStoryId)
-                    StoryDetailView(interactor: interactor)
-                } else {
-                    EmptyView()
-                }
-            }
         }
     }
     
@@ -139,14 +144,6 @@ struct CommentView: View {
             displayingSafariURL != nil
         } set: { value in
             if !value { displayingSafariURL = nil }
-        }
-    }
-    
-    func displayingInternalStoryIdBinding() -> Binding<Bool> {
-        Binding {
-            displayingInternalStoryId != nil
-        } set: { value in
-            if !value { displayingInternalStoryId = nil }
         }
     }
     
