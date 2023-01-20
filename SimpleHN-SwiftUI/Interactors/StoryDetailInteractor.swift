@@ -32,9 +32,23 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
     
+    #if DEBUG
+    private var displayingSwiftUIPreview = false
+    #endif
+    
     /// Entry from StoriesView, we already have a `Story` object
-    init(story: Story) {
+    init(story: Story, comments: [CommentViewModel] = []) {
         self.story = story
+        
+        #if DEBUG
+        if comments.count > 0 {
+            self.comments = comments
+            self.commentsLoaded = comments.count
+            self.topLevelComments = comments
+            self.displayingSwiftUIPreview = true
+            self.commentsRemainingToLoad = false
+        }
+        #endif
     }
     
     /// Entry from search results or intercepting internal links like news.ycombinator.com/item?id=1234
@@ -44,6 +58,11 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     override func didBecomeActive() {
+        #if DEBUG
+        if displayingSwiftUIPreview {
+            return
+        }
+        #endif
         loadComments()
         
         /// Workaround for the fact that we have no idea when loading is complete
@@ -183,7 +202,17 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             }
             
             DispatchQueue.main.async {
-                self.commentsExpanded[viewModel] = .expanded
+                /// Ensure that if a comment is loaded with a collapsed or hidden parent
+                /// the newly loaded comment is also hidden
+                /// This looks visually broken if not addressed explicitly
+                if let parent,
+                   (self.commentsExpanded[parent] == .collapsed ||
+                       self.commentsExpanded[parent] == .hidden) {
+                    self.commentsExpanded[viewModel] = .hidden
+                    
+                } else {
+                    self.commentsExpanded[viewModel] = .expanded
+                }
                 self.commentsLoaded += 1
             }
             

@@ -20,13 +20,11 @@ struct StoriesView: View {
     }
     
     var body: some View {
-        if case .initialLoad = interactor.loadingState {
-            LoadingView()
-            .onAppear {
-                interactor.activate()
-            }
-        } else {
-            ZStack {
+        ZStack {
+            if case .initialLoad = interactor.loadingState {
+                LoadingView()
+                
+            } else {
                 List {
                     ForEach(interactor.stories) { story in
                         NavigationLink(value: story) {
@@ -48,35 +46,38 @@ struct StoriesView: View {
                 .refreshable {
                     await interactor.refreshStories()
                 }
-                .toolbar {
-                    if !isSearchVisible {
-                        ToolbarItemGroup(placement: .navigationBarLeading) {
-                            Button {
-                                isSettingsVisible = true
-                            } label: {
-                                Image(systemName: "gear")
-                            }
-                        }
-                        if AppRemoteConfig.instance.isSearchEnabled() {
-                            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                                Button {
-                                    isSearchVisible = true
-                                } label: {
-                                    Image(systemName: "magnifyingglass")
-                                }
-                            }
-                        }
-                    }
-                }
-                .sheet(isPresented: $isSettingsVisible, content: {
-                    SettingsNavigationView(isSettingsVisible: $isSettingsVisible)
-                })
                 .listStyle(.plain)
                 
                 if isSearchVisible {
                     SearchNavigationView(isSearchVisible: $isSearchVisible)
                 }
             }
+        }
+        .toolbar {
+            if !isSearchVisible {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        isSettingsVisible = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                }
+                if AppRemoteConfig.instance.isSearchEnabled() {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            isSearchVisible = true
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isSettingsVisible, content: {
+            SettingsNavigationView(isSettingsVisible: $isSettingsVisible)
+        })
+        .onAppear {
+            interactor.activate()
         }
     }
 }

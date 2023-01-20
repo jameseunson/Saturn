@@ -13,6 +13,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let subtitle: String
     let score: Int
     let comments: Int
+    let url: URL?
     
     init(story: Story) {
         self.id = story.id
@@ -33,6 +34,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         
         self.score = story.score
         self.comments = story.descendants ?? 0
+        self.url = story.url
     }
     
     init(searchItem: SearchItem) {
@@ -54,6 +56,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         
         self.score = searchItem.points
         self.comments = searchItem.numComments
+        self.url = searchItem.url
     }
     
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {

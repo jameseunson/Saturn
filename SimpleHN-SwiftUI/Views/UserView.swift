@@ -35,37 +35,54 @@ struct UserView: View {
     
     @State var selectedCommentToShare: CommentViewModel?
     
+    @State var selectedStoryToView: StoryRowViewModel?
+    @State var selectedCommentToView: CommentViewModel?
+    
     var body: some View {
         if let user {
-            InfiniteScrollView(loader: interactor,
-                               readyToLoadMore: $readyToLoadMore,
-                               itemsRemainingToLoad: $itemsRemainingToLoad) {
-                
-                UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL)
-                    .padding([.leading, .trailing])
+            ScrollViewReader { reader in
+                InfiniteScrollView(loader: interactor,
+                                   readyToLoadMore: $readyToLoadMore,
+                                   itemsRemainingToLoad: $itemsRemainingToLoad) {
+                    
+                    UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL)
+                        .padding([.leading, .trailing])
+                        .id("top")
 
-                Divider()
-                
-                ForEach(items) { item in
-                    VStack {
-                        switch item {
-                        case let .comment(comment):
-                            CommentView(expanded: .constant(.expanded), comment: comment) { comment in
-                                selectedCommentToShare = comment
-                            } onToggleExpanded: { comment, expanded in
-                                print(comment)
-                            }
-                            .padding([.trailing, .leading, .bottom])
-
-                        case let .story(story):
-                            Divider()
-                            StoryRowView(story: story)
+                    Divider()
+                    
+                    ForEach(items) { item in
+                        VStack {
+                            switch item {
+                            case let .comment(comment):
+                                CommentView(expanded: .constant(.expanded),
+                                            comment: comment,
+                                            displaysStory: true) { comment in
+                                    selectedCommentToShare = comment
+                                    
+                                } onTapUser: { _ in
+                                    withAnimation {
+                                        reader.scrollTo("top")
+                                    }
+                                    
+                                } onToggleExpanded: { comment, expanded in
+                                    selectedCommentToView = comment
+                                }
                                 .padding([.trailing, .leading, .bottom])
+
+                            case let .story(story):
+                                Divider()
+                                StoryRowView(story: story)
+                                    .padding([.trailing, .leading, .bottom])
+                                    .onTapGesture {
+                                        selectedStoryToView = story
+                                    }
+                            }
                         }
                     }
-                }
-                if itemsRemainingToLoad {
-                    ListLoadingView()
+                    if itemsRemainingToLoad {
+                        ListLoadingView()
+                    }
                 }
             }
             .sheet(isPresented: displayingSafariViewBinding()) {
@@ -92,6 +109,21 @@ struct UserView: View {
             })
             .refreshable {
                 await interactor.refreshUser()
+            }
+            .navigationDestination(isPresented: displayingStoryViewBinding()) {
+                if let selectedStoryToView {
+                    StoryDetailView(interactor: StoryDetailInteractor(storyId: selectedStoryToView.id))
+                        .navigationTitle(selectedStoryToView.title)
+                } else {
+                    EmptyView()
+                }
+            }
+            .navigationDestination(isPresented: displayingCommentViewBinding()) {
+                if let selectedCommentToView {
+                    StoryDetailCommentView(interactor: StoryDetailCommentInteractor(focusedComment: selectedCommentToView))
+                } else {
+                    EmptyView()
+                }
             }
 
         } else {
@@ -123,6 +155,22 @@ struct UserView: View {
             selectedCommentToShare != nil
         } set: { value in
             if !value { selectedCommentToShare = nil }
+        }
+    }
+    
+    func displayingStoryViewBinding() -> Binding<Bool> {
+        Binding {
+            selectedStoryToView != nil
+        } set: { value in
+            if !value { selectedStoryToView = nil }
+        }
+    }
+    
+    func displayingCommentViewBinding() -> Binding<Bool> {
+        Binding {
+            selectedCommentToView != nil
+        } set: { value in
+            if !value { selectedCommentToView = nil }
         }
     }
 }

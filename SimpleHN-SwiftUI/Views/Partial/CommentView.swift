@@ -19,16 +19,20 @@ struct CommentView: View {
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
     let onTapStoryId: ((Int) -> Void)?
     
+    let displaysStory: Bool
+    
     @State var displayingSafariURL: URL?
     
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
+         displaysStory: Bool = false,
          onTapOptions: @escaping (CommentViewModel) -> Void,
          onTapUser: ((String) -> Void)? = nil,
          onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil,
          onTapStoryId: ((Int) -> Void)? = nil) {
         _expanded = expanded
         self.comment = comment
+        self.displaysStory = displaysStory
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
@@ -38,6 +42,7 @@ struct CommentView: View {
     var body: some View {
         if expanded == .hidden {
             EmptyView()
+            
         } else {
             HStack {
                 if comment.indendation > 0 {
@@ -80,6 +85,16 @@ struct CommentView: View {
                                     .foregroundColor(.gray)
                             }
                         }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation {
+                                toggleExpanded()
+                            }
+                            if let onToggleExpanded {
+                                onToggleExpanded(comment, expanded)
+                            }
+                        }
+                        
                         if expanded == .collapsed {
                             Rectangle()
                                 .foregroundColor(.clear)
@@ -99,25 +114,18 @@ struct CommentView: View {
                     if expanded == .expanded {
                         Text(comment.comment.text)
                             .font(.body)
-                            .environment(\.openURL, OpenURLAction { url in
-                                // TODO: Fix bug with woodruffw post
-                                
-                                if let idMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/item\?id=([0-9]+)/),
-                                   let idMatchInt = Int(idMatch.output.1),
-                                   let onTapStoryId {
-                                    onTapStoryId(idMatchInt)
-                                    
-                                } else if let userMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/user\?id=([a-zA-Z0-9]+)/),
-                                          let onTapUser {
-                                    let userId = userMatch.output.1
-                                    onTapUser(String(userId))
-                                    
-                                } else {
-                                    displayingSafariURL = url
-                                }
-                                return .handled
-                            })
+                            .modifier(CommentLinkHandlerModifier(displayingSafariURL: $displayingSafariURL,
+                                                                 onTapUser: onTapUser,
+                                                                 onTapStoryId: onTapStoryId))
                     }
+                    
+//                    if displaysStory {
+//                        Rectangle()
+//                            .foregroundColor(.gray)
+//                            .cornerRadius(8)
+//                            .padding([.top, .bottom])
+//                            .frame(height: 50)
+//                    }
                 }
             }
             .onTapGesture {
@@ -151,10 +159,37 @@ struct CommentView: View {
         switch expanded {
         case .expanded:
             expanded = .collapsed
-        case .collapsed:
-            expanded = .expanded
-        case .hidden:
+        case .collapsed, .hidden:
             expanded = .expanded
         }
+    }
+}
+
+struct CommentLinkHandlerModifier: ViewModifier {
+    @Binding var displayingSafariURL: URL?
+    
+    let onTapUser: ((String) -> Void)?
+    let onTapStoryId: ((Int) -> Void)?
+    
+    func body(content: Content) -> some View {
+        content
+        .environment(\.openURL, OpenURLAction { url in
+            // TODO: Fix bug with woodruffw post
+            
+            if let idMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/item\?id=([0-9]+)/),
+               let idMatchInt = Int(idMatch.output.1),
+               let onTapStoryId {
+                onTapStoryId(idMatchInt)
+                
+            } else if let userMatch = url.absoluteString.firstMatch(of: /news.ycombinator.com\/user\?id=([a-zA-Z0-9]+)/),
+                      let onTapUser {
+                let userId = userMatch.output.1
+                onTapUser(String(userId))
+                
+            } else {
+                displayingSafariURL = url
+            }
+            return .handled
+        })
     }
 }

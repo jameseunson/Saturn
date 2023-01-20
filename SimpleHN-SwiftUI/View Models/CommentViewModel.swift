@@ -37,3 +37,9 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
         hasher.combine(parent)
     }
 }
+
+extension CommentViewModel {
+    static func fakeComment() -> CommentViewModel {
+        CommentViewModel(comment: Comment.init(id: 1234, by: "person", kids: nil, parent: 1234, text: AttributedString(stringLiteral: "asdf"), time: Date()), indendation: 0, parent: nil)
+    }
+}

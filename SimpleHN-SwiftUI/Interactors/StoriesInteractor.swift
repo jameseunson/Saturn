@@ -60,6 +60,11 @@ final class StoriesInteractor: Interactor {
                 }
 
             } receiveValue: { stories in
+                if self.currentPage == 0 {
+                    self.storyIds.removeAll(keepingCapacity: true)
+                    self.stories.removeAll(keepingCapacity: true)
+                }
+                
                 self.stories.append(contentsOf: stories)
                 self.loadingState = .loaded
                 self.currentPage += 1
@@ -95,13 +100,11 @@ final class StoriesInteractor: Interactor {
     
     func refreshStories() async {
         Task {
-            self.storyIds.removeAll(keepingCapacity: true)
-            self.stories.removeAll(keepingCapacity: true)
             self.currentPage = 0
             
-            DispatchQueue.main.async {
-                self.loadingState = .initialLoad
-            }
+//            DispatchQueue.main.async {
+//                self.loadingState = .loading
+//            }
             loadNextPage()
         }
     }

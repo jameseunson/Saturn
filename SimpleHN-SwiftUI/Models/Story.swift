@@ -18,6 +18,18 @@ struct Story: Codable, Identifiable, Hashable {
     let type: String
     let url: URL?
     
+    init(id: Int, score: Int, time: Date, descendants: Int?, by: String, title: String, kids: [Int]?, type: String, url: URL?) {
+        self.id = id
+        self.score = score
+        self.time = time
+        self.descendants = descendants
+        self.by = by
+        self.title = title
+        self.kids = kids
+        self.type = type
+        self.url = url
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(Int.self, forKey: .id)
@@ -32,5 +44,15 @@ struct Story: Codable, Identifiable, Hashable {
         self.kids = try container.decodeIfPresent([Int].self, forKey: .kids)
         self.type = try container.decode(String.self, forKey: .type)
         self.url = try container.decodeIfPresent(URL.self, forKey: .url)
+    }
+    
+    func hasComments() -> Bool {
+        kids?.count ?? 0 > 0
+    }
+}
+
+extension Story {
+    static func fakeStory() -> Story {
+        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [1234], type: "story", url: nil)
     }
 }

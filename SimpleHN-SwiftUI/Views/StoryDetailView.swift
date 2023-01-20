@@ -30,47 +30,57 @@ struct StoryDetailView: View {
     var body: some View {
         ZStack {
             if let story {
-                InfiniteScrollView(loader: interactor,
-                                   readyToLoadMore: $readyToLoadMore,
-                                   itemsRemainingToLoad: $commentsRemainingToLoad) {
-                    
-                    StoryRowView(story: StoryRowViewModel(story: story))
-                        .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
-                        .onTapGesture {
-                            isShowingSafariView = true
-                        }
-                    Divider()
-                    
-                    if interactor.comments.count == 0 {
-                        ListLoadingView()
-                            .listRowSeparator(.hidden)
-                            .padding(10)
+                GeometryReader { reader in
+                    InfiniteScrollView(loader: interactor,
+                                       readyToLoadMore: $readyToLoadMore,
+                                       itemsRemainingToLoad: $commentsRemainingToLoad) {
                         
-                    } else {
-                        ForEach(interactor.comments) { comment in
-                            CommentView(expanded: binding(for: comment), comment: comment) { comment in
-                                selectedComment = comment
-                                
-                            } onTapUser: { user in
-                                selectedUser = user
-                                
-                            } onToggleExpanded: { comment, expanded in
-                                self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
-                                
-                            } onTapStoryId: { storyId in
-                                self.displayingInternalStoryId = storyId
+                        StoryRowView(story: StoryRowViewModel(story: story))
+                            .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
+                            .onTapGesture {
+                                if story.url != nil {
+                                    isShowingSafariView = true
+                                }
                             }
-                            .padding(10)
-                        }
+                        Divider()
                         
-                        if commentsRemainingToLoad {
-                            ListLoadingView()
+                        if story.hasComments() {
+                            if interactor.comments.count == 0 {
+                                ListLoadingView()
+                                    .listRowSeparator(.hidden)
+                                    .padding(10)
+                                
+                            } else {
+                                ForEach(interactor.comments) { comment in
+                                    CommentView(expanded: binding(for: comment), comment: comment) { comment in
+                                        selectedComment = comment
+                                        
+                                    } onTapUser: { user in
+                                        selectedUser = user
+                                        
+                                    } onToggleExpanded: { comment, expanded in
+                                        self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
+                                        
+                                    } onTapStoryId: { storyId in
+                                        self.displayingInternalStoryId = storyId
+                                    }
+                                    .padding(10)
+                                }
+                                
+                                if commentsRemainingToLoad {
+                                    ListLoadingView()
+                                }
+                            }
+                        } else {
+                            Text("No comments yet...")
+                                .foregroundColor(.gray)
+                                .frame(height: max(reader.size.height - 100, 0))
                         }
                     }
+                   .refreshable {
+                       await interactor.refreshComments()
+                   }
                 }
-               .refreshable {
-                   await interactor.refreshComments()
-               }
                 
             } else {
                 LoadingView()
@@ -89,31 +99,10 @@ struct StoryDetailView: View {
         .onReceive(interactor.$story, perform: { output in
             self.story = output
         })
-        .navigationDestination(isPresented: displayingUserBinding()) {
-            if let selectedUser {
-                UserView(interactor: UserInteractor(username: selectedUser))
-                    .navigationTitle(selectedUser)
-            } else {
-                EmptyView()
-            }
-        }
-        .navigationDestination(isPresented: displayingInternalStoryIdBinding()) {
-            if let displayingInternalStoryId {
-                StoryDetailView(interactor: StoryDetailInteractor(storyId: displayingInternalStoryId))
-            } else {
-                EmptyView()
-            }
-        }
-        .confirmationDialog("User", isPresented: displayingCommentSheet(), actions: {
-            if let selectedComment {
-                Button(selectedComment.by) {
-                    selectedUser = selectedComment.by
-                }
-                Button("Share Comment") {
-                    selectedShareItem = .comment(selectedComment)
-                }
-            }
-        })
+        .modifier(CommentNavigationModifier(selectedShareItem: $selectedShareItem,
+                                            selectedUser: $selectedUser,
+                                            displayingInternalStoryId: $displayingInternalStoryId,
+                                            selectedComment: $selectedComment))
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
@@ -125,13 +114,6 @@ struct StoryDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: isShareVisible(), content: {
-            if let url = selectedShareItem?.url {
-                let sheet = ActivityViewController(itemsToShare: [url])
-                    .ignoresSafeArea()
-                sheet.presentationDetents([.medium])
-            }
-        })
         .sheet(isPresented: $isShowingSafariView) {
             if let url = story?.url {
                 SafariView(url: url)
@@ -159,36 +141,14 @@ struct StoryDetailView: View {
             self.commentsExpanded[comment] = $0
         }
     }
-    
-    func displayingUserBinding() -> Binding<Bool> {
-        Binding {
-            selectedUser != nil
-        } set: { value in
-            if !value { selectedUser = nil }
-        }
-    }
-    
-    func displayingInternalStoryIdBinding() -> Binding<Bool> {
-        Binding {
-            displayingInternalStoryId != nil
-        } set: { value in
-            if !value { displayingInternalStoryId = nil }
-        }
-    }
-    
-    func displayingCommentSheet() -> Binding<Bool> {
-        Binding {
-            selectedComment != nil
-        } set: { value in
-            if !value { selectedComment = nil }
-        }
-    }
-    
-    func isShareVisible() -> Binding<Bool> {
-        Binding {
-            selectedShareItem != nil
-        } set: { value in
-            if !value { selectedShareItem = nil }
+}
+
+struct StoryDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationStack {
+            StoryDetailView(interactor: StoryDetailInteractor(story: Story.fakeStory(), comments: [CommentViewModel.fakeComment()]))
+                .navigationTitle("Story")
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
