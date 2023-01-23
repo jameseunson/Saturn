@@ -23,7 +23,7 @@ struct User: Identifiable, Hashable, Codable {
         
         let unprocessedText = try container.decodeIfPresent(String.self, forKey: .about)
         if let unprocessedText {
-            if let attributedString = try? CommentTextProcessor.processCommentText(unprocessedText) {
+            if let attributedString = try? TextProcessor.processCommentText(unprocessedText) {
                 self.about = attributedString
             } else {
                 self.about = AttributedString(unprocessedText)

@@ -44,6 +44,11 @@ struct StoryDetailView: View {
                             }
                         Divider()
                         
+                        if let text = story.text {
+                            Text(text)
+                                .padding(EdgeInsets(top: 0, leading: 10, bottom: 10, trailing: 10))
+                        }
+                        
                         if story.hasComments() {
                             if interactor.comments.count == 0 {
                                 ListLoadingView()

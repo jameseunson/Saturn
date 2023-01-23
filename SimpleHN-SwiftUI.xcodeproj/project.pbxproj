@@ -10,6 +10,7 @@
 		1A2F3808297A724400F35844 /* StoryDetailCommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */; };
 		1A2F380A297A75A300F35844 /* StoryDetailCommentInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
+		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
@@ -34,9 +35,9 @@
 		1A873ABF296E76B200870A50 /* CommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABE296E76B200870A50 /* CommentView.swift */; };
 		1A873AC7296F921C00870A50 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AC6296F921C00870A50 /* User.swift */; };
 		1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AC8296FCD1600870A50 /* SettingsView.swift */; };
-		1A873ACB296FCD4800870A50 /* CommentTextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */; };
+		1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACA296FCD4800870A50 /* TextProcessor.swift */; };
 		1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACC296FCD5B00870A50 /* SearchView.swift */; };
-		1A873ACE2970F64800870A50 /* CommentTextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */; };
+		1A873ACE2970F64800870A50 /* TextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ACA296FCD4800870A50 /* TextProcessor.swift */; };
 		1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD02971136200870A50 /* StoryRowViewModel.swift */; };
 		1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD229713BB300870A50 /* UserInteractor.swift */; };
 		1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD42971435B00870A50 /* UserViewModel.swift */; };
@@ -117,7 +118,7 @@
 		1A873ABE296E76B200870A50 /* CommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentView.swift; sourceTree = "<group>"; wrapsLines = 0; };
 		1A873AC6296F921C00870A50 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		1A873AC8296FCD1600870A50 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentTextProcessor.swift; sourceTree = "<group>"; wrapsLines = 1; };
+		1A873ACA296FCD4800870A50 /* TextProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextProcessor.swift; sourceTree = "<group>"; wrapsLines = 1; };
 		1A873ACC296FCD5B00870A50 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		1A873AD02971136200870A50 /* StoryRowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowViewModel.swift; sourceTree = "<group>"; };
 		1A873AD229713BB300870A50 /* UserInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInteractor.swift; sourceTree = "<group>"; };
@@ -155,6 +156,7 @@
 				1AE4A9BD2977D92900D0B0D3 /* FirebaseFirestore in Frameworks */,
 				1AE4A9C52977D92900D0B0D3 /* FirebaseRemoteConfigSwift in Frameworks */,
 				1AE4A9BF2977D92900D0B0D3 /* FirebaseFirestoreCombine-Community in Frameworks */,
+				1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */,
 				1AE4A9C12977D92900D0B0D3 /* FirebaseFirestoreSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -298,7 +300,7 @@
 			children = (
 				1AE4A993297526AB00D0B0D3 /* Settings.swift */,
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
-				1A873ACA296FCD4800870A50 /* CommentTextProcessor.swift */,
+				1A873ACA296FCD4800870A50 /* TextProcessor.swift */,
 				1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */,
 				1AE4A9D829792B5A00D0B0D3 /* APIResponseCache.swift */,
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
@@ -365,6 +367,7 @@
 				1AE4A9C02977D92900D0B0D3 /* FirebaseFirestoreSwift */,
 				1AE4A9C22977D92900D0B0D3 /* FirebaseRemoteConfig */,
 				1AE4A9C42977D92900D0B0D3 /* FirebaseRemoteConfigSwift */,
+				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* SimpleHN-SwiftUI.app */;
@@ -440,6 +443,7 @@
 			mainGroup = 1A5DBBA8296933BA00D4D86E;
 			packageReferences = (
 				1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -491,7 +495,7 @@
 				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesInteractor.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
-				1A873ACB296FCD4800870A50 /* CommentTextProcessor.swift in Sources */,
+				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
@@ -535,7 +539,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A5DBBC6296933BB00D4D86E /* SimpleHN_SwiftUITests.swift in Sources */,
-				1A873ACE2970F64800870A50 /* CommentTextProcessor.swift in Sources */,
+				1A873ACE2970F64800870A50 /* TextProcessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,6 +862,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimonFairbairn/SwiftyMarkdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -869,6 +881,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1A3911D4297E62980045D14F /* SwiftyMarkdown */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
+			productName = SwiftyMarkdown;
+		};
 		1AE4A9B22977D92900D0B0D3 /* FirebaseAnalyticsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

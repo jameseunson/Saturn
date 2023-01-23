@@ -95,22 +95,35 @@ final class APIManager {
     private func retrieve(from url: String) -> AnyPublisher<Any, Error> {
         return Future { [weak self] promise in
             guard let self else { return }
-         
-            self.ref.child(url).getData { error, snapshot in
-                guard error == nil,
-                      let value = snapshot?.value else {
-                    if let error {
-                        promise(.failure(error))
-                    } else {
-                        promise(.failure(APIManagerError.generic))
-                    }
-                    return
+            
+            Task {
+                do {
+                    let output = try await self.retrieve(from: url)
+                    promise(.success(output))
+                } catch {
+                    promise(.failure(error))
                 }
-                promise(.success(value))
             }
         }
         .timeout(.seconds(5), scheduler: DispatchQueue.main)
         .eraseToAnyPublisher()
+    }
+    
+    private func retrieve(from url: String) async throws -> Any {
+        try await withCheckedThrowingContinuation { continuation in
+            self.ref.child(url).getData { error, snapshot in
+                guard error == nil,
+                      let value = snapshot?.value else {
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(throwing: APIManagerError.generic)
+                    }
+                    return
+                }
+                continuation.resume(with: .success(value))
+            }
+        }
     }
     
     private func decodeResponse<T: Codable>(_ response: Any) throws -> T {

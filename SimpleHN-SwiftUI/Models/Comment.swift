@@ -37,7 +37,7 @@ struct Comment: Identifiable, Hashable, Codable {
         self.parent = try container.decode(Int.self, forKey: .parent)
         
         let unprocessedText = try container.decode(String.self, forKey: .text)
-        if let attributedString = try? CommentTextProcessor.processCommentText(unprocessedText) {
+        if let attributedString = try? TextProcessor.processCommentText(unprocessedText) {
             self.text = attributedString
         } else {
             self.text = AttributedString(unprocessedText)

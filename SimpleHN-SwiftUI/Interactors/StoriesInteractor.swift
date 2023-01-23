@@ -32,14 +32,18 @@ final class StoriesInteractor: Interactor {
     }
     
     func loadNextPage() {
-        switch loadingState {
-        case .loadingMore:
-            return
-        case .loaded, .failed:
-            loadingState = .loadingMore
-        case .initialLoad:
-            // fallthrough
-            break
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            
+            switch self.loadingState {
+            case .loadingMore:
+                return
+            case .loaded, .failed:
+                self.loadingState = .loadingMore
+            case .initialLoad:
+                // fallthrough
+                break
+            }
         }
         
         getStoryIds()
@@ -101,10 +105,6 @@ final class StoriesInteractor: Interactor {
     func refreshStories() async {
         Task {
             self.currentPage = 0
-            
-//            DispatchQueue.main.async {
-//                self.loadingState = .loading
-//            }
             loadNextPage()
         }
     }

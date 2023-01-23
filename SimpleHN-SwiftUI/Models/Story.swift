@@ -17,8 +17,9 @@ struct Story: Codable, Identifiable, Hashable {
     let kids: [Int]?
     let type: String
     let url: URL?
+    let text: AttributedString?
     
-    init(id: Int, score: Int, time: Date, descendants: Int?, by: String, title: String, kids: [Int]?, type: String, url: URL?) {
+    init(id: Int, score: Int, time: Date, descendants: Int?, by: String, title: String, kids: [Int]?, type: String, url: URL?, text: AttributedString?) {
         self.id = id
         self.score = score
         self.time = time
@@ -28,6 +29,7 @@ struct Story: Codable, Identifiable, Hashable {
         self.kids = kids
         self.type = type
         self.url = url
+        self.text = text
     }
     
     init(from decoder: Decoder) throws {
@@ -44,6 +46,16 @@ struct Story: Codable, Identifiable, Hashable {
         self.kids = try container.decodeIfPresent([Int].self, forKey: .kids)
         self.type = try container.decode(String.self, forKey: .type)
         self.url = try container.decodeIfPresent(URL.self, forKey: .url)
+        
+        if let unprocessedText = try container.decodeIfPresent(String.self, forKey: .text) {
+            if let attributedString = try? TextProcessor.processCommentText(unprocessedText) {
+                self.text = attributedString
+            } else {
+                self.text = AttributedString(unprocessedText)
+            }
+        } else {
+            self.text = nil
+        }
     }
     
     func hasComments() -> Bool {
@@ -53,6 +65,6 @@ struct Story: Codable, Identifiable, Hashable {
 
 extension Story {
     static func fakeStory() -> Story {
-        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [1234], type: "story", url: nil)
+        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [1234], type: "story", url: nil, text: nil)
     }
 }

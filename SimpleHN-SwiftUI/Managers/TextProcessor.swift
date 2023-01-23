@@ -1,5 +1,5 @@
 //
-//  CommentTextProcessor.swift
+//  TextProcessor.swift
 //  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 12/1/2023.
@@ -7,14 +7,14 @@
 
 import Foundation
 import UIKit
+import SwiftUI
+import SwiftyMarkdown
 
-final class CommentTextProcessor {
+final class TextProcessor {
+    static var markdownSetupComplete = false
+    
     static func processCommentText(_ input: String) throws -> AttributedString {
         var outputString = input
-        
-        if outputString.contains("reading too much into it") {
-            print(outputString)
-        }
         
         /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
         /// HN formatting has lots of quirks (for one, it's *not* valid html nor valid markdown) and AttributedString handling of even
@@ -24,6 +24,7 @@ final class CommentTextProcessor {
         processOrdinalListItems(&outputString)
         
         outputString = outputString.replacingOccurrences(of: "<p>", with: "\n\n")
+        outputString = outputString.replacingOccurrences(of: "&lt;", with: "<")
         outputString = outputString.replacingOccurrences(of: "&gt;", with: ">")
         outputString = outputString.replacingOccurrences(of: "&#x27;", with: "'")
         outputString = outputString.replacingOccurrences(of: "&quot;", with: "\"")
@@ -37,17 +38,23 @@ final class CommentTextProcessor {
         outputString = outputString.replacingOccurrences(of: "<b>", with: "**")
         outputString = outputString.replacingOccurrences(of: "</b>", with: "**")
         
-        /// Handle code blocks
-        outputString = outputString.replacingOccurrences(of: "<pre><code>", with: "```\n")
-        outputString = outputString.replacingOccurrences(of: "</code></pre>", with: "\n```\n")
-        
         /// NOTE: This is not exhaustive, some less commonly used formatting still breaks
         // TODO: Fix # for code blocks
         
         /// Replace html link with markdown link
         processLinks(&outputString)
+        processCodeBlocks(&outputString)
+        processItalicizedQuotes(&outputString)
         
-        return try parseMarkdown(outputString)
+        let md = SwiftyMarkdown(string: outputString)
+        
+        md.link.color = UIColor(Color.accentColor)
+        md.blockquotes.color = UIColor(Color.gray)
+        md.code.color = UIColor(Color.primary)
+        md.code.fontName = UIFont.monospacedSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize, weight: .regular).fontName
+        md.code.fontSize = UIFont.preferredFont(forTextStyle: .callout).pointSize
+        
+        return AttributedString(md.attributedString())
     }
     
     /// Convert <a href="http://google.com">asdf</a> to [asdf](http://google.com)
@@ -70,28 +77,40 @@ final class CommentTextProcessor {
         }
     }
     
-    static func parseMarkdown(_ outputString: String) throws -> AttributedString {
-        guard let markdownData = outputString.data(using: .utf8) else {
-            throw APIManagerError.generic
+    /// Converts <pre><code> formatted code blocks to tab indented, which makes
+    /// them function correctly as code blocks within the markdown library
+    static func processCodeBlocks(_ outputString: inout String) {
+        guard outputString.contains("<pre><code>") else { return }
+        
+        let characterRules = [CharacterRule(primaryTag: CharacterRuleTag(tag: "<pre><code>", type: .open), otherTags: [CharacterRuleTag(tag: "</code></pre>", type: .close)], styles: [1: CharacterStyle.code])]
+        let processor = SwiftyTokeniser( with : characterRules )
+        let tokens = processor.process(outputString)
+
+        for token in tokens {
+            if let style = token.characterStyles.first as? CharacterStyle,
+               style == .code {
+                var outputLines = [String]()
+                for line in token.outputString.components(separatedBy: CharacterSet.newlines) {
+                    outputLines.append(String("\t" + line))
+                }
+                let codeOutputString = outputLines.joined(separator: "\n")
+                outputString = outputString.replacing(token.outputString, with: codeOutputString)
+            }
         }
         
-        /// Inspired by https://github.com/frankrausch/AttributedStringStyledMarkdown
-        /// Adds grey styling to block quotes and adds proper line breaks, which AttributedString strips for no apparent reason
-        var s = try AttributedString(markdown: markdownData, options: .init(allowsExtendedAttributes: true, interpretedSyntax: .full, failurePolicy: .returnPartiallyParsedIfPossible, languageCode: "en"))
-        for (intentBlock, intentRange) in s.runs[AttributeScopes.FoundationAttributes.PresentationIntentAttribute.self].reversed() {
-            guard let intentBlock else {
-                continue
-            }
-            for intent in intentBlock.components {
-                if intent.kind == .blockQuote {
-                    s[intentRange].foregroundColor = .secondaryLabel
-                }
-                if intentRange.lowerBound != s.startIndex {
-                    s.characters.insert(contentsOf: "\n\n", at: intentRange.lowerBound)
-                }
-            }
+        /// Handle code blocks
+        outputString = outputString.replacingOccurrences(of: "<pre><code>", with: "")
+        outputString = outputString.replacingOccurrences(of: "</code></pre>", with: "")
+    }
+    
+    /// Italicized quotes look broken and don't turn to grey correctly within the markdown library,
+    /// so strip the italicization and leave them as only quotes
+    static func processItalicizedQuotes(_ outputString: inout String) {
+        let italicizedQuoteRegex = /_>(.*?)_\n/
+        let italicizedQuoteRegexMatches = outputString.matches(of: italicizedQuoteRegex)
+        for italicizedQuoteRegexMatch in italicizedQuoteRegexMatches {
+            let matchString = italicizedQuoteRegexMatch.output.0
+            outputString = outputString.replacingOccurrences(of: matchString, with: matchString.replacingOccurrences(of: "_", with: ""))
         }
-        
-        return s
     }
 }
