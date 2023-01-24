@@ -23,7 +23,9 @@ final class SearchAPIManager {
     {"query":"%s","analyticsTags":["web"],"page":0,"hitsPerPage":30,"minWordSizefor1Typo":4,"minWordSizefor2Typos":8,"advancedSyntax":true,"ignorePlurals":false,"clickAnalytics":true,"minProximity":7,"numericFilters":[],"tagFilters":["story",[]],"typoTolerance":true,"queryType":"prefixNone","restrictSearchableAttributes":["title","comment_text","url","story_text","author"],"getRankingInfo":true}:
     """
     
-    func search(query: String) -> AnyPublisher<SearchResponse?, Error> {
+    let apiManager = APIManager()
+    
+    func search(query: String) -> AnyPublisher<[SearchResultItem], Error> {
         guard var urlComponents = URLComponents(string: baseURLString) else {
             return Fail(error: APIManagerError.generic).eraseToAnyPublisher()
         }
@@ -49,22 +51,67 @@ final class SearchAPIManager {
         let queryPostBody = postBody.replacingOccurrences(of: "%s", with: query)
         mutableRequest.httpBody = queryPostBody.data(using: .utf8)
         
-        return URLSession.DataTaskPublisher(request: mutableRequest, session: .shared)
+        if query.components(separatedBy: CharacterSet.whitespaces).count == 1 {
+            return Publishers.MergeMany(publisherForQuery(request: mutableRequest),
+                                        publisherForUser(query: query))
+                .eraseToAnyPublisher()
+            
+        } else {
+            return publisherForQuery(request: mutableRequest)
+        }
+    }
+    
+    // MARK: -
+    private func publisherForQuery(request: URLRequest) -> AnyPublisher<[SearchResultItem], Error> {
+        return URLSession.DataTaskPublisher(request: request, session: .shared)
             .mapError { _ in APIManagerError.generic }
-            .map { (data: Data, urlResponse: URLResponse) -> SearchResponse? in
-//                print(String(data: data, encoding: .utf8))
-                return self.decodeResponse(data: data)
+            .tryMap { (data: Data, urlResponse: URLResponse) -> SearchResponse in
+                let decoder = JSONDecoder()
+                return try decoder.decode(SearchResponse.self, from: data)
             }
+            .map({ (response: SearchResponse) -> [SearchResultItem] in
+                response.hits.map { SearchResultItem.searchResult($0) }
+            })
             .eraseToAnyPublisher()
     }
     
-    private func decodeResponse<T: Decodable>(data: Data) -> T? {
-        do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
-        } catch let error {
-            print(error)
-            return nil
+    private func publisherForUser(query: String) -> AnyPublisher<[SearchResultItem], Error> {
+        return apiManager.loadUser(id: query)
+            .map { [SearchResultItem.user($0)] }
+            .eraseToAnyPublisher()
+    }
+}
+
+enum SearchResultItem: Codable, Hashable, Identifiable {
+    static func == (lhs: SearchResultItem, rhs: SearchResultItem) -> Bool {
+        switch (lhs, rhs) {
+        case let (.searchResult(lhsResult), .searchResult(rhsResult)):
+            return lhsResult == rhsResult
+        case let (.user(lhsResult), .user(rhsResult)):
+            return lhsResult == rhsResult
+        default:
+            return false
+        }
+    }
+    
+    var id: Int {
+        switch self {
+        case let .searchResult(searchItem):
+            return searchItem.objectID
+        case let .user(user):
+            return user.hashValue
+        }
+    }
+    
+    case searchResult(SearchItem)
+    case user(User)
+    
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case let .searchResult(searchItem):
+            hasher.combine(searchItem)
+        case let .user(user):
+            hasher.combine(user)
         }
     }
 }

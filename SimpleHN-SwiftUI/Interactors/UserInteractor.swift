@@ -26,17 +26,24 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         self.username = username
     }
     
+    init(user: User) {
+        self.user = user
+        self.username = user.id
+    }
+    
     override func didBecomeActive() {
-        apiManager.loadUser(id: username)
-            .sink { completion in
-                if case let .failure(error) = completion {
-                    print(error)
+        if user == nil {
+            apiManager.loadUser(id: username)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        print(error)
+                    }
+                    
+                } receiveValue: { user in
+                    self.user = user
                 }
-                
-            } receiveValue: { user in
-                self.user = user
-            }
-            .store(in: &disposeBag)
+                .store(in: &disposeBag)
+        }
         
         loadMoreItems()
     }

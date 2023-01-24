@@ -8,5 +8,6 @@
 import Foundation
 
 struct SearchResponse: Codable {
+//    let users: [User]
     let hits: [SearchItem]
 }

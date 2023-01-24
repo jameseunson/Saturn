@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SearchItem: Codable {
+struct SearchItem: Codable, Hashable {
     let createdAt: Date
     let title: String
     let url: URL?

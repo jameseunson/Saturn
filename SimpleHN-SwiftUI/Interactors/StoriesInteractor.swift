@@ -48,13 +48,7 @@ final class StoriesInteractor: Interactor {
         
         getStoryIds()
             .flatMap { ids -> AnyPublisher<[Story], Error> in
-                /// Calculate page offsets
-                let pageStart = self.currentPage * self.pageLength
-                let pageEnd = min(((self.currentPage + 1) * self.pageLength), ids.count)
-                let idsPage = Array(ids[pageStart..<pageEnd])
-                
-                /// Begin load
-                return self.apiManager.loadStories(ids: idsPage)
+                return self.apiManager.loadStories(ids: self.idsForCurrentPage(with: ids))
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -64,14 +58,7 @@ final class StoriesInteractor: Interactor {
                 }
 
             } receiveValue: { stories in
-                if self.currentPage == 0 {
-                    self.storyIds.removeAll(keepingCapacity: true)
-                    self.stories.removeAll(keepingCapacity: true)
-                }
-                
-                self.stories.append(contentsOf: stories)
-                self.loadingState = .loaded
-                self.currentPage += 1
+                self.completeLoad(with: stories)
             }
             .store(in: &disposeBag)
     }
@@ -83,9 +70,7 @@ final class StoriesInteractor: Interactor {
             if self.storyIds.isEmpty {
                 self.apiManager.loadStoryIds(type: self.type)
                     .handleEvents(receiveOutput: { ids in
-                        if self.storyIds.isEmpty {
-                            self.storyIds.append(contentsOf: ids)
-                        }
+                        self.storyIds.append(contentsOf: ids)
                     })
                     .sink { completion in
                         if case let .failure(error) = completion {
@@ -103,9 +88,40 @@ final class StoriesInteractor: Interactor {
     }
     
     func refreshStories() async {
-        Task {
+        do {
             self.currentPage = 0
-            loadNextPage()
+            
+            let storyIds = try await apiManager.loadStoryIds(type: self.type)
+            let stories = try await apiManager.loadStories(ids: storyIds)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.completeLoad(with: stories)
+            }
+            
+        } catch {
+            // TODO: Handle error
         }
+    }
+    
+    // MARK: -
+    
+    /// Calculate page offsets
+    private func idsForCurrentPage(with ids: [Int]) -> [Int] {
+        let pageStart = self.currentPage * self.pageLength
+        let pageEnd = min(((self.currentPage + 1) * self.pageLength), ids.count)
+        let idsPage = Array(ids[pageStart..<pageEnd])
+        
+        return idsPage
+    }
+    
+    private func completeLoad(with stories: [Story]) {
+        if self.currentPage == 0 {
+            self.storyIds.removeAll(keepingCapacity: true)
+            self.stories.removeAll(keepingCapacity: true)
+        }
+        
+        self.stories.append(contentsOf: stories)
+        self.loadingState = .loaded
+        self.currentPage += 1
     }
 }

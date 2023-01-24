@@ -22,6 +22,22 @@ final class APIManager {
             .eraseToAnyPublisher()
     }
     
+    func loadStories(ids: [Int]) async throws -> [Story] {
+        return try await withThrowingTaskGroup(of: Story.self, body: { group in
+            for id in ids {
+                group.addTask {
+                    return try await self.loadStory(id: id)
+                }
+            }
+            var stories = [Story]()
+            for try await story in group {
+                stories.append(story)
+            }
+            
+            return stories
+        })
+    }
+    
     func loadStoryIds(type: StoryListType) -> AnyPublisher<Array<Int>, Error> {
         return retrieve(from: type.path)
             .tryMap { response in
@@ -33,8 +49,20 @@ final class APIManager {
             .eraseToAnyPublisher()
     }
     
+    func loadStoryIds(type: StoryListType) async throws -> Array<Int> {
+        if let response = try await retrieve(from: type.path) as? Array<Int> {
+            return response
+        } else {
+            throw APIManagerError.generic
+        }
+    }
+    
     func loadStory(id: Int) -> AnyPublisher<Story, Error> {
         return retrieveObject(id: id)
+    }
+    
+    func loadStory(id: Int) async throws -> Story {
+        return try await retrieveObject(id: id)
     }
     
     func loadComment(id: Int) -> AnyPublisher<Comment, Error> {
@@ -109,6 +137,11 @@ final class APIManager {
         .eraseToAnyPublisher()
     }
     
+    private func retrieveObject<T: Codable>(id: Int) async throws -> T {
+        let response = try await retrieve(from: "v0/item/\(id)")
+        return try self.decodeResponse(response)
+    }
+    
     private func retrieve(from url: String) async throws -> Any {
         try await withCheckedThrowingContinuation { continuation in
             self.ref.child(url).getData { error, snapshot in
@@ -132,6 +165,10 @@ final class APIManager {
             throw APIManagerError.deleted
         }
         
+        if response is NSNull {
+            throw APIManagerError.noData
+        }
+        
         let jsonData = try JSONSerialization.data(withJSONObject: response)
         let object = try JSONDecoder().decode(T.self, from: jsonData)
         return object
@@ -141,5 +178,6 @@ final class APIManager {
 enum APIManagerError: Error {
     case generic
     case deleted
+    case noData
 }
 
