@@ -1,6 +1,6 @@
 //
 //  ActivityViewController.swift
-//  Shutterbug
+//  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 9/9/2022.
 //

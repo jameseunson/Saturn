@@ -31,7 +31,7 @@ struct InfiniteScrollView<Content>: View where Content: View {
     
     var body : some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 0) {
                 content
             }
             .background(GeometryReader { proxy -> Color in

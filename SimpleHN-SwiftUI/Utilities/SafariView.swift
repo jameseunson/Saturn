@@ -1,6 +1,6 @@
 //
 //  SafariView.swift
-//  Shutterbug
+//  SimpleHN-SwiftUI
 //
 //  Created by James Eunson on 15/9/2022.
 //

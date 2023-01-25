@@ -46,7 +46,7 @@ struct StoryDetailView: View {
                         
                         if let text = story.text {
                             Text(text)
-                                .padding(EdgeInsets(top: 0, leading: 10, bottom: 10, trailing: 10))
+                                .padding(10)
                         }
                         
                         if story.hasComments() {
@@ -69,7 +69,6 @@ struct StoryDetailView: View {
                                     } onTapStoryId: { storyId in
                                         self.displayingInternalStoryId = storyId
                                     }
-                                    .padding(10)
                                 }
                                 
                                 if commentsRemainingToLoad {
@@ -150,10 +149,14 @@ struct StoryDetailView: View {
 
 struct StoryDetailView_Previews: PreviewProvider {
     static var previews: some View {
+        #if DEBUG
         NavigationStack {
             StoryDetailView(interactor: StoryDetailInteractor(story: Story.fakeStory(), comments: [CommentViewModel.fakeComment()]))
                 .navigationTitle("Story")
                 .navigationBarTitleDisplayMode(.inline)
         }
+        #else
+        EmptyView()
+        #endif
     }
 }

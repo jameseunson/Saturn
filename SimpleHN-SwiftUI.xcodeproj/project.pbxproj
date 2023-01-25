@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A050D7F2981076400C26F12 /* CommentLinkHandlerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D7E2981076400C26F12 /* CommentLinkHandlerModifier.swift */; };
 		1A2F3808297A724400F35844 /* StoryDetailCommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */; };
 		1A2F380A297A75A300F35844 /* StoryDetailCommentInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
@@ -88,6 +89,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A050D7E2981076400C26F12 /* CommentLinkHandlerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLinkHandlerModifier.swift; sourceTree = "<group>"; };
 		1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentView.swift; sourceTree = "<group>"; };
 		1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentInteractor.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */,
+				1A050D7E2981076400C26F12 /* CommentLinkHandlerModifier.swift */,
 			);
 			path = Modifiers;
 			sourceTree = "<group>";
@@ -497,6 +500,7 @@
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
+				1A050D7F2981076400C26F12 /* CommentLinkHandlerModifier.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
@@ -692,6 +696,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SimpleHN-SwiftUI/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Application\\ Support/Reveal/RevealServer/iOS",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SimpleHN-SwiftUI/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = SimpleHN;
@@ -723,6 +731,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SimpleHN-SwiftUI/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Application\\ Support/Reveal/RevealServer/iOS",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SimpleHN-SwiftUI/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = SimpleHN;

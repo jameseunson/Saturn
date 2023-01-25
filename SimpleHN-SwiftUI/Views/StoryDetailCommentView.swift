@@ -78,9 +78,13 @@ struct StoryDetailCommentView: View {
 struct StoryDetailCommentView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
+            #if DEBUG
             StoryDetailCommentView(interactor: StoryDetailCommentInteractor(focusedComment: CommentViewModel.fakeComment()))
                 .navigationTitle("Story")
                 .navigationBarTitleDisplayMode(.inline)
+            #else
+            EmptyView()
+            #endif
         }
     }
 }
