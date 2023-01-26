@@ -19,34 +19,54 @@ struct SearchView: View {
                 .edgesIgnoringSafeArea(.all)
             
             GeometryReader { reader in
-                List {
-                    if case .loading = interactor.results {
-                        LoadingView()
-                            .frame(width: reader.size.width, height: reader.size.height)
-                        
-                    } else if case let .loaded(results) = interactor.results {
-                        if results.count > 0,
-                           results.containsUser() {
-                            Section(header: Text("Users")) {
-                                ForEach(results) { result in
-                                    if case let .user(user) = result {
-                                        NavigationLink(value: result) {
-                                            HStack {
-                                                Image(systemName: "person.circle")
-                                                Text(user.id)
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        if case .loading = interactor.results {
+                            LoadingView()
+                                .frame(width: reader.size.width, height: reader.size.height)
+                            
+                        } else if case let .loaded(results) = interactor.results {
+                            if results.count > 0 {
+                                if results.containsUser() {
+                                    Text("Users")
+                                        .font(.callout)
+                                        .fontWeight(.medium)
+                                        .padding([.leading])
+                                    Divider()
+                                        .padding([.leading])
+                                    ForEach(results) { result in
+                                        if case let .user(user) = result {
+                                            NavigationLink(value: result) {
+                                                HStack {
+                                                    Image(systemName: "person.circle")
+                                                        .foregroundColor(Color.primary)
+                                                    Text(user.id)
+                                                        .foregroundColor(Color.primary)
+                                                }
+                                                .padding([.leading, .trailing, .bottom])
                                             }
                                         }
                                     }
                                 }
-                            }
-                            Section(header: Text("Stories")) {
+                                Text("Stories")
+                                    .font(.callout)
+                                    .fontWeight(.medium)
+                                    .padding([.leading])
+                                Divider()
+                                    .padding([.leading])
                                 ForEach(results) { result in
                                     if case let .searchResult(searchItem) = result {
                                         NavigationLink(value: result) {
                                             StoryRowView(story: StoryRowViewModel(searchItem: searchItem))
+                                                .padding([.leading, .trailing])
                                         }
+                                        Divider()
                                     }
                                 }
+                            } else {
+                                Text("No results for '\(searchQuery)'")
+                                    .foregroundColor(.gray)
+                                    .frame(width: reader.size.width, height: reader.size.height)
                             }
                         }
                     }
@@ -76,5 +96,14 @@ struct SearchView: View {
         .onChange(of: searchQuery) { newValue in
             interactor.searchQueryChanged(newValue)
         }
+    }
+}
+
+struct SearchView_Previews: PreviewProvider {
+    static var previews: some View {
+        SearchView(interactor: SearchInteractor(results: .loaded(response: [])))
+        SearchView(interactor: SearchInteractor(results: .loaded(response: [SearchResultItem.searchResult(SearchItem.createFakeSearchItem()), SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
+            SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
+            SearchResultItem.user(User.createFakeUser())])))
     }
 }

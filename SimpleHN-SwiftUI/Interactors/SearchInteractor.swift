@@ -16,16 +16,19 @@ final class SearchInteractor: Interactor {
     
     private var resultsAccumulator = [SearchResultItem]()
     
+    init(results: LoadableResource<[SearchResultItem]> = .notLoading) {
+        self.results = results
+    }
+    
     override func didBecomeActive() {
         querySubject
             .filter { $0.count > 0 }
-            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
-            .handleEvents(receiveOutput: { _ in
-                self.resultsAccumulator.removeAll()
-                self.results = .loading
-            })
+            .debounce(for: .milliseconds(750), scheduler: RunLoop.main)
             .flatMap { query in
                 self.apiManager.search(query: query)
+                    .catch { error in
+                        return Just([])
+                    }
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -42,6 +45,16 @@ final class SearchInteractor: Interactor {
     }
     
     func searchQueryChanged(_ query: String) {
+        switch results {
+        case .loading:
+            break
+        default:
+            if query.count > 0 {
+                self.results = .loading
+            }
+            self.resultsAccumulator.removeAll()
+        }
+        
         querySubject.send(query)
     }
 }

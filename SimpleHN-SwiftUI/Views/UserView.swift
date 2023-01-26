@@ -46,38 +46,31 @@ struct UserView: View {
                                    itemsRemainingToLoad: $itemsRemainingToLoad) {
                     
                     UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL)
-                        .padding([.leading, .trailing])
                         .id("top")
-
-                    Divider()
+                        .padding(.bottom, 10)
                     
                     ForEach(items) { item in
-                        VStack {
-                            switch item {
-                            case let .comment(comment):
-                                CommentView(expanded: .constant(.expanded),
-                                            comment: comment,
-                                            displaysStory: true) { comment in
-                                    selectedCommentToShare = comment
-                                    
-                                } onTapUser: { _ in
-                                    withAnimation {
-                                        reader.scrollTo("top")
-                                    }
-                                    
-                                } onToggleExpanded: { comment, expanded in
-                                    selectedCommentToView = comment
+                        switch item {
+                        case let .comment(comment):
+                            CommentView(expanded: .constant(.expanded),
+                                        comment: comment,
+                                        displaysStory: true) { comment in
+                                selectedCommentToShare = comment
+                                
+                            } onTapUser: { _ in
+                                withAnimation {
+                                    reader.scrollTo("top")
                                 }
-                                .padding([.trailing, .leading, .bottom])
-
-                            case let .story(story):
-                                Divider()
-                                StoryRowView(story: story)
-                                    .padding([.trailing, .leading, .bottom])
-                                    .onTapGesture {
-                                        selectedStoryToView = story
-                                    }
+                                
+                            } onToggleExpanded: { comment, expanded in
+                                selectedCommentToView = comment
                             }
+
+                        case let .story(story):
+                            StoryRowView(story: story)
+                                .onTapGesture {
+                                    selectedStoryToView = story
+                                }
                         }
                     }
                     if itemsRemainingToLoad {

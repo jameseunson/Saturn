@@ -17,17 +17,15 @@ struct LoadingView: View {
     }
     
     var body: some View {
-        return VStack() {
+        VStack {
             Spacer()
-            
             if isFailed {
-                LoadingFailedView(isFailed: $isFailed, onTapRetry: onTapRetry)
+                LoadingFailedView(isFailed: $isFailed,
+                                  onTapRetry: onTapRetry)
                 
             } else {
-                ProgressView()
-                    .scaleEffect(2)
+                SpinnerView(configuration: .init(width: 50, height: 50, lineWidth: 10.0))
             }
-
             Spacer()
         }
     }
@@ -53,12 +51,13 @@ struct LoadingFailedView: View {
                 .foregroundColor(Color.gray.opacity(0.3))
                 .padding(.bottom, 10)
             
-            VStack(spacing: 3) {
-                Text("Oops, a problem occurred")
-                    .font(.headline)
+            VStack(spacing: 6) {
+                Text("Could not load stories")
+                    .fontWeight(.medium)
+                    .font(.title3)
                 
                 Text("Please check your connection and try again")
-                    .font(.caption)
+                    .font(.body)
                     .foregroundColor(.gray)
                     .padding(.bottom, 10)
             }
@@ -74,7 +73,7 @@ struct LoadingFailedView: View {
                     .padding([.leading, .trailing], 30)
                     .background {
                         RoundedRectangle(cornerRadius: 10)
-                            .foregroundColor( isRetryTapped ? Color("SBAccentDarkColor") : Color.accentColor )
+                            .foregroundColor( Color.accentColor )
                     }
             }
             .simultaneousGesture(tap)

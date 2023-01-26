@@ -81,10 +81,20 @@ final class APIManager {
             }
             .flatMap { id, type -> AnyPublisher<UserItem, Error> in
                 if type == "story" {
-                    return self.loadStory(id: id).map { UserItem.story($0) }.eraseToAnyPublisher()
+                    return self.loadStory(id: id)
+                        .catch { _ in
+                            return Empty().eraseToAnyPublisher()
+                        }
+                        .map { UserItem.story($0) }
+                        .eraseToAnyPublisher()
                     
                 } else if type == "comment" {
-                    return self.loadComment(id: id).map { UserItem.comment($0) }.eraseToAnyPublisher()
+                    return self.loadComment(id: id)
+                        .catch { _ in
+                            return Empty().eraseToAnyPublisher()
+                        }
+                        .map { UserItem.comment($0) }
+                        .eraseToAnyPublisher()
                     
                 } else {
                     // TODO: Handle other types
@@ -96,8 +106,8 @@ final class APIManager {
     
     func loadUser(id: String) -> AnyPublisher<User, Error> {
         return retrieve(from: "v0/user/\(id)")
-            .tryMap { response in
-                return try self.decodeResponse(response)
+            .flatMap { response in
+                return self.decodeResponse(response)
             }
             .eraseToAnyPublisher()
     }
@@ -105,16 +115,8 @@ final class APIManager {
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
-            .tryMap { response -> T? in
-                do {
-                    return try self.decodeResponse(response)
-                    
-                } catch APIManagerError.deleted {
-                    return nil /// Don't trigger an error if the response is empty, just ignore
-                    
-                } catch let error {
-                    throw error
-                }
+            .flatMap { response in
+                self.decodeResponse(response)
             }
             .compactMap { $0 }
             .eraseToAnyPublisher()
@@ -133,7 +135,6 @@ final class APIManager {
                 }
             }
         }
-        .timeout(.seconds(5), scheduler: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
@@ -143,7 +144,18 @@ final class APIManager {
     }
     
     private func retrieve(from url: String) async throws -> Any {
-        try await withCheckedThrowingContinuation { continuation in
+        let didTimeout = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
+        let didComplete = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+                if didComplete.pointee {
+                    return
+                }
+                didTimeout.pointee = true
+
+                continuation.resume(throwing: TimeoutError())
+            }
             self.ref.child(url).getData { error, snapshot in
                 guard error == nil,
                       let value = snapshot?.value else {
@@ -154,9 +166,32 @@ final class APIManager {
                     }
                     return
                 }
+                if didTimeout.pointee {
+                    return
+                }
+                didComplete.pointee = true
                 continuation.resume(with: .success(value))
             }
         }
+    }
+    
+    private func decodeResponse<T: Codable>(_ response: Any) -> AnyPublisher<T, Error> {
+        return Future { promise in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let object: T = try self.decodeResponse(response)
+                    
+                    DispatchQueue.main.async {
+                        promise(.success(object))
+                    }
+                    
+                } catch let error {
+                    promise(.failure(error))
+                }
+            }
+
+        }
+        .eraseToAnyPublisher()
     }
     
     private func decodeResponse<T: Codable>(_ response: Any) throws -> T {
@@ -171,6 +206,7 @@ final class APIManager {
         
         let jsonData = try JSONSerialization.data(withJSONObject: response)
         let object = try JSONDecoder().decode(T.self, from: jsonData)
+        
         return object
     }
 }
@@ -181,3 +217,6 @@ enum APIManagerError: Error {
     case noData
 }
 
+private struct TimeoutError: LocalizedError {
+  var errorDescription: String? = "Task timed out before completion"
+}

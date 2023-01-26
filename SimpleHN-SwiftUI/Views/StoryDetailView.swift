@@ -9,8 +9,6 @@ import Foundation
 import SwiftUI
 
 struct StoryDetailView: View {
-    @State var story: Story?
-    
     @StateObject var interactor: StoryDetailInteractor
     @State private var isShowingSafariView = false
     @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
@@ -29,20 +27,19 @@ struct StoryDetailView: View {
     
     var body: some View {
         ZStack {
-            if let story {
+            if let story = interactor.story {
                 GeometryReader { reader in
                     InfiniteScrollView(loader: interactor,
                                        readyToLoadMore: $readyToLoadMore,
                                        itemsRemainingToLoad: $commentsRemainingToLoad) {
                         
                         StoryRowView(story: StoryRowViewModel(story: story))
-                            .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
+                            .padding(.bottom, 10)
                             .onTapGesture {
                                 if story.url != nil {
                                     isShowingSafariView = true
                                 }
                             }
-                        Divider()
                         
                         if let text = story.text {
                             Text(text)
@@ -53,10 +50,9 @@ struct StoryDetailView: View {
                             if interactor.comments.count == 0 {
                                 ListLoadingView()
                                     .listRowSeparator(.hidden)
-                                    .padding(10)
                                 
                             } else {
-                                ForEach(interactor.comments) { comment in
+                                ForEach(interactor.displayComments) { comment in
                                     CommentView(expanded: binding(for: comment), comment: comment) { comment in
                                         selectedComment = comment
                                         
@@ -69,16 +65,26 @@ struct StoryDetailView: View {
                                     } onTapStoryId: { storyId in
                                         self.displayingInternalStoryId = storyId
                                     }
+                                    .contextMenu {
+                                        Button(action: { selectedComment = comment }, label:
+                                        {
+                                            Label("Share", systemImage: "square.and.arrow.up")
+                                        })
+                                        Button(action: { selectedUser = comment.by }, label:
+                                        {
+                                            Label(comment.by, systemImage: "person.circle")
+                                        })
+                                    }
                                 }
                                 
-                                if commentsRemainingToLoad {
+                                if interactor.commentsRemainingToLoad {
                                     ListLoadingView()
                                 }
                             }
                         } else {
                             Text("No comments yet...")
                                 .foregroundColor(.gray)
-                                .frame(height: max(reader.size.height - 100, 0))
+                                .frame(height: max(reader.size.height - 150, 0))
                         }
                     }
                    .refreshable {
@@ -100,9 +106,9 @@ struct StoryDetailView: View {
         .onReceive(interactor.$commentsRemainingToLoad, perform: { output in
             commentsRemainingToLoad = output
         })
-        .onReceive(interactor.$story, perform: { output in
-            self.story = output
-        })
+        .onReceive(interactor.$commentsExpanded) { output in
+            commentsExpanded = output
+        }
         .modifier(CommentNavigationModifier(selectedShareItem: $selectedShareItem,
                                             selectedUser: $selectedUser,
                                             displayingInternalStoryId: $displayingInternalStoryId,
@@ -110,7 +116,7 @@ struct StoryDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    if let story {
+                    if let story = interactor.story {
                         selectedShareItem = .story(story)
                     }
                 } label: {
@@ -119,16 +125,13 @@ struct StoryDetailView: View {
             }
         }
         .sheet(isPresented: $isShowingSafariView) {
-            if let url = story?.url {
+            if let url = interactor.story?.url {
                 SafariView(url: url)
                     .ignoresSafeArea()
             }
         }
-        .onReceive(interactor.$commentsExpanded) { output in
-            commentsExpanded = output
-        }
         .userActivity(StoryDetailView.userActivity) { activity in
-            if let story,
+            if let story = interactor.story,
                let url = URL(string: "https://news.ycombinator.com/item?id=\(story.id)") {
                 activity.webpageURL = url
                 activity.becomeCurrent()

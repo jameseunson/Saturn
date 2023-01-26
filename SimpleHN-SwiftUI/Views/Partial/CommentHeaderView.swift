@@ -35,22 +35,19 @@ struct CommentHeaderView: View {
                     .font(.body)
                     .foregroundColor(.gray)
                 if expanded == .expanded {
-                    Button {
-                        onTapOptions(comment)
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.body)
-                            .foregroundColor(.gray)
-                    }
-                } else {
-                    Image(systemName: "chevron.down")
+                    Image(systemName: "ellipsis")
                         .font(.body)
                         .foregroundColor(.gray)
+                        .onTapGesture {
+                            onTapOptions(comment)
+                        }
                 }
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                toggleExpanded()
+                withAnimation {
+                    toggleExpanded()
+                }
                 if let onToggleExpanded {
                     onToggleExpanded(comment, expanded)
                 }
@@ -62,7 +59,9 @@ struct CommentHeaderView: View {
                     .contentShape(Rectangle())
                     .allowsHitTesting(true)
                     .onTapGesture {
-                        toggleExpanded()
+                        withAnimation {
+                            toggleExpanded()
+                        }
                         if let onToggleExpanded {
                             onToggleExpanded(comment, expanded)
                         }

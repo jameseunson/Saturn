@@ -18,6 +18,7 @@ enum CommentExpandedState {
 
 final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published var comments: Array<CommentViewModel> = []
+    @Published var displayComments: Array<CommentViewModel> = []
     @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     @Published var readyToLoadMore: Bool = false
     @Published var commentsRemainingToLoad: Bool = true
@@ -107,6 +108,14 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
         }
+        
+        $commentsExpanded
+            .sink { expanded in
+                self.displayComments = self.comments.filter {
+                    expanded[$0] != .hidden
+                }
+            }
+            .store(in: &disposeBag)
     }
     
     func loadComments() {
@@ -179,6 +188,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     /// Visit each leaf and create a view model, appending to the parent's `children` property
     private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
         apiManager.loadComment(id: rootCommentId)
+            .flatMap { comment in
+                self.loadMarkdown(for: comment)
+            }
             .receive(on: DispatchQueue.global())
             .sink { completion in
                 if case let .failure(error) = completion {
@@ -223,6 +235,17 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             }
         }
         .store(in: &disposeBag)
+    }
+    
+    private func loadMarkdown(for comment: Comment) -> AnyPublisher<Comment, Error> {
+        Future { promise in
+            Task.detached {
+                await comment.processText()
+                promise(.success(comment))
+            }
+        }
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
     }
     
     /// Once the comments are loaded, walk the tree and construct a flat representation

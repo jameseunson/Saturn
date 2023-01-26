@@ -18,9 +18,11 @@ struct StoryRowView: View {
                 Text(story.title)
                     .font(.title3)
                     .foregroundColor(Color.primary)
+                    .multilineTextAlignment(.leading)
                 Text(story.subtitle)
                     .font(.callout)
                     .foregroundColor(.gray)
+                    .multilineTextAlignment(.leading)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 6) {

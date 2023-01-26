@@ -8,19 +8,29 @@
 import Foundation
 import UIKit
 
-struct Comment: Identifiable, Hashable, Codable {
+final class Comment: Identifiable, Hashable, Codable {
+    static func == (lhs: Comment, rhs: Comment) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
     let id: Int
     let by: String
     let kids: [Int]?
     let parent: Int
-    let text: AttributedString
+    let text: String
     let time: Date
+    
+    var processedText: AttributedString?
     
     var url: URL? {
         return URL(string: "https://news.ycombinator.com/item?id=\(id)")
     }
     
-    init(id: Int, by: String, kids: [Int]?, parent: Int, text: AttributedString, time: Date) {
+    init(id: Int, by: String, kids: [Int]?, parent: Int, text: String, time: Date) {
         self.id = id
         self.by = by
         self.kids = kids
@@ -35,16 +45,22 @@ struct Comment: Identifiable, Hashable, Codable {
         self.by = try container.decode(String.self, forKey: .by)
         self.kids = try container.decodeIfPresent([Int].self, forKey: .kids)
         self.parent = try container.decode(Int.self, forKey: .parent)
-        
-        let unprocessedText = try container.decode(String.self, forKey: .text)
-        if let attributedString = try? TextProcessor.processCommentText(unprocessedText) {
-            self.text = attributedString
-        } else {
-            self.text = AttributedString(unprocessedText)
-        }
+        self.text = try container.decode(String.self, forKey: .text)
         
         let timestamp = try container.decode(TimeInterval.self, forKey: .time)
         self.time = Date(timeIntervalSince1970: timestamp)
+    }
+
+    func processText() async {
+        return await withCheckedContinuation { [weak self] continuation in
+            guard let self else { return }
+            if let attributedString = try? TextProcessor.processCommentText(self.text) {
+                self.processedText = attributedString
+            } else {
+                self.processedText = AttributedString(self.text)
+            }
+            continuation.resume(with: .success(()))
+        }
     }
     
     enum CodingKeys: String, CodingKey {

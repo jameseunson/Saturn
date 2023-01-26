@@ -13,6 +13,8 @@ struct StoriesView: View {
     @ObservedObject var interactor: StoriesInteractor
     @State var isSettingsVisible: Bool = false
     @State var isSearchVisible: Bool = false
+    @State var selectedShareItem: URL?
+    @State var selectedUser: String?
     
     init(type: StoryListType) {
         self.type = type
@@ -21,10 +23,8 @@ struct StoriesView: View {
     
     var body: some View {
         ZStack {
-            if case .initialLoad = interactor.loadingState {
-                LoadingView()
-                
-            } else {
+            switch interactor.loadingState {
+            case .loaded, .loadingMore:
                 List {
                     ForEach(interactor.stories) { story in
                         NavigationLink(value: story) {
@@ -34,13 +34,23 @@ struct StoriesView: View {
                                         interactor.loadNextPage()
                                     }
                                 }
+                                .contextMenu {
+                                    Button(action: { selectedShareItem = story.url }, label:
+                                    {
+                                        Label("Share", systemImage: "square.and.arrow.up")
+                                    })
+                                    Button(action: { selectedUser = story.by }, label:
+                                    {
+                                        Label(story.by, systemImage: "person.circle")
+                                    })
+                                }
                         }
                     }
                     ListLoadingView()
                 }
                 .navigationDestination(for: Story.self) { story in
                     let interactor = StoryDetailInteractor(story: story)
-                    StoryDetailView(story: story, interactor: interactor)
+                    StoryDetailView(interactor: interactor)
                         .navigationTitle(story.title)
                 }
                 .refreshable {
@@ -51,6 +61,9 @@ struct StoriesView: View {
                 if isSearchVisible {
                     SearchNavigationView(isSearchVisible: $isSearchVisible)
                 }
+                
+            case .failed, .initialLoad:
+                LoadingView(isFailed: isFailedBinding())
             }
         }
         .toolbar {
@@ -73,65 +86,53 @@ struct StoriesView: View {
                 }
             }
         }
+        .navigationDestination(isPresented: displayingUserBinding()) {
+            if let selectedUser {
+                UserView(interactor: UserInteractor(username: selectedUser))
+                    .navigationTitle(selectedUser)
+            } else {
+                EmptyView()
+            }
+        }
         .sheet(isPresented: $isSettingsVisible, content: {
             SettingsNavigationView(isSettingsVisible: $isSettingsVisible)
+        })
+        .sheet(isPresented: isShareVisible(), content: {
+            if let url = selectedShareItem {
+                let sheet = ActivityViewController(itemsToShare: [url])
+                    .ignoresSafeArea()
+                sheet.presentationDetents([.medium])
+            }
         })
         .onAppear {
             interactor.activate()
         }
     }
-}
-
-struct SettingsNavigationView: View {
-    @Binding var isSettingsVisible: Bool
     
-    var body: some View {
-        NavigationStack {
-            SettingsView()
-                .navigationTitle("Settings")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        Button {
-                            isSettingsVisible = false
-                        } label: {
-                            Text("Done")
-                                .fontWeight(.medium)
-                        }
-
-                    }
-                }
+    func isFailedBinding() -> Binding<Bool> {
+        Binding {
+            interactor.loadingState == .failed
+        } set: { value in
+            if !value {
+                interactor.loadingState = .initialLoad
+                interactor.loadNextPage()
+            }
         }
     }
-}
-
-struct SearchNavigationView: View {
-    @Binding var isSearchVisible: Bool
     
-    var body: some View {
-        NavigationStack {
-            SearchView()
-                .navigationTitle("Search")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
-                        Button {
-                            isSearchVisible = false
-                        } label: {
-                            Image(systemName: "chevron.left")
-                        }
-                    }
-                }
+    func isShareVisible() -> Binding<Bool> {
+        Binding {
+            selectedShareItem != nil
+        } set: { value in
+            if !value { selectedShareItem = nil }
         }
     }
-}
-
-struct ListLoadingView: View {
-    var body: some View {
-        HStack {
-            Spacer()
-            ProgressView()
-            Spacer()
+    
+    func displayingUserBinding() -> Binding<Bool> {
+        Binding {
+            selectedUser != nil
+        } set: { value in
+            if !value { selectedUser = nil }
         }
     }
 }

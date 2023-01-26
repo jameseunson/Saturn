@@ -40,111 +40,24 @@ struct CommentView: View {
     }
     
     var body: some View {
-        if expanded == .hidden {
-            EmptyView()
-            
-        } else {
-            HStack {
-                if comment.indendation > 0 {
-                    Spacer()
-                        .frame(width: CGFloat(comment.indendation) * 20)
-                    
-                    RoundedRectangle(cornerSize: .init(width: 1, height: 1))
-                        .frame(width: 2)
-                        .foregroundColor(.gray)
-                        .padding(.trailing, 5)
-                }
-                
-                VStack(alignment: .leading) {
-                    ZStack {
-                        HStack {
-                            Text(comment.by)
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.accentColor)
-                                .onTapGesture {
-                                    if let onTapUser {
-                                        onTapUser(comment.by)
-                                    }
-                                }
-                            Spacer()
-                            Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
-                                .font(.body)
-                                .foregroundColor(.gray)
-                            if expanded == .expanded {
-                                Button {
-                                    onTapOptions(comment)
-                                } label: {
-                                    Image(systemName: "ellipsis")
-                                        .font(.body)
-                                        .foregroundColor(.gray)
-                                }
-                            } else {
-                                Image(systemName: "chevron.down")
-                                    .font(.body)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation {
-                                toggleExpanded()
-                            }
-                            if let onToggleExpanded {
-                                onToggleExpanded(comment, expanded)
-                            }
-                        }
-                        
-                        if expanded == .collapsed {
-                            Rectangle()
-                                .foregroundColor(.clear)
-                                .contentShape(Rectangle())
-                                .allowsHitTesting(true)
-                                .onTapGesture {
-                                    withAnimation {
-                                        toggleExpanded()
-                                    }
-                                    if let onToggleExpanded {
-                                        onToggleExpanded(comment, expanded)
-                                    }
-                                }
-                        }
-                    }
-                    Divider()
-                    if expanded == .expanded {
-                        Text(comment.comment.text)
-                            .font(.body)
-                            .modifier(CommentLinkHandlerModifier(displayingSafariURL: $displayingSafariURL,
-                                                                 onTapUser: onTapUser,
-                                                                 onTapStoryId: onTapStoryId))
-                    }
-                    
-//                    if displaysStory {
-//                        Rectangle()
-//                            .foregroundColor(.gray)
-//                            .cornerRadius(8)
-//                            .padding([.top, .bottom])
-//                            .frame(height: 50)
-//                    }
-                }
-            }
-            .onTapGesture {
-                withAnimation {
-                    toggleExpanded()
-                }
-                if let onToggleExpanded {
-                    onToggleExpanded(comment, expanded)
-                }
-            }
-            .buttonStyle(PlainButtonStyle())
-            .frame(height: expanded == .expanded ? nil : 20)
-            .sheet(isPresented: displayingSafariViewBinding()) {
-                if let displayingSafariURL {
-                    SafariView(url: displayingSafariURL)
-                        .ignoresSafeArea()
-                }
-            }
+        DisclosureGroup(isExpanded: isExpandedBinding()) {
+            Text(comment.comment.processedText ?? AttributedString())
+                .font(.body)
+                .modifier(CommentLinkHandlerModifier(displayingSafariURL: $displayingSafariURL,
+                                                     onTapUser: onTapUser,
+                                                     onTapStoryId: onTapStoryId))
+        } label: {
+            CommentHeaderView(comment: comment,
+                              onTapOptions: onTapOptions,
+                              onTapUser: onTapUser,
+                              onToggleExpanded: onToggleExpanded,
+                              expanded: $expanded)
         }
+        .disclosureGroupStyle(CustomDisclosureGroupStyle(comment: comment))
+        .modifier(CommentExpandModifier(comment: comment,
+                                        onToggleExpanded: onToggleExpanded,
+                                        expanded: $expanded,
+                                        displayingSafariURL: $displayingSafariURL))
     }
     
     func displayingSafariViewBinding() -> Binding<Bool> {
@@ -155,12 +68,57 @@ struct CommentView: View {
         }
     }
     
-    func toggleExpanded() {
-        switch expanded {
-        case .expanded:
-            expanded = .collapsed
-        case .collapsed, .hidden:
-            expanded = .expanded
+    func isExpandedBinding() -> Binding<Bool> {
+        Binding {
+            expanded == .expanded
+        } set: { value in
+            expanded = value ? expanded : .collapsed
+        }
+    }
+}
+
+struct CommentIndentationView: View {
+    let comment: CommentViewModel
+    
+    var body: some View {
+        if comment.indendation > 0 {
+            Spacer()
+                .frame(width: CGFloat(comment.indendation) * 20)
+            
+            RoundedRectangle(cornerSize: .init(width: 1, height: 1))
+                .frame(width: 2)
+                .foregroundColor(.gray)
+                .padding(.trailing, 5)
+        } else {
+            EmptyView()
+        }
+    }
+}
+
+struct CustomDisclosureGroupStyle: DisclosureGroupStyle {
+    let comment: CommentViewModel
+    
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            if comment.indendation > 0 {
+                Spacer()
+                    .frame(width: (CGFloat(comment.indendation) * 20))
+            }
+            configuration.label
+            Spacer()
+            Image(systemName: "chevron.down")
+                .foregroundColor(.gray)
+                .rotationEffect(.degrees(configuration.isExpanded ? 90 : 0))
+        }
+        if configuration.isExpanded {
+            HStack {
+                if comment.indendation > 0 {
+                    Spacer()
+                        .frame(width: CGFloat(comment.indendation) * 20)
+                }
+                configuration.content
+                    .disclosureGroupStyle(self)
+            }
         }
     }
 }

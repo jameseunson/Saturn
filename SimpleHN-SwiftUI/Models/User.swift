@@ -14,6 +14,14 @@ struct User: Identifiable, Hashable, Codable {
     let karma: Int
     let submitted: [Int]
     
+    init(id: String, created: Date, about: AttributedString?, karma: Int, submitted: [Int]) {
+        self.id = id
+        self.created = created
+        self.about = about
+        self.karma = karma
+        self.submitted = submitted
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
@@ -34,5 +42,11 @@ struct User: Identifiable, Hashable, Codable {
         
         self.karma = try container.decode(Int.self, forKey: .karma)
         self.submitted = try container.decode([Int].self, forKey: .submitted)
+    }
+}
+
+extension User {
+    static func createFakeUser() -> User {
+        User(id: "deminature", created: Date(), about: nil, karma: 1234, submitted: [])
     }
 }
