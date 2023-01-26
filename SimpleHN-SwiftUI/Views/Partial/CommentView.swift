@@ -11,6 +11,7 @@ import SwiftUI
 struct CommentView: View {
     @Binding var expanded: CommentExpandedState
     
+    let formatter = RelativeDateTimeFormatter()
     let comment: CommentViewModel
     
     let onTapOptions: (CommentViewModel) -> Void
@@ -39,54 +40,111 @@ struct CommentView: View {
     }
     
     var body: some View {
-        HStack {
-            if comment.indendation > 0 {
-                Spacer()
-                    .frame(width: CGFloat(comment.indendation) * 20)
-                
-                RoundedRectangle(cornerSize: .init(width: 1, height: 1))
-                    .frame(width: 2)
-                    .foregroundColor(.gray)
-                    .padding(.trailing, 5)
-                    .opacity(expanded == .expanded || expanded == .collapsed ? 1.0 : 0.0)
-            }
+        if expanded == .hidden {
+            EmptyView()
             
-            VStack(alignment: .leading) {
-                CommentHeaderView(comment: comment,
-                                  onTapOptions: onTapOptions,
-                                  onTapUser: onTapUser,
-                                  onToggleExpanded: onToggleExpanded,
-                                  expanded: $expanded)
-                .opacity(expanded == .expanded || expanded == .collapsed ? 1.0 : 0.0)
+        } else {
+            HStack {
+                if comment.indendation > 0 {
+                    Spacer()
+                        .frame(width: CGFloat(comment.indendation) * 20)
+                    
+                    RoundedRectangle(cornerSize: .init(width: 1, height: 1))
+                        .frame(width: 2)
+                        .foregroundColor(.gray)
+                        .padding(.trailing, 5)
+                }
                 
-                Divider()
-                if expanded == .expanded {
-                    Text(comment.comment.text)
-                        .font(.body)
-                        .opacity(expanded == .expanded ? 1.0 : 0.0)
-                        .modifier(CommentLinkHandlerModifier(displayingSafariURL: $displayingSafariURL,
-                                                             onTapUser: onTapUser,
-                                                             onTapStoryId: onTapStoryId))
+                VStack(alignment: .leading) {
+                    ZStack {
+                        HStack {
+                            Text(comment.by)
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color.accentColor)
+                                .onTapGesture {
+                                    if let onTapUser {
+                                        onTapUser(comment.by)
+                                    }
+                                }
+                            Spacer()
+                            Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
+                                .font(.body)
+                                .foregroundColor(.gray)
+                            if expanded == .expanded {
+                                Button {
+                                    onTapOptions(comment)
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .font(.body)
+                                        .foregroundColor(.gray)
+                                }
+                            } else {
+                                Image(systemName: "chevron.down")
+                                    .font(.body)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation {
+                                toggleExpanded()
+                            }
+                            if let onToggleExpanded {
+                                onToggleExpanded(comment, expanded)
+                            }
+                        }
+                        
+                        if expanded == .collapsed {
+                            Rectangle()
+                                .foregroundColor(.clear)
+                                .contentShape(Rectangle())
+                                .allowsHitTesting(true)
+                                .onTapGesture {
+                                    withAnimation {
+                                        toggleExpanded()
+                                    }
+                                    if let onToggleExpanded {
+                                        onToggleExpanded(comment, expanded)
+                                    }
+                                }
+                        }
+                    }
+                    Divider()
+                    if expanded == .expanded {
+                        Text(comment.comment.text)
+                            .font(.body)
+                            .modifier(CommentLinkHandlerModifier(displayingSafariURL: $displayingSafariURL,
+                                                                 onTapUser: onTapUser,
+                                                                 onTapStoryId: onTapStoryId))
+                    }
+                    
+//                    if displaysStory {
+//                        Rectangle()
+//                            .foregroundColor(.gray)
+//                            .cornerRadius(8)
+//                            .padding([.top, .bottom])
+//                            .frame(height: 50)
+//                    }
+                }
+            }
+            .onTapGesture {
+                withAnimation {
+                    toggleExpanded()
+                }
+                if let onToggleExpanded {
+                    onToggleExpanded(comment, expanded)
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+            .frame(height: expanded == .expanded ? nil : 20)
+            .sheet(isPresented: displayingSafariViewBinding()) {
+                if let displayingSafariURL {
+                    SafariView(url: displayingSafariURL)
+                        .ignoresSafeArea()
                 }
             }
         }
-        .onTapGesture {
-            toggleExpanded()
-            if let onToggleExpanded {
-                onToggleExpanded(comment, expanded)
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
-        .frame(height: heightForExpandedState())
-        .clipped()
-        .sheet(isPresented: displayingSafariViewBinding()) {
-            if let displayingSafariURL {
-                SafariView(url: displayingSafariURL)
-                    .ignoresSafeArea()
-            }
-        }
-        .animation(.spring(response: 0.3))
-        .padding(paddingForExpandedState())
     }
     
     func displayingSafariViewBinding() -> Binding<Bool> {
@@ -94,99 +152,6 @@ struct CommentView: View {
             displayingSafariURL != nil
         } set: { value in
             if !value { displayingSafariURL = nil }
-        }
-    }
-    
-    func toggleExpanded() {
-        switch expanded {
-        case .expanded:
-            expanded = .collapsed
-        case .collapsed, .hidden:
-            expanded = .expanded
-        }
-    }
-    
-    func heightForExpandedState() -> CGFloat? {
-        switch expanded {
-        case .expanded:
-            return nil
-        case .collapsed:
-            return 35
-        case .hidden:
-            return 0
-        }
-    }
-    
-    func paddingForExpandedState() -> CGFloat {
-        switch expanded {
-        case .expanded, .collapsed:
-            return 10
-        case .hidden:
-            return 0
-        }
-    }
-}
-
-struct CommentHeaderView: View {
-    let comment: CommentViewModel
-    let formatter = RelativeDateTimeFormatter()
-    
-    let onTapOptions: (CommentViewModel) -> Void
-    let onTapUser: ((String) -> Void)?
-    let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
-    
-    @Binding var expanded: CommentExpandedState
-    
-    var body: some View {
-        ZStack {
-            HStack {
-                Text(comment.by)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(Color.accentColor)
-                    .onTapGesture {
-                        if let onTapUser {
-                            onTapUser(comment.by)
-                        }
-                    }
-                Spacer()
-                Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
-                    .font(.body)
-                    .foregroundColor(.gray)
-                if expanded == .expanded {
-                    Button {
-                        onTapOptions(comment)
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.body)
-                            .foregroundColor(.gray)
-                    }
-                } else {
-                    Image(systemName: "chevron.down")
-                        .font(.body)
-                        .foregroundColor(.gray)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                toggleExpanded()
-                if let onToggleExpanded {
-                    onToggleExpanded(comment, expanded)
-                }
-            }
-            
-            if expanded == .collapsed {
-                Rectangle()
-                    .foregroundColor(.clear)
-                    .contentShape(Rectangle())
-                    .allowsHitTesting(true)
-                    .onTapGesture {
-                        toggleExpanded()
-                        if let onToggleExpanded {
-                            onToggleExpanded(comment, expanded)
-                        }
-                    }
-            }
         }
     }
     

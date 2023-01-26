@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A050D7F2981076400C26F12 /* CommentLinkHandlerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D7E2981076400C26F12 /* CommentLinkHandlerModifier.swift */; };
+		1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D802982088500C26F12 /* CommentHeaderView.swift */; };
 		1A2F3808297A724400F35844 /* StoryDetailCommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */; };
 		1A2F380A297A75A300F35844 /* StoryDetailCommentInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
@@ -90,6 +91,7 @@
 
 /* Begin PBXFileReference section */
 		1A050D7E2981076400C26F12 /* CommentLinkHandlerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLinkHandlerModifier.swift; sourceTree = "<group>"; };
+		1A050D802982088500C26F12 /* CommentHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentHeaderView.swift; sourceTree = "<group>"; };
 		1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentView.swift; sourceTree = "<group>"; };
 		1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentInteractor.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
@@ -339,6 +341,7 @@
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
 				1A873AD62971461A00870A50 /* UserHeaderView.swift */,
 				1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */,
+				1A050D802982088500C26F12 /* CommentHeaderView.swift */,
 			);
 			path = Partial;
 			sourceTree = "<group>";
@@ -517,6 +520,7 @@
 				1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
 				1AE4A9CF2979143E00D0B0D3 /* SearchResponse.swift in Sources */,
+				1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */,
 				1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */,
 				1A873AC7296F921C00870A50 /* User.swift in Sources */,
 				1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */,
