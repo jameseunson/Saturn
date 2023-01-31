@@ -8,20 +8,6 @@
 import Foundation
 import SwiftUI
 
-enum UserItemViewModel: Identifiable, Equatable {
-    var id: Int {
-        switch self {
-        case let .comment(comment):
-            return comment.id
-        case let .story(story):
-            return story.id
-        }
-    }
-    
-    case comment(CommentViewModel)
-    case story(StoryRowViewModel)
-}
-
 struct UserView: View {
     @StateObject var interactor: UserInteractor
     @State var user: UserViewModel?
@@ -38,6 +24,9 @@ struct UserView: View {
     @State var selectedStoryToView: StoryRowViewModel?
     @State var selectedCommentToView: CommentViewModel?
     
+    /// NSUserActivity - handoff
+    static let userActivity = "com.JEON.SimpleHN.view-user"
+    
     var body: some View {
         if let user {
             ScrollViewReader { reader in
@@ -45,9 +34,19 @@ struct UserView: View {
                                    readyToLoadMore: $readyToLoadMore,
                                    itemsRemainingToLoad: $itemsRemainingToLoad) {
                     
-                    UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL)
-                        .id("top")
-                        .padding(.bottom, 10)
+                    UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL) { user in
+                        // TODO:
+                        
+                    } onTapStoryId: { storyId in
+                        // TODO:
+                        
+                    } onTapURL: { url in
+                        displayingSafariURL = url
+                    }
+                    .id("top")
+                    .padding()
+                    
+                    Divider()
                     
                     ForEach(items) { item in
                         switch item {
@@ -71,7 +70,9 @@ struct UserView: View {
                                 .onTapGesture {
                                     selectedStoryToView = story
                                 }
+                                .padding()
                         }
+                        Divider()
                     }
                     if itemsRemainingToLoad {
                         ListLoadingView()
@@ -116,6 +117,13 @@ struct UserView: View {
                     StoryDetailCommentView(interactor: StoryDetailCommentInteractor(focusedComment: selectedCommentToView))
                 } else {
                     EmptyView()
+                }
+            }
+            .userActivity(UserView.userActivity) { activity in
+                if let user = interactor.user,
+                   let url = URL(string: "https://news.ycombinator.com/user?id=\(user.id)") {
+                    activity.webpageURL = url
+                    activity.becomeCurrent()
                 }
             }
 

@@ -10,62 +10,81 @@ import SwiftUI
 
 struct CommentHeaderView: View {
     let comment: CommentViewModel
-    let formatter = RelativeDateTimeFormatter()
     
-    let onTapOptions: (CommentViewModel) -> Void
+    let onTapOptions: ((CommentViewModel) -> Void)?
     let onTapUser: ((String) -> Void)?
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
     
     @Binding var expanded: CommentExpandedState
     
+    init(comment: CommentViewModel,
+         onTapOptions: ((CommentViewModel) -> Void)? = nil,
+         onTapUser: ( (String) -> Void)? = nil,
+         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil,
+         expanded: Binding<CommentExpandedState>) {
+        self.comment = comment
+        self.onTapOptions = onTapOptions
+        self.onTapUser = onTapUser
+        self.onToggleExpanded = onToggleExpanded
+        _expanded = expanded
+    }
+    
     var body: some View {
-        ZStack {
-            HStack {
-                Text(comment.by)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(Color.accentColor)
-                    .onTapGesture {
-                        if let onTapUser {
-                            onTapUser(comment.by)
+        if expanded == .hidden {
+            EmptyView()
+        } else {
+            ZStack {
+                HStack {
+                    Text(comment.by)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(Color.accentColor)
+                        .onTapGesture {
+                            if let onTapUser {
+                                onTapUser(comment.by)
+                            }
                         }
-                    }
-                Spacer()
-                Text(formatter.localizedString(for: comment.comment.time, relativeTo: Date()))
-                    .font(.body)
-                    .foregroundColor(.gray)
-                if expanded == .expanded {
-                    Image(systemName: "ellipsis")
+                    Spacer()
+                    Text(comment.relativeTimeString)
                         .font(.body)
                         .foregroundColor(.gray)
-                        .onTapGesture {
-                            onTapOptions(comment)
-                        }
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                withAnimation {
-                    toggleExpanded()
-                }
-                if let onToggleExpanded {
-                    onToggleExpanded(comment, expanded)
-                }
-            }
-            
-            if expanded == .collapsed {
-                Rectangle()
-                    .foregroundColor(.clear)
-                    .contentShape(Rectangle())
-                    .allowsHitTesting(true)
-                    .onTapGesture {
-                        withAnimation {
-                            toggleExpanded()
-                        }
-                        if let onToggleExpanded {
-                            onToggleExpanded(comment, expanded)
-                        }
+                    if expanded == .expanded {
+                        Image(systemName: "ellipsis")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .onTapGesture {
+                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                impactMed.impactOccurred()
+                                if let onTapOptions {
+                                    onTapOptions(comment)
+                                }
+                            }
                     }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation {
+                        toggleExpanded()
+                    }
+                    if let onToggleExpanded {
+                        onToggleExpanded(comment, expanded)
+                    }
+                }
+                
+                if expanded == .collapsed {
+                    Rectangle()
+                        .foregroundColor(.clear)
+                        .contentShape(Rectangle())
+                        .allowsHitTesting(true)
+                        .onTapGesture {
+                            withAnimation {
+                                toggleExpanded()
+                            }
+                            if let onToggleExpanded {
+                                onToggleExpanded(comment, expanded)
+                            }
+                        }
+                }
             }
         }
     }

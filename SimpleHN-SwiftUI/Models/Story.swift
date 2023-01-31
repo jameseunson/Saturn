@@ -67,4 +67,8 @@ extension Story {
     static func fakeStory() -> Story {
         Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [1234], type: "story", url: nil, text: nil)
     }
+    
+    static func fakeStoryWithNoComments() -> Story {
+        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [], type: "story", url: nil, text: nil)
+    }
 }

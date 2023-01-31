@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Combine
 
 final class Comment: Identifiable, Hashable, Codable {
     static func == (lhs: Comment, rhs: Comment) -> Bool {
@@ -51,7 +52,18 @@ final class Comment: Identifiable, Hashable, Codable {
         self.time = Date(timeIntervalSince1970: timestamp)
     }
 
-    func processText() async {
+    func loadMarkdown() -> AnyPublisher<Comment, Error> {
+        Future { promise in
+            Task.detached {
+                await self.processText()
+                promise(.success(self))
+            }
+        }
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+    }
+    
+    private func processText() async {
         return await withCheckedContinuation { [weak self] continuation in
             guard let self else { return }
             if let attributedString = try? TextProcessor.processCommentText(self.text) {

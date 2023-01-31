@@ -13,7 +13,6 @@ struct CommentExpandModifier: ViewModifier {
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
     
     @Binding var expanded: CommentExpandedState
-    @Binding var displayingSafariURL: URL?
     
     func body(content: Content) -> some View {
         content
@@ -25,12 +24,6 @@ struct CommentExpandModifier: ViewModifier {
                     onToggleExpanded(comment, expanded)
                 }
             }
-            .sheet(isPresented: displayingSafariViewBinding()) {
-                if let displayingSafariURL {
-                    SafariView(url: displayingSafariURL)
-                        .ignoresSafeArea()
-                }
-            }
     }
     
     func toggleExpanded() {
@@ -39,14 +32,6 @@ struct CommentExpandModifier: ViewModifier {
             expanded = .collapsed
         case .collapsed, .hidden:
             expanded = .expanded
-        }
-    }
-    
-    func displayingSafariViewBinding() -> Binding<Bool> {
-        Binding {
-            displayingSafariURL != nil
-        } set: { value in
-            if !value { displayingSafariURL = nil }
         }
     }
 }

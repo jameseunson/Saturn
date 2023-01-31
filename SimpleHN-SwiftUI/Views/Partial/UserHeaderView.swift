@@ -12,8 +12,12 @@ struct UserHeaderView: View {
     let user: UserViewModel
     @Binding var displayingSafariURL: URL?
     
+    let onTapUser: ((String) -> Void)
+    let onTapStoryId: ((Int) -> Void)
+    let onTapURL: ((URL) -> Void)
+    
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(user.id)
@@ -45,19 +49,16 @@ struct UserHeaderView: View {
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 0))
             }
+            .padding(.bottom, user.about == nil ? 0 : 10)
+            
             if let about = user.about {
+                Divider()
                 Text(about)
                     .font(.callout)
                     .foregroundColor(.gray)
-                    .environment(\.openURL, OpenURLAction { url in
-                        // https://stackoverflow.com/questions/15226545/ios-email-address-validation
-                        if let _ = url.absoluteString.firstMatch(of: /[A-Z0-9a-z]+([._%+-]{1}[A-Z0-9a-z]+)*@[A-Z0-9a-z]+([.-]{1}[A-Z0-9a-z]+)*(\\.[A-Za-z]{2,4}){0,1}/) {
-                            UIApplication.shared.open(url)
-                        } else {
-                            displayingSafariURL = url
-                        }
-                        return .handled
-                    })
+                    .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                      onTapStoryId: onTapStoryId,
+                                                      onTapURL: onTapURL))
             }
         }
     }

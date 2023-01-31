@@ -90,6 +90,9 @@ final class APIManager {
                     
                 } else if type == "comment" {
                     return self.loadComment(id: id)
+                        .flatMap { comment in
+                            comment.loadMarkdown()
+                        }
                         .catch { _ in
                             return Empty().eraseToAnyPublisher()
                         }

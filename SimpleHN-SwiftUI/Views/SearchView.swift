@@ -43,6 +43,8 @@ struct SearchView: View {
                                                     Text(user.id)
                                                         .foregroundColor(Color.primary)
                                                 }
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .contentShape(Rectangle())
                                                 .padding([.leading, .trailing, .bottom])
                                             }
                                         }

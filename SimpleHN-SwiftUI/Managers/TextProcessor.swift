@@ -9,11 +9,12 @@ import Foundation
 import UIKit
 import SwiftUI
 import SwiftyMarkdown
+import RegexBuilder
 
 final class TextProcessor {
     static var markdownSetupComplete = false
     
-    static func processCommentText(_ input: String) throws -> AttributedString {
+    static func processCommentText(_ input: String, forceDetectLinks: Bool = false) throws -> AttributedString {
         var outputString = input
         
         /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
@@ -29,6 +30,7 @@ final class TextProcessor {
         outputString = outputString.replacingOccurrences(of: "&#x27;", with: "'")
         outputString = outputString.replacingOccurrences(of: "&quot;", with: "\"")
         outputString = outputString.replacingOccurrences(of: "&#x2F;", with: "/")
+        outputString = outputString.replacingOccurrences(of: "&amp;", with: "&")
         
         /// Handle italics
         outputString = outputString.replacingOccurrences(of: "<i>", with: "_")
@@ -45,6 +47,10 @@ final class TextProcessor {
         processLinks(&outputString)
         processCodeBlocks(&outputString)
         processItalicizedQuotes(&outputString)
+        
+        if forceDetectLinks {
+            detectLinks(&outputString)
+        }
         
         let md = SwiftyMarkdown(string: outputString)
         
@@ -111,6 +117,23 @@ final class TextProcessor {
         for italicizedQuoteRegexMatch in italicizedQuoteRegexMatches {
             let matchString = italicizedQuoteRegexMatch.output.0
             outputString = outputString.replacingOccurrences(of: matchString, with: matchString.replacingOccurrences(of: "_", with: ""))
+        }
+    }
+    
+    static func detectLinks(_ outputString: inout String) {
+        let linkRegex = Regex { Capture { .url() } }
+
+        let linkMatches = outputString.matches(of: linkRegex)
+        linkMatches.forEach { linkMatch in
+            let markdownLink = "[\(linkMatch.output.0)](\(linkMatch.output.0))"
+            outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
+        }
+        
+        let emailRegex = /[A-Z0-9a-z]+([._%+-]{1}[A-Z0-9a-z]+)*@[A-Z0-9a-z]+([.-]{1}[A-Z0-9a-z]+)*(\\.[A-Za-z]{2,4}){0,1}/
+        let emailMatches = outputString.matches(of: emailRegex)
+        for emailMatch in emailMatches {
+            let markdownLink = "[\(emailMatch.output.0)](\(emailMatch.output.0))"
+            outputString = outputString.replacingOccurrences(of: emailMatch.output.0, with: markdownLink)
         }
     }
 }

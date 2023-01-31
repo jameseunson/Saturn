@@ -4,7 +4,6 @@
 //
 //  Created by James Eunson on 17/1/2023.
 //
-
 import Foundation
 import SwiftUI
 
@@ -30,17 +29,18 @@ struct InfiniteScrollView<Content>: View where Content: View {
     }
     
     var body : some View {
-        List {
-            content
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                content
+            }
+            .background(GeometryReader { proxy -> Color in
+                            DispatchQueue.main.async {
+                                offset = -proxy.frame(in: .named("scroll")).origin.y
+                                contentHeight = proxy.frame(in: .named("scroll")).size.height
+                            }
+                            return Color.clear
+                        })
         }
-        .background(GeometryReader { proxy -> Color in
-                        DispatchQueue.main.async {
-                            offset = -proxy.frame(in: .named("scroll")).origin.y
-                            contentHeight = proxy.frame(in: .named("scroll")).size.height
-                        }
-                        return Color.clear
-                    })
-        .listStyle(.plain)
         .coordinateSpace(name: "scroll")
         .onChange(of: offset, perform: { _ in evaluateLoadMore() })
         .onChange(of: contentHeight, perform: { _ in evaluateLoadMore() })

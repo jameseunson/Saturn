@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CommentNavigationModifier: ViewModifier {
     @Binding var selectedShareItem: StoryDetailShareItem?
-@Binding var selectedUser: String?
+    @Binding var selectedUser: String?
     @Binding var displayingInternalStoryId: Int?
     @Binding var selectedComment: CommentViewModel?
     

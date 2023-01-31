@@ -18,43 +18,45 @@ struct StoryDetailCommentView: View {
     
     @State var displayFullComments = false
     
+    @Namespace var bottom
+    
     var body: some View {
         if let story = interactor.story {
             ZStack {
                 ScrollViewReader { reader in
                     ScrollView {
-                        StoryRowView(story: StoryRowViewModel(story: story))
-                            .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
-                        
-                        Divider()
-                        
-                        ForEach(interactor.comments) { comment in
-                            CommentView(expanded: .constant(.expanded), comment: comment) { comment in
-                                selectedComment = comment
-                                
-                            } onTapUser: { user in
-                                selectedUser = user
-                                
-                            } onTapStoryId: { storyId in
-                                self.displayingInternalStoryId = storyId
+                        VStack(spacing: 0) {
+                            StoryRowView(story: StoryRowViewModel(story: story))
+                                .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
+                            
+                            Divider()
+                            
+                            ForEach(interactor.comments) { comment in
+                                CommentView(expanded: .constant(.expanded), comment: comment) { comment in
+                                    selectedComment = comment
+                                    
+                                } onTapUser: { user in
+                                    selectedUser = user
+                                    
+                                } onTapStoryId: { storyId in
+                                    self.displayingInternalStoryId = storyId
+                                }
+                                .id(comment.id)
                             }
-                            .id(comment.id)
-                            .padding(10)
+                            
+                            Spacer()
+                                .padding([.bottom], 100)
+                                .id(bottom)
                         }
                     }
-                    .onAppear {
-                        // TODO: Does not work, fix
-                        if let focusedCommentViewModel = interactor.focusedCommentViewModel {
-                            withAnimation {
-                                reader.scrollTo(focusedCommentViewModel.id)
-                            }
-                        }
+                    .modifier(CommentNavigationModifier(selectedShareItem: $selectedShareItem,
+                                                        selectedUser: $selectedUser,
+                                                        displayingInternalStoryId: $displayingInternalStoryId,
+                                                        selectedComment: $selectedComment))
+                    .onReceive(interactor.$comments) { comments in
+                        reader.scrollTo(bottom)
                     }
                 }
-                .modifier(CommentNavigationModifier(selectedShareItem: $selectedShareItem,
-                                                    selectedUser: $selectedUser,
-                                                    displayingInternalStoryId: $displayingInternalStoryId,
-                                                    selectedComment: $selectedComment))
                 
                 ViewAllCommentsButton(displayFullComments: $displayFullComments)
             }
@@ -78,13 +80,9 @@ struct StoryDetailCommentView: View {
 struct StoryDetailCommentView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            #if DEBUG
             StoryDetailCommentView(interactor: StoryDetailCommentInteractor(focusedComment: CommentViewModel.fakeComment()))
                 .navigationTitle("Story")
                 .navigationBarTitleDisplayMode(.inline)
-            #else
-            EmptyView()
-            #endif
         }
     }
 }

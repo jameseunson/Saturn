@@ -34,6 +34,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     override func didBecomeActive() {
         if user == nil {
             apiManager.loadUser(id: username)
+                .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         print(error)
@@ -65,6 +66,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     .collect()
                     .eraseToAnyPublisher()
             }
+            .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
                     print(error)

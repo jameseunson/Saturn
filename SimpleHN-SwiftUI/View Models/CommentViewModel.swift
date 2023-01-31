@@ -8,11 +8,14 @@
 import Foundation
 
 final class CommentViewModel: Codable, Hashable, Identifiable {
+    static let formatter = RelativeDateTimeFormatter()
+    
     let id: Int
     let comment: Comment
     let indendation: Int
     let parent: CommentViewModel?
     let by: String
+    let relativeTimeString: String
     
     var expanded: Bool = true
     var children: [CommentViewModel] = []
@@ -23,6 +26,7 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
         self.indendation = indendation
         self.parent = parent
         self.by = comment.by
+        self.relativeTimeString = CommentViewModel.formatter.localizedString(for: comment.time, relativeTo: Date())
     }
     
     static func == (lhs: CommentViewModel, rhs: CommentViewModel) -> Bool {
@@ -38,10 +42,8 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
     }
 }
 
-#if DEBUG
 extension CommentViewModel {
     static func fakeComment() -> CommentViewModel {
         CommentViewModel(comment: Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date()), indendation: 0, parent: nil)
     }
 }
-#endif

@@ -17,15 +17,20 @@ enum CommentExpandedState {
 }
 
 final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
-    @Published var comments: Array<CommentViewModel> = []
-    @Published var displayComments: Array<CommentViewModel> = []
-    @Published var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
+    // MARK: - Public
     @Published var readyToLoadMore: Bool = false
     @Published var commentsRemainingToLoad: Bool = true
     @Published var story: Story?
     
-    @Published private var commentsLoaded = 0
-    @Published private var currentlyLoadingComment: CommentViewModel?
+    var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
+    var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
+    
+    var commentsExpanded = CurrentValueSubject<Dictionary<CommentViewModel, CommentExpandedState>, Never>([:])
+    var commentsExpandedDebounced: AnyPublisher<Dictionary<CommentViewModel, CommentExpandedState>, Never> = Empty().eraseToAnyPublisher()
+    
+    // MARK: - Private
+    private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
+    private var currentlyLoadingComment = CurrentValueSubject<CommentViewModel?, Never>(nil)
     
     private var storyId: Int?
     private let apiManager = APIManager()
@@ -43,8 +48,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         
         #if DEBUG
         if comments.count > 0 {
-            self.comments = comments
-            self.commentsLoaded = comments.count
+            self.comments.send(comments)
+            self.commentsLoaded.send(comments.count)
             self.topLevelComments = comments
             self.displayingSwiftUIPreview = true
             self.commentsRemainingToLoad = false
@@ -64,22 +69,30 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             return
         }
         #endif
+        
+        commentsDebounced = comments.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
+        commentsExpandedDebounced = commentsExpanded.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
+        
         loadComments()
         
         /// Workaround for the fact that we have no idea when loading is complete
         /// and the backend always returns fewer comments than is indicated by
         /// `descendants` on the Story model
-        $commentsLoaded
+        commentsLoaded
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { _ in
-                self.comments = self.flatten()
+                print(self.commentsLoaded.value)
+                self.comments.send(self.flatten())
         }
         .store(in: &disposeBag)
         
-        $currentlyLoadingComment
+        currentlyLoadingComment
             .compactMap { $0 }
             .flatMap { comment in
                 if comment.comment.kids != nil {
-                    return self.$commentsLoaded
+                    return self.commentsLoaded
                         .debounce(for: .seconds(1), scheduler: RunLoop.main)
                         .map { _ in () }
                         .eraseToAnyPublisher()
@@ -90,7 +103,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             }
             .receive(on: RunLoop.main)
             .sink { _ in
-                self.currentlyLoadingComment = nil
+                self.currentlyLoadingComment.send(nil)
                 self.readyToLoadMore = true
             }
             .store(in: &disposeBag)
@@ -108,14 +121,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
         }
-        
-        $commentsExpanded
-            .sink { expanded in
-                self.displayComments = self.comments.filter {
-                    expanded[$0] != .hidden
-                }
-            }
-            .store(in: &disposeBag)
     }
     
     func loadComments() {
@@ -155,8 +160,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     func refreshComments() async {
         Task {
             DispatchQueue.main.async { [weak self] in
-                self?.comments.removeAll()
-                self?.commentsExpanded.removeAll()
+                self?.comments.send([])
+                self?.commentsExpanded.send([:])
             }
             
             topLevelComments.removeAll()
@@ -167,7 +172,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func updateExpanded(_ expanded: Dictionary<CommentViewModel, CommentExpandedState>, for comment: CommentViewModel, _ set: CommentExpandedState) {
-        commentsExpanded = expanded
+        var mutableExpanded = expanded
         
         var queue = Array<CommentViewModel>()
         queue.append(contentsOf: comment.children)
@@ -177,11 +182,14 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             queue.insert(contentsOf: comment.children, at: 0)
             
             if set == .collapsed {
-                commentsExpanded[comment] = .hidden
+                mutableExpanded[comment] = .hidden
             } else {
-                commentsExpanded[comment] = .expanded
+                mutableExpanded[comment] = .expanded
             }
         }
+        
+        /// Only one assignment to publisher to reduce redraws in SwiftUI
+        commentsExpanded.send(mutableExpanded)
     }
     
     // MARK: -
@@ -189,14 +197,14 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
         apiManager.loadComment(id: rootCommentId)
             .flatMap { comment in
-                self.loadMarkdown(for: comment)
+                comment.loadMarkdown()
             }
             .receive(on: DispatchQueue.global())
             .sink { completion in
                 if case let .failure(error) = completion {
                     print(error)
                     DispatchQueue.main.async {
-                        self.commentsLoaded += 1
+                        self.commentsLoaded.send(self.commentsLoaded.value + 1)
                     }
                 }
             
@@ -209,7 +217,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             } else {
                 self.topLevelComments.append(viewModel)
                 DispatchQueue.main.async {
-                    self.currentlyLoadingComment = viewModel
+                    self.currentlyLoadingComment.send(viewModel)
                 }
             }
             
@@ -217,15 +225,19 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 /// Ensure that if a comment is loaded with a collapsed or hidden parent
                 /// the newly loaded comment is also hidden
                 /// This looks visually broken if not addressed explicitly
+                var mutableCommentsExpanded = self.commentsExpanded.value
+                
                 if let parent,
-                   (self.commentsExpanded[parent] == .collapsed ||
-                       self.commentsExpanded[parent] == .hidden) {
-                    self.commentsExpanded[viewModel] = .hidden
+                   (mutableCommentsExpanded[parent] == .collapsed ||
+                    mutableCommentsExpanded[parent] == .hidden) {
+                    mutableCommentsExpanded[viewModel] = .hidden
                     
                 } else {
-                    self.commentsExpanded[viewModel] = .expanded
+                    mutableCommentsExpanded[viewModel] = .expanded
                 }
-                self.commentsLoaded += 1
+                
+                self.commentsExpanded.send(mutableCommentsExpanded)
+                self.commentsLoaded.send(self.commentsLoaded.value + 1)
             }
             
             if let kids = comment.kids {
@@ -235,17 +247,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             }
         }
         .store(in: &disposeBag)
-    }
-    
-    private func loadMarkdown(for comment: Comment) -> AnyPublisher<Comment, Error> {
-        Future { promise in
-            Task.detached {
-                await comment.processText()
-                promise(.success(comment))
-            }
-        }
-        .setFailureType(to: Error.self)
-        .eraseToAnyPublisher()
     }
     
     /// Once the comments are loaded, walk the tree and construct a flat representation
