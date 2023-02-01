@@ -31,8 +31,8 @@ struct User: Identifiable, Hashable, Codable {
         
         let unprocessedText = try container.decodeIfPresent(String.self, forKey: .about)
         if let unprocessedText {
-            if let attributedString = try? TextProcessor.processCommentText(unprocessedText, forceDetectLinks: true) {
-                self.about = attributedString
+            if let result = try? TextProcessor.processCommentText(unprocessedText, forceDetectLinks: true) {
+                self.about = result.output
             } else {
                 self.about = AttributedString(unprocessedText)
             }

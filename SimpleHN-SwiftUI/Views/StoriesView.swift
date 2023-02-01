@@ -15,6 +15,7 @@ struct StoriesView: View {
     @State var isSearchVisible: Bool = false
     @State var selectedShareItem: URL?
     @State var selectedUser: String?
+    @State var displayingSafariURL: URL?
     
     init(type: StoryListType) {
         self.type = type
@@ -28,7 +29,9 @@ struct StoriesView: View {
                 List {
                     ForEach(interactor.stories) { story in
                         NavigationLink(value: story) {
-                            StoryRowView(story: StoryRowViewModel(story: story))
+                            StoryRowView(story: StoryRowViewModel(story: story),
+                                         onTapArticleLink: { url in self.displayingSafariURL = url },
+                                         showsTextPreview: true)
                                 .onAppear {
                                     if story == interactor.stories.last {
                                         interactor.loadNextPage()
@@ -104,11 +107,18 @@ struct StoriesView: View {
                 sheet.presentationDetents([.medium])
             }
         })
+        .sheet(isPresented: displayingSafariViewBinding()) {
+            if let displayingSafariURL {
+                SafariView(url: displayingSafariURL)
+                    .ignoresSafeArea()
+            }
+        }
         .onAppear {
             interactor.activate()
         }
     }
     
+    // MARK: - Bindings
     func isFailedBinding() -> Binding<Bool> {
         Binding {
             interactor.loadingState == .failed
@@ -133,6 +143,14 @@ struct StoriesView: View {
             selectedUser != nil
         } set: { value in
             if !value { selectedUser = nil }
+        }
+    }
+    
+    func displayingSafariViewBinding() -> Binding<Bool> {
+        Binding {
+            displayingSafariURL != nil
+        } set: { value in
+            if !value { displayingSafariURL = nil }
         }
     }
 }

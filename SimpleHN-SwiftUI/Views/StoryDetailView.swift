@@ -62,20 +62,22 @@ struct StoryDetailView: View {
                                 .listRowSeparator(.hidden)
                             
                         } else {
-                            ForEach(comments, id: \.self) { comment in
-                                CommentView(expanded: binding(for: comment), comment: comment) { comment in
-                                    selectedComment = comment
-                                    
-                                } onTapUser: { user in
-                                    selectedUser = user
-                                    
-                                } onToggleExpanded: { comment, expanded in
-                                    self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
-                                    
-                                } onTapStoryId: { storyId in
-                                    self.displayingInternalStoryId = storyId
+                                ForEach(comments, id: \.self) { comment in
+                                    if self.commentsExpanded[comment] != .hidden {
+                                        CommentView(expanded: binding(for: comment), comment: comment) { comment in
+                                            selectedComment = comment
+                                            
+                                        } onTapUser: { user in
+                                            selectedUser = user
+                                            
+                                        } onToggleExpanded: { comment, expanded in
+                                            self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
+                                            
+                                        } onTapStoryId: { storyId in
+                                            self.displayingInternalStoryId = storyId
+                                        }
+                                    }
                                 }
-                            }
                             
                             if interactor.commentsRemainingToLoad {
                                 ListLoadingView()

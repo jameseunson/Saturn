@@ -14,18 +14,16 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let score: Int
     let comments: Int
     let url: URL?
+    let imageURL: URL?
+    let text: AttributedString?
     
     init(story: Story) {
         self.id = story.id
         self.title = story.title
+        self.text = story.text
         
         var subtitleComponents = [String]()
         
-        if let url = story.url,
-        let host = url.host {
-            subtitleComponents.append(host)
-            subtitleComponents.append(" · ")
-        }
         subtitleComponents.append(story.by)
         subtitleComponents.append(" · ")
         subtitleComponents.append(RelativeDateTimeFormatter().localizedString(for: story.time, relativeTo: Date()))
@@ -35,6 +33,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.score = story.score
         self.comments = story.descendants ?? 0
         self.url = story.url
+        self.imageURL = story.urlForFavicon()
     }
     
     init(searchItem: SearchItem) {
@@ -57,6 +56,9 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.score = searchItem.points
         self.comments = searchItem.numComments
         self.url = searchItem.url
+        
+        self.imageURL = nil
+        self.text = nil
     }
     
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {

@@ -20,6 +20,7 @@ final class StoriesInteractor: Interactor {
     var storyIds = [Int]()
     @Published var stories = [Story]()
     @Published var loadingState: LoadingState = .initialLoad
+    @Published var storyImages = [Story: StoryImageType]()
     
     init(type: StoryListType) {
         self.type = type

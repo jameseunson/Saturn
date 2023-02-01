@@ -26,6 +26,7 @@ final class Comment: Identifiable, Hashable, Codable {
     let time: Date
     
     var processedText: AttributedString?
+    var processedTextHeight: CGFloat = 0
     
     var url: URL? {
         return URL(string: "https://news.ycombinator.com/item?id=\(id)")
@@ -66,10 +67,12 @@ final class Comment: Identifiable, Hashable, Codable {
     private func processText() async {
         return await withCheckedContinuation { [weak self] continuation in
             guard let self else { return }
-            if let attributedString = try? TextProcessor.processCommentText(self.text) {
-                self.processedText = attributedString
+            if let result = try? TextProcessor.processCommentText(self.text) {
+                self.processedText = result.output
+                self.processedTextHeight = result.height
             } else {
                 self.processedText = AttributedString(self.text)
+                // TODO: Height for failure case
             }
             continuation.resume(with: .success(()))
         }

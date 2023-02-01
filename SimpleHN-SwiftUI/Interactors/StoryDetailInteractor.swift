@@ -83,7 +83,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         commentsLoaded
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { _ in
-                print(self.commentsLoaded.value)
                 self.comments.send(self.flatten())
         }
         .store(in: &disposeBag)

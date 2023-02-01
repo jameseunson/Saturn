@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import UIKit
+import Combine
 
 struct Story: Codable, Identifiable, Hashable {
     let id: Int
@@ -18,6 +20,9 @@ struct Story: Codable, Identifiable, Hashable {
     let type: String
     let url: URL?
     let text: AttributedString?
+    
+    @EquatableNoop
+    var storyImage: StoryImageType?
     
     init(id: Int, score: Int, time: Date, descendants: Int?, by: String, title: String, kids: [Int]?, type: String, url: URL?, text: AttributedString?) {
         self.id = id
@@ -48,8 +53,8 @@ struct Story: Codable, Identifiable, Hashable {
         self.url = try container.decodeIfPresent(URL.self, forKey: .url)
         
         if let unprocessedText = try container.decodeIfPresent(String.self, forKey: .text) {
-            if let attributedString = try? TextProcessor.processCommentText(unprocessedText) {
-                self.text = attributedString
+            if let result = try? TextProcessor.processCommentText(unprocessedText) {
+                self.text = result.output
             } else {
                 self.text = AttributedString(unprocessedText)
             }
@@ -61,6 +66,35 @@ struct Story: Codable, Identifiable, Hashable {
     func hasComments() -> Bool {
         kids?.count ?? 0 > 0
     }
+    
+    // MARK: -
+    func urlForFavicon() -> URL? {
+        guard let url = url,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let scheme = components.scheme else {
+            return nil
+        }
+        
+        components.path = "/favicon.ico"
+        guard let iconUrl = components.url,
+              scheme == "https" else {
+            return nil
+        }
+        return iconUrl
+    }
+    
+    enum CodingKeys: CodingKey {
+        case id
+        case score
+        case time
+        case descendants
+        case by
+        case title
+        case kids
+        case type
+        case url
+        case text
+    }
 }
 
 extension Story {
@@ -71,4 +105,20 @@ extension Story {
     static func fakeStoryWithNoComments() -> Story {
         Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [], type: "story", url: nil, text: nil)
     }
+}
+
+enum StoryImageType: Equatable, Hashable {
+    case image(UIImage)
+    case notAvailable
+}
+
+@propertyWrapper
+struct EquatableNoop<Value>: Equatable, Hashable {
+    var wrappedValue: Value
+
+    static func == (lhs: EquatableNoop<Value>, rhs: EquatableNoop<Value>) -> Bool {
+        true
+    }
+    
+    func hash(into hasher: inout Hasher) {}
 }

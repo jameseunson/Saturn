@@ -14,7 +14,7 @@ import RegexBuilder
 final class TextProcessor {
     static var markdownSetupComplete = false
     
-    static func processCommentText(_ input: String, forceDetectLinks: Bool = false) throws -> AttributedString {
+    static func processCommentText(_ input: String, forceDetectLinks: Bool = false) throws -> TextProcessorResult {
         var outputString = input
         
         /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
@@ -60,7 +60,11 @@ final class TextProcessor {
         md.code.fontName = UIFont.monospacedSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize, weight: .regular).fontName
         md.code.fontSize = UIFont.preferredFont(forTextStyle: .callout).pointSize
         
-        return AttributedString(md.attributedString())
+        let s = md.attributedString()
+        let rect = s.boundingRect(with: .init(width: UIScreen.main.bounds.size.width - 20, height: CGFloat.infinity), options: [.usesLineFragmentOrigin , .usesFontLeading], context: nil)
+
+        return TextProcessorResult(output: AttributedString(s),
+                                   height: rect.size.height)
     }
     
     /// Convert <a href="http://google.com">asdf</a> to [asdf](http://google.com)
@@ -136,4 +140,9 @@ final class TextProcessor {
             outputString = outputString.replacingOccurrences(of: emailMatch.output.0, with: markdownLink)
         }
     }
+}
+
+struct TextProcessorResult {
+    let output: AttributedString
+    let height: CGFloat
 }
