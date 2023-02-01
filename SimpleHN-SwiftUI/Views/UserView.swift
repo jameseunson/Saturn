@@ -66,7 +66,8 @@ struct UserView: View {
                             }
 
                         case let .story(story):
-                            StoryRowView(story: story)
+                            StoryRowView(story: story,
+                                         onTapArticleLink: { url in self.displayingSafariURL = url })
                                 .onTapGesture {
                                     selectedStoryToView = story
                                 }

@@ -59,8 +59,10 @@ struct SearchView: View {
                                 ForEach(results) { result in
                                     if case let .searchResult(searchItem) = result {
                                         NavigationLink(value: result) {
-                                            StoryRowView(story: StoryRowViewModel(searchItem: searchItem))
-                                                .padding([.leading, .trailing])
+                                            StoryRowView(story: StoryRowViewModel(searchItem: searchItem),
+                                                         onTapArticleLink: { _ in // TODO:
+                                            })
+                                            .padding([.leading, .trailing])
                                         }
                                         Divider()
                                     }

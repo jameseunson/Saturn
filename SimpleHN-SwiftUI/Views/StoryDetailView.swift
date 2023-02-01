@@ -33,7 +33,8 @@ struct StoryDetailView: View {
                                    readyToLoadMore: $readyToLoadMore,
                                    itemsRemainingToLoad: $commentsRemainingToLoad) {
                     
-                    StoryRowView(story: StoryRowViewModel(story: story))
+                    StoryRowView(story: StoryRowViewModel(story: story),
+                                 onTapArticleLink: { url in self.displayingSafariURL = url })
                         .padding()
                         .onTapGesture {
                             if story.url != nil {

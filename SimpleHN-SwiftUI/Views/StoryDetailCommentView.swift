@@ -26,8 +26,11 @@ struct StoryDetailCommentView: View {
                 ScrollViewReader { reader in
                     ScrollView {
                         VStack(spacing: 0) {
-                            StoryRowView(story: StoryRowViewModel(story: story))
-                                .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
+                            StoryRowView(story: StoryRowViewModel(story: story),
+                                         onTapArticleLink: { url in
+                                // TODO:
+                            })
+                            .padding(EdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10))
                             
                             Divider()
                             
