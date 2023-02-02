@@ -17,7 +17,7 @@ struct CommentExpandModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onTapGesture {
-                withAnimation {
+                withAnimation(.easeInOut(duration: 0.3)) {
                     toggleExpanded()
                 }
                 if let onToggleExpanded {

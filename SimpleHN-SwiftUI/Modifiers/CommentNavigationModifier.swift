@@ -16,7 +16,7 @@ struct CommentNavigationModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-        .navigationDestination(isPresented: displayingUserBinding()) {
+        .navigationDestination(isPresented: content.createBoolBinding(from: $selectedUser)) {
             if let selectedUser {
                 UserView(interactor: UserInteractor(username: selectedUser))
                     .navigationTitle(selectedUser)
@@ -24,14 +24,14 @@ struct CommentNavigationModifier: ViewModifier {
                 EmptyView()
             }
         }
-        .navigationDestination(isPresented: displayingInternalStoryIdBinding()) {
+        .navigationDestination(isPresented: content.createBoolBinding(from: $displayingInternalStoryId)) {
             if let displayingInternalStoryId {
-                StoryDetailView(interactor: StoryDetailInteractor(storyId: displayingInternalStoryId))
+                StoryDetailView(interactor: StoryDetailInteractor(itemId: displayingInternalStoryId))
             } else {
                 EmptyView()
             }
         }
-        .confirmationDialog("User", isPresented: displayingCommentSheet(), actions: {
+        .confirmationDialog("User", isPresented: content.createBoolBinding(from: $selectedComment), actions: {
             if let selectedComment {
                 Button(selectedComment.by) {
                     selectedUser = selectedComment.by
@@ -41,46 +41,13 @@ struct CommentNavigationModifier: ViewModifier {
                 }
             }
         })
-        .sheet(isPresented: isShareVisible(), content: {
+        .sheet(isPresented: content.createBoolBinding(from: $selectedShareItem), content: {
             if let url = selectedShareItem?.url {
                 let sheet = ActivityViewController(itemsToShare: [url])
                     .ignoresSafeArea()
                 sheet.presentationDetents([.medium])
             }
         })
-    }
-    
-    func displayingUserBinding() -> Binding<Bool> {
-        Binding {
-            selectedUser != nil
-        } set: { value in
-            if !value { selectedUser = nil }
-        }
-    }
-    
-    func displayingInternalStoryIdBinding() -> Binding<Bool> {
-        Binding {
-            displayingInternalStoryId != nil
-        } set: { value in
-            if !value { displayingInternalStoryId = nil }
-        }
-    }
-    
-    
-    func displayingCommentSheet() -> Binding<Bool> {
-        Binding {
-            selectedComment != nil
-        } set: { value in
-            if !value { selectedComment = nil }
-        }
-    }
-    
-    func isShareVisible() -> Binding<Bool> {
-        Binding {
-            selectedShareItem != nil
-        } set: { value in
-            if !value { selectedShareItem = nil }
-        }
     }
 }
 

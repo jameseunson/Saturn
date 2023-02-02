@@ -20,6 +20,8 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
     var expanded: Bool = true
     var children: [CommentViewModel] = []
     
+    var isAnimating: Bool = false
+    
     init(comment: Comment, indendation: Int, parent: CommentViewModel?) {
         self.id = comment.id
         self.comment = comment

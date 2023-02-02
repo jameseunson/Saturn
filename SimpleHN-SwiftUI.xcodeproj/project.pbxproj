@@ -12,8 +12,10 @@
 		1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D8229820E2000C26F12 /* SearchResultItem.swift */; };
 		1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */; };
 		1A111DFB29889C44005B29B6 /* UserItemViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFA29889C44005B29B6 /* UserItemViewModel.swift */; };
-		1A2F3808297A724400F35844 /* StoryDetailCommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */; };
-		1A2F380A297A75A300F35844 /* StoryDetailCommentInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */; };
+		1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */; };
+		1A111E00298B705B005B29B6 /* View+Bindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFF298B705B005B29B6 /* View+Bindings.swift */; };
+		1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */; };
+		1A111E04298B7321005B29B6 /* View+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111E03298B7321005B29B6 /* View+Color.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift */; };
@@ -103,8 +105,10 @@
 		1A050D8229820E2000C26F12 /* SearchResultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultItem.swift; sourceTree = "<group>"; };
 		1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentIndentationView.swift; sourceTree = "<group>"; };
 		1A111DFA29889C44005B29B6 /* UserItemViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserItemViewModel.swift; sourceTree = "<group>"; };
-		1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentView.swift; sourceTree = "<group>"; };
-		1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailCommentInteractor.swift; sourceTree = "<group>"; };
+		1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAllCommentsButton.swift; sourceTree = "<group>"; };
+		1A111DFF298B705B005B29B6 /* View+Bindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Bindings.swift"; sourceTree = "<group>"; };
+		1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ConditionalModifier.swift"; sourceTree = "<group>"; };
+		1A111E03298B7321005B29B6 /* View+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Color.swift"; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* SimpleHN-SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SimpleHN-SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHN_SwiftUIApp.swift; sourceTree = "<group>"; };
@@ -198,6 +202,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1A111DFE298B704E005B29B6 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				1A111DFF298B705B005B29B6 /* View+Bindings.swift */,
+				1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */,
+				1A111E03298B7321005B29B6 /* View+Color.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		1A2F380B297A86AB00F35844 /* Modifiers */ = {
 			isa = PBXGroup;
 			children = (
@@ -231,6 +245,7 @@
 		1A5DBBB3296933BA00D4D86E /* SimpleHN-SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				1A111DFE298B704E005B29B6 /* Extensions */,
 				1A2F380B297A86AB00F35844 /* Modifiers */,
 				1A873ACF2971135900870A50 /* View Models */,
 				1A873AB9296D666A00870A50 /* Utilities */,
@@ -283,7 +298,6 @@
 				1A873AC8296FCD1600870A50 /* SettingsView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
-				1A2F3807297A724400F35844 /* StoryDetailCommentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -313,7 +327,6 @@
 				1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */,
 				1AE4A99C2977B83E00D0B0D3 /* SearchInteractor.swift */,
 				1AE4A9DC29792ECA00D0B0D3 /* RootInteractor.swift */,
-				1A2F3809297A75A300F35844 /* StoryDetailCommentInteractor.swift */,
 			);
 			path = Interactors;
 			sourceTree = "<group>";
@@ -366,6 +379,7 @@
 				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
 				1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */,
 				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
+				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
 			);
 			path = Partial;
 			sourceTree = "<group>";
@@ -541,6 +555,7 @@
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
 				1AE4A9D32979146700D0B0D3 /* StoryListType.swift in Sources */,
+				1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */,
 				1AE4A99F2977D7BF00D0B0D3 /* AppRemoteConfig.swift in Sources */,
 				1AE4A9D929792B5A00D0B0D3 /* APIResponseCache.swift in Sources */,
 				1AE4A9DD29792ECA00D0B0D3 /* RootInteractor.swift in Sources */,
@@ -549,12 +564,12 @@
 				1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */,
 				1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
+				1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */,
 				1AE4A9CF2979143E00D0B0D3 /* SearchResponse.swift in Sources */,
 				1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */,
 				1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */,
 				1A873AC7296F921C00870A50 /* User.swift in Sources */,
 				1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */,
-				1A2F3808297A724400F35844 /* StoryDetailCommentView.swift in Sources */,
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */,
 				1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */,
@@ -564,8 +579,9 @@
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
 				1AE4A99D2977B83E00D0B0D3 /* SearchInteractor.swift in Sources */,
-				1A2F380A297A75A300F35844 /* StoryDetailCommentInteractor.swift in Sources */,
 				1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */,
+				1A111E00298B705B005B29B6 /* View+Bindings.swift in Sources */,
+				1A111E04298B7321005B29B6 /* View+Color.swift in Sources */,
 				1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */,
 				1A5DBC13296BD46600D4D86E /* Story.swift in Sources */,
 				1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */,

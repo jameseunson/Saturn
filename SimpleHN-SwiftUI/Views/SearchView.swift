@@ -81,8 +81,7 @@ struct SearchView: View {
             switch item {
             case let .searchResult(searchItem):
                 let story = StoryRowViewModel(searchItem: searchItem)
-                let interactor = StoryDetailInteractor(storyId: story.id)
-                StoryDetailView(interactor: interactor)
+                StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
                     .navigationTitle(story.title)
                 
             case let .user(selectedUser):

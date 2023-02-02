@@ -63,6 +63,9 @@ struct UserView: View {
                                 
                             } onToggleExpanded: { comment, expanded in
                                 selectedCommentToView = comment
+                                
+                            } onTapURL: { url in
+                                self.displayingSafariURL = url
                             }
 
                         case let .story(story):
@@ -80,13 +83,13 @@ struct UserView: View {
                     }
                 }
             }
-            .sheet(isPresented: displayingSafariViewBinding()) {
+            .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
                 if let displayingSafariURL {
                     SafariView(url: displayingSafariURL)
                         .ignoresSafeArea()
                 }
             }
-            .sheet(isPresented: isShareVisible(), content: {
+            .sheet(isPresented: createBoolBinding(from: $selectedCommentToShare), content: {
                 if let url = selectedCommentToShare?.comment.url {
                     let sheet = ActivityViewController(itemsToShare: [url])
                         .ignoresSafeArea()
@@ -105,17 +108,17 @@ struct UserView: View {
             .refreshable {
                 await interactor.refreshUser()
             }
-            .navigationDestination(isPresented: displayingStoryViewBinding()) {
+            .navigationDestination(isPresented: createBoolBinding(from: $selectedStoryToView)) {
                 if let selectedStoryToView {
-                    StoryDetailView(interactor: StoryDetailInteractor(storyId: selectedStoryToView.id))
+                    StoryDetailView(interactor: StoryDetailInteractor(itemId: selectedStoryToView.id))
                         .navigationTitle(selectedStoryToView.title)
                 } else {
                     EmptyView()
                 }
             }
-            .navigationDestination(isPresented: displayingCommentViewBinding()) {
+            .navigationDestination(isPresented: createBoolBinding(from: $selectedCommentToView)) {
                 if let selectedCommentToView {
-                    StoryDetailCommentView(interactor: StoryDetailCommentInteractor(focusedComment: selectedCommentToView))
+                    StoryDetailView(interactor: StoryDetailInteractor(itemId: selectedCommentToView.id))
                 } else {
                     EmptyView()
                 }
@@ -141,38 +144,6 @@ struct UserView: View {
             .onReceive(interactor.$items) { output in
                 self.items = output
             }
-        }
-    }
-    
-    func displayingSafariViewBinding() -> Binding<Bool> {
-        Binding {
-            displayingSafariURL != nil
-        } set: { value in
-            if !value { displayingSafariURL = nil }
-        }
-    }
-    
-    func isShareVisible() -> Binding<Bool> {
-        Binding {
-            selectedCommentToShare != nil
-        } set: { value in
-            if !value { selectedCommentToShare = nil }
-        }
-    }
-    
-    func displayingStoryViewBinding() -> Binding<Bool> {
-        Binding {
-            selectedStoryToView != nil
-        } set: { value in
-            if !value { selectedStoryToView = nil }
-        }
-    }
-    
-    func displayingCommentViewBinding() -> Binding<Bool> {
-        Binding {
-            selectedCommentToView != nil
-        } set: { value in
-            if !value { selectedCommentToView = nil }
         }
     }
 }

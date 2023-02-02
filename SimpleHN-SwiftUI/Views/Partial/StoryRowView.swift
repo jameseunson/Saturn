@@ -81,6 +81,7 @@ struct StoryRowView: View {
                         .padding(.leading, 10)
                         .lineLimit(1)
                         .foregroundColor(.gray)
+                        .font(.callout)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)

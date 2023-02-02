@@ -63,7 +63,7 @@ struct CommentHeaderView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.3)) {
                         toggleExpanded()
                     }
                     if let onToggleExpanded {
@@ -77,7 +77,7 @@ struct CommentHeaderView: View {
                         .contentShape(Rectangle())
                         .allowsHitTesting(true)
                         .onTapGesture {
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 toggleExpanded()
                             }
                             if let onToggleExpanded {

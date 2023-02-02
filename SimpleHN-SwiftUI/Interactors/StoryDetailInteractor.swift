@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 import UIKit
 
-enum CommentExpandedState {
+enum CommentExpandedState: Equatable {
     case expanded
     case collapsed
     case hidden
@@ -18,25 +18,30 @@ enum CommentExpandedState {
 
 final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     // MARK: - Public
-    @Published var readyToLoadMore: Bool = false
-    @Published var commentsRemainingToLoad: Bool = true
-    @Published var story: Story?
+    @Published private(set) var readyToLoadMore: Bool = false
+    @Published private(set) var commentsRemainingToLoad: Bool = true
+    @Published private(set) var story: Story?
     
     var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
     
     var commentsExpanded = CurrentValueSubject<Dictionary<CommentViewModel, CommentExpandedState>, Never>([:])
     var commentsExpandedDebounced: AnyPublisher<Dictionary<CommentViewModel, CommentExpandedState>, Never> = Empty().eraseToAnyPublisher()
+    @Published private(set) var hasPendingExpandedUpdate: Bool = false /// Bypass debounce for comment expand/collapse
     
     // MARK: - Private
     private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
     private var currentlyLoadingComment = CurrentValueSubject<CommentViewModel?, Never>(nil)
     
-    private var storyId: Int?
+    private var itemId: Int?
     private let apiManager = APIManager()
     
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
+    
+    // MARK: - Comment Focused View
+    private var commentChain = [Comment]()
+    @Published private(set) var focusedCommentViewModel: CommentViewModel?
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -58,22 +63,22 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     /// Entry from search results or intercepting internal links like news.ycombinator.com/item?id=1234
-    /// where we don't yet have a full `Story` object, and it must be loaded as part of the interactor startup
-    init(storyId: Int) {
-        self.storyId = storyId
+    /// where we don't yet have a full `Story` or `Comment` object, and it must be loaded as part of the interactor startup
+    init(itemId: Int) {
+        self.itemId = itemId
     }
     
     override func didBecomeActive() {
+        commentsDebounced = comments.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
+        commentsExpandedDebounced = commentsExpanded.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
+        
         #if DEBUG
         if displayingSwiftUIPreview {
             return
         }
         #endif
-        
-        commentsDebounced = comments.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
-            .eraseToAnyPublisher()
-        commentsExpandedDebounced = commentsExpanded.debounce(for: .milliseconds(200), scheduler: RunLoop.main)
-            .eraseToAnyPublisher()
         
         loadComments()
         
@@ -107,16 +112,21 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             }
             .store(in: &disposeBag)
         
-        if let storyId {
-            apiManager.loadStory(id: storyId)
+        if let itemId {
+            apiManager.loadUserItem(id: itemId)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         print(error)
                     }
-                    
-                } receiveValue: { story in
-                    self.story = story
-                    self.loadComments()
+                } receiveValue: { item in
+                    switch item {
+                    case let .story(story):
+                        self.story = story
+                        self.loadComments()
+                        
+                    case let .comment(comment):
+                        self.traverse(comment)
+                    }
                 }
                 .store(in: &disposeBag)
         }
@@ -135,7 +145,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func loadMoreItems() {
-        guard let kids = story?.kids else { return }
+        guard commentsRemainingToLoad,
+              let kids = story?.kids else { return }
         
         var nextKidToLoad: Int?
         for kid in kids {
@@ -176,19 +187,36 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         var queue = Array<CommentViewModel>()
         queue.append(contentsOf: comment.children)
         
+        var remainingToAnimate = 5
+        
         while(!queue.isEmpty) {
             let comment = queue.removeFirst()
             queue.insert(contentsOf: comment.children, at: 0)
             
+            if remainingToAnimate >= 0 {
+                comment.isAnimating = true
+                remainingToAnimate -= 1
+            }
+            
             if set == .collapsed {
                 mutableExpanded[comment] = .hidden
+                
             } else {
                 mutableExpanded[comment] = .expanded
             }
         }
         
         /// Only one assignment to publisher to reduce redraws in SwiftUI
+        hasPendingExpandedUpdate = true
         commentsExpanded.send(mutableExpanded)
+    }
+    
+    func expandedUpdateComplete() {
+        hasPendingExpandedUpdate = false
+        
+        comments.value
+            .filter { $0.isAnimating }
+            .forEach { $0.isAnimating = false }
     }
     
     // MARK: -
@@ -264,5 +292,61 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
         
         return flat
+    }
+}
+
+// MARK: - Comment Focused View
+extension StoryDetailInteractor {
+    func traverse(_ comment: Comment) {
+        DispatchQueue.main.async { [weak self] in
+            self?.commentsRemainingToLoad = false
+        }
+        commentChain = [comment]
+        
+        apiManager.loadUserItem(id: comment.parent)
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    print(error)
+                }
+            } receiveValue: { item in
+                switch item {
+                case let .comment(comment):
+                    self.commentChain.insert(comment, at: 0)
+                    self.traverse(comment)
+                    
+                case let .story(story):
+                    self.story = story
+                    
+                    self.processComments()
+                }
+            }
+            .store(in: &disposeBag)
+    }
+    
+    func processComments() {
+        var parent: CommentViewModel?
+        for (i, comment) in commentChain.enumerated() {
+            let model = CommentViewModel(comment: comment, indendation: i, parent: parent)
+            
+            var mutableComments = self.comments.value
+            mutableComments.append(model)
+            
+            if i == 0 {
+                self.focusedCommentViewModel = model
+                self.topLevelComments.append(model)
+                self.loadedTopLevelComments.append(model.id)
+            }
+            
+            DispatchQueue.main.async {
+                var mutableCommentsExpanded = self.commentsExpanded.value
+                mutableCommentsExpanded[model] = .expanded
+                
+                self.commentsExpanded.send(mutableCommentsExpanded)
+                self.commentsLoaded.send(self.commentsLoaded.value + 1)
+            }
+            
+            self.comments.send(mutableComments)
+            parent = model
+        }
     }
 }

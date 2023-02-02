@@ -43,7 +43,7 @@ struct CommentView: View {
     
     var body: some View {
         HStack {
-            if expanded == .hidden {
+            if expanded == .hidden && !comment.isAnimating {
                 EmptyView()
             } else {
                 CommentIndentationView(comment: comment)
@@ -113,35 +113,29 @@ struct CommentView: View {
     }
 }
 
-extension Color {
-    static var random: Color {
-        return Color(
-            red: .random(in: 0...1),
-            green: .random(in: 0...1),
-            blue: .random(in: 0...1)
-        )
-    }
-}
-
 struct AnimatingCellHeight: ViewModifier, Animatable {
     var height: CGFloat = 0
+    
+    private var target: CGFloat
+    private var onEnded: () -> ()
+
+    init(height: CGFloat, onEnded: @escaping () -> () = {}) {
+        self.target = height
+        self.height = height
+        self.onEnded = onEnded // << callback
+    }
 
     var animatableData: CGFloat {
         get { height }
-        set { height = newValue }
+        set {
+            height = newValue
+            if newValue == target {
+                onEnded()
+            }
+        }
     }
 
     func body(content: Content) -> some View {
         content.frame(height: height)
-    }
-}
-
-extension View {
-    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
     }
 }

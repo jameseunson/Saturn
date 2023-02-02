@@ -47,6 +47,7 @@ struct StoriesView: View {
                                         Label(story.by, systemImage: "person.circle")
                                     })
                                 }
+                                .padding(.bottom, 15)
                         }
                     }
                     ListLoadingView()
@@ -89,7 +90,7 @@ struct StoriesView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: displayingUserBinding()) {
+        .navigationDestination(isPresented: createBoolBinding(from: $selectedUser)) {
             if let selectedUser {
                 UserView(interactor: UserInteractor(username: selectedUser))
                     .navigationTitle(selectedUser)
@@ -100,14 +101,14 @@ struct StoriesView: View {
         .sheet(isPresented: $isSettingsVisible, content: {
             SettingsNavigationView(isSettingsVisible: $isSettingsVisible)
         })
-        .sheet(isPresented: isShareVisible(), content: {
+        .sheet(isPresented: createBoolBinding(from: $selectedShareItem), content: {
             if let url = selectedShareItem {
                 let sheet = ActivityViewController(itemsToShare: [url])
                     .ignoresSafeArea()
                 sheet.presentationDetents([.medium])
             }
         })
-        .sheet(isPresented: displayingSafariViewBinding()) {
+        .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
             if let displayingSafariURL {
                 SafariView(url: displayingSafariURL)
                     .ignoresSafeArea()
@@ -127,30 +128,6 @@ struct StoriesView: View {
                 interactor.loadingState = .initialLoad
                 interactor.loadNextPage()
             }
-        }
-    }
-    
-    func isShareVisible() -> Binding<Bool> {
-        Binding {
-            selectedShareItem != nil
-        } set: { value in
-            if !value { selectedShareItem = nil }
-        }
-    }
-    
-    func displayingUserBinding() -> Binding<Bool> {
-        Binding {
-            selectedUser != nil
-        } set: { value in
-            if !value { selectedUser = nil }
-        }
-    }
-    
-    func displayingSafariViewBinding() -> Binding<Bool> {
-        Binding {
-            displayingSafariURL != nil
-        } set: { value in
-            if !value { displayingSafariURL = nil }
         }
     }
 }

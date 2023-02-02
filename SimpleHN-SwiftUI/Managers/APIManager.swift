@@ -100,6 +100,7 @@ final class APIManager {
                         .eraseToAnyPublisher()
                     
                 } else {
+                    print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
                     // TODO: Handle other types
                     return Empty().eraseToAnyPublisher()
                 }
