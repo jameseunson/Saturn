@@ -12,11 +12,13 @@ struct StoryRowView: View {
     let formatter = RelativeDateTimeFormatter()
     let story: StoryRowViewModel
     let onTapArticleLink: ((URL) -> Void)?
+    let onTapUser: ((String) -> Void)?
     let showsTextPreview: Bool
     
-    init(story: StoryRowViewModel, onTapArticleLink: ((URL) -> Void)? = nil, showsTextPreview: Bool = false) {
+    init(story: StoryRowViewModel, onTapArticleLink: ((URL) -> Void)? = nil, onTapUser: ((String) -> Void)? = nil, showsTextPreview: Bool = false) {
         self.story = story
         self.onTapArticleLink = onTapArticleLink
+        self.onTapUser = onTapUser
         self.showsTextPreview = showsTextPreview
     }
     
@@ -28,10 +30,26 @@ struct StoryRowView: View {
                         .font(.title3)
                         .foregroundColor(Color.primary)
                         .multilineTextAlignment(.leading)
-                    Text(story.subtitle)
-                        .font(.callout)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.leading)
+                    
+                    HStack(spacing: 0) {
+                        Button {
+                            if let onTapUser {
+                                onTapUser(story.author)
+                            }
+                        } label: {
+                            Text(story.author)
+                                .font(.callout)
+                                .foregroundColor(.gray)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.leading)
+                        }
+                        .contentShape(Rectangle())
+                        
+                        Text(" · " + story.timeAgo)
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 6) {
@@ -109,22 +127,5 @@ struct StoryRowView: View {
                     .multilineTextAlignment(.leading)
             }
         }
-    }
-}
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape( RoundedCorner(radius: radius, corners: corners) )
-    }
-}
-
-struct RoundedCorner: Shape {
-
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        return Path(path.cgPath)
     }
 }

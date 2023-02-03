@@ -192,17 +192,20 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         while(!queue.isEmpty) {
             let comment = queue.removeFirst()
             queue.insert(contentsOf: comment.children, at: 0)
-            
-            if remainingToAnimate >= 0 {
-                comment.isAnimating = true
-                remainingToAnimate -= 1
-            }
-            
+                
             if set == .collapsed {
                 mutableExpanded[comment] = .hidden
+                if remainingToAnimate >= 0 {
+                    comment.isAnimating = .collapsing
+                    remainingToAnimate -= 1
+                }
                 
             } else {
                 mutableExpanded[comment] = .expanded
+                if remainingToAnimate >= 0 {
+                    comment.isAnimating = .expanding
+                    remainingToAnimate -= 1
+                }
             }
         }
         
@@ -215,8 +218,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         hasPendingExpandedUpdate = false
         
         comments.value
-            .filter { $0.isAnimating }
-            .forEach { $0.isAnimating = false }
+            .filter { $0.isAnimating != .none }
+            .forEach { $0.isAnimating = .none }
     }
     
     // MARK: -
@@ -241,6 +244,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                                              parent: parent)
             if let parent {
                 parent.children.append(viewModel)
+                self.incrementTotalChildCount(parent)
+                
             } else {
                 self.topLevelComments.append(viewModel)
                 DispatchQueue.main.async {
@@ -292,6 +297,13 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
         
         return flat
+    }
+    
+    func incrementTotalChildCount(_ root: CommentViewModel) {
+        root.totalChildCount += 1
+        if let parent = root.parent {
+            incrementTotalChildCount(parent)
+        }
     }
 }
 

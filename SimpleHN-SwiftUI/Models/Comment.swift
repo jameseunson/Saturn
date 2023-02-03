@@ -64,6 +64,12 @@ final class Comment: Identifiable, Hashable, Codable {
         .eraseToAnyPublisher()
     }
     
+    @discardableResult
+    func loadMarkdown() async -> Comment {
+        await processText()
+        return self
+    }
+    
     private func processText() async {
         return await withCheckedContinuation { [weak self] continuation in
             guard let self else { return }

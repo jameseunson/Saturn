@@ -15,12 +15,16 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Published var itemsRemainingToLoad: Bool = true
     
     private let username: String
-    private let apiManager = APIManager()
     private let pageLength = 10
     
     private var currentPage: Int = 0
     private var submittedIds = [Int]()
     private var loadedItems = [Int]()
+    
+    var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
+    
+    private let apiManager = APIManager()
+    private let commentLoader = CommentLoader()
     
     init(username: String) {
         self.username = username
@@ -46,7 +50,65 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 .store(in: &disposeBag)
         }
         
+        $items
+            .filter { $0.count > 0 }
+            .setFailureType(to: Error.self)
+            .flatMap { models in
+                let publishers = models.compactMap {
+                    /// If we already have a chain object for this comment, don't retrieve it
+                    if self.commentContexts.value.keys.contains($0.id) {
+                        return nil
+                    }
+                    if case let .comment(comment) = $0 {
+                        return comment
+                    } else {
+                        return nil
+                    }
+                }
+                .map { self.loadCommentChain(from: $0) }
+                
+                if publishers.count > 0 {
+                    return Publishers.MergeMany(publishers)
+                        .collect()
+                        .eraseToAnyPublisher()
+                } else {
+                    return Empty()
+                        .eraseToAnyPublisher()
+                }
+            }
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                if case let .failure(error) = completion {
+                    print(error)
+                    // TODO: 
+                }
+            }, receiveValue: { output in
+                var mutableContexts = self.commentContexts.value
+                for item in output {
+                    let (commentViewModel, container) = item
+                    mutableContexts[commentViewModel.id] = container
+                }
+                self.commentContexts.send(mutableContexts)
+            })
+            .store(in: &disposeBag)
+        
         loadMoreItems()
+    }
+    
+    func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
+        return Future { [weak self] promise in
+            guard let self else { return }
+            
+            Task {
+                do {
+                    let output = try await self.commentLoader.traverse(comment.comment)
+                    promise(.success((comment, output)))
+                } catch let error {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
     }
     
     func loadMoreItems() {

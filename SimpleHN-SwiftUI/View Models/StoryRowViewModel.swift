@@ -10,7 +10,8 @@ import Foundation
 final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let id: Int
     let title: String
-    let subtitle: String
+    let author: String
+    let timeAgo: String
     let score: Int
     let comments: Int
     let url: URL?
@@ -22,13 +23,8 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.title = story.title
         self.text = story.text
         
-        var subtitleComponents = [String]()
-        
-        subtitleComponents.append(story.by)
-        subtitleComponents.append(" · ")
-        subtitleComponents.append(RelativeDateTimeFormatter().localizedString(for: story.time, relativeTo: Date()))
-        
-        self.subtitle = subtitleComponents.joined()
+        self.author = story.by
+        self.timeAgo = RelativeDateTimeFormatter().localizedString(for: story.time, relativeTo: Date())
         
         self.score = story.score
         self.comments = story.descendants ?? 0
@@ -40,18 +36,8 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.id = searchItem.objectID
         self.title = searchItem.title
         
-        var subtitleComponents = [String]()
-        
-        if let url = searchItem.url,
-           let host = url.host {
-            subtitleComponents.append(host)
-            subtitleComponents.append(" · ")
-        }
-        subtitleComponents.append(searchItem.author)
-        subtitleComponents.append(" · ")
-        subtitleComponents.append(RelativeDateTimeFormatter().localizedString(for: searchItem.createdAt, relativeTo: Date()))
-        
-        self.subtitle = subtitleComponents.joined()
+        self.author = searchItem.author
+        self.timeAgo = RelativeDateTimeFormatter().localizedString(for: searchItem.createdAt, relativeTo: Date())
         
         self.score = searchItem.points
         self.comments = searchItem.numComments
@@ -64,7 +50,8 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {
         return lhs.id == rhs.id &&
                lhs.title == rhs.title &&
-               lhs.subtitle == rhs.subtitle &&
+               lhs.author == rhs.author &&
+               lhs.timeAgo == rhs.timeAgo &&
                lhs.score == rhs.score &&
                lhs.comments == rhs.comments
     }
@@ -72,7 +59,8 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(title)
-        hasher.combine(subtitle)
+        hasher.combine(author)
+        hasher.combine(timeAgo)
         hasher.combine(score)
         hasher.combine(comments)
     }

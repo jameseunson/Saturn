@@ -21,9 +21,6 @@ struct Story: Codable, Identifiable, Hashable {
     let url: URL?
     let text: AttributedString?
     
-    @EquatableNoop
-    var storyImage: StoryImageType?
-    
     init(id: Int, score: Int, time: Date, descendants: Int?, by: String, title: String, kids: [Int]?, type: String, url: URL?, text: AttributedString?) {
         self.id = id
         self.score = score
@@ -105,20 +102,4 @@ extension Story {
     static func fakeStoryWithNoComments() -> Story {
         Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [], type: "story", url: nil, text: nil)
     }
-}
-
-enum StoryImageType: Equatable, Hashable {
-    case image(UIImage)
-    case notAvailable
-}
-
-@propertyWrapper
-struct EquatableNoop<Value>: Equatable, Hashable {
-    var wrappedValue: Value
-
-    static func == (lhs: EquatableNoop<Value>, rhs: EquatableNoop<Value>) -> Bool {
-        true
-    }
-    
-    func hash(into hasher: inout Hasher) {}
 }

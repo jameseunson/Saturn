@@ -69,6 +69,10 @@ final class APIManager {
         return retrieveObject(id: id)
     }
     
+    func loadComment(id: Int) async throws -> Comment {
+        return try await retrieveObject(id: id)
+    }
+    
     func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error> {
         retrieve(from: "v0/item/\(id)")
             .tryMap { response -> (Int, String) in
@@ -106,6 +110,30 @@ final class APIManager {
                 }
             }
             .eraseToAnyPublisher()
+    }
+    
+    func loadUserItem(id: Int) async throws -> UserItem {
+        let response = try await retrieve(from: "v0/item/\(id)")
+        
+        guard let dict = response as? Dictionary<String, Any>,
+              let type = dict["type"] as? String,
+              let id = dict["id"] as? Int else {
+            throw APIManagerError.generic
+        }
+        if type == "story" {
+            let story = try await self.loadStory(id: id)
+            return UserItem.story(story)
+            
+        } else if type == "comment" {
+            let comment = try await self.loadComment(id: id)
+            await comment.loadMarkdown()
+            
+            return UserItem.comment(comment)
+
+        } else {
+            print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
+            throw APIManagerError.generic
+        }
     }
     
     func loadUser(id: String) -> AnyPublisher<User, Error> {

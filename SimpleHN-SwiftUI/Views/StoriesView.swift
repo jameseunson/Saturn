@@ -26,31 +26,38 @@ struct StoriesView: View {
         ZStack {
             switch interactor.loadingState {
             case .loaded, .loadingMore:
-                List {
-                    ForEach(interactor.stories) { story in
-                        NavigationLink(value: story) {
-                            StoryRowView(story: StoryRowViewModel(story: story),
-                                         onTapArticleLink: { url in self.displayingSafariURL = url },
-                                         showsTextPreview: true)
-                                .onAppear {
-                                    if story == interactor.stories.last {
-                                        interactor.loadNextPage()
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(interactor.stories) { story in
+                            Divider()
+                                .padding(.bottom, 10)
+                                .padding(.leading, 15)
+                            NavigationLink(value: story) {
+                                StoryRowView(story: StoryRowViewModel(story: story),
+                                             onTapArticleLink: { url in self.displayingSafariURL = url },
+                                             onTapUser: { user in self.selectedUser = user },
+                                             showsTextPreview: true)
+                                    .onAppear {
+                                        if story == interactor.stories.last {
+                                            interactor.loadNextPage()
+                                        }
                                     }
-                                }
-                                .contextMenu {
-                                    Button(action: { selectedShareItem = story.url }, label:
-                                    {
-                                        Label("Share", systemImage: "square.and.arrow.up")
-                                    })
-                                    Button(action: { selectedUser = story.by }, label:
-                                    {
-                                        Label(story.by, systemImage: "person.circle")
-                                    })
-                                }
-                                .padding(.bottom, 15)
+                                    .contextMenu {
+                                        Button(action: { selectedShareItem = story.url }, label:
+                                        {
+                                            Label("Share", systemImage: "square.and.arrow.up")
+                                        })
+                                        Button(action: { selectedUser = story.by }, label:
+                                        {
+                                            Label(story.by, systemImage: "person.circle")
+                                        })
+                                    }
+                                    .padding([.leading, .trailing], 15)
+                                    .padding(.bottom, 25)
+                            }
                         }
+                        ListLoadingView()
                     }
-                    ListLoadingView()
                 }
                 .navigationDestination(for: Story.self) { story in
                     let interactor = StoryDetailInteractor(story: story)
@@ -60,7 +67,6 @@ struct StoriesView: View {
                 .refreshable {
                     await interactor.refreshStories()
                 }
-                .listStyle(.plain)
                 
                 if isSearchVisible {
                     SearchNavigationView(isSearchVisible: $isSearchVisible)

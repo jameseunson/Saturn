@@ -23,6 +23,8 @@ struct CommentView: View {
     
     let displaysStory: Bool
     
+    static let collapsedHeight: CGFloat = 30
+    
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
          displaysStory: Bool = false,
@@ -43,10 +45,11 @@ struct CommentView: View {
     
     var body: some View {
         HStack {
-            if expanded == .hidden && !comment.isAnimating {
+            if expanded == .hidden && comment.isAnimating == .none {
                 EmptyView()
             } else {
                 CommentIndentationView(comment: comment)
+                    .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
                 VStack(alignment: .leading) {
                     CommentHeaderView(comment: comment,
                                       onTapOptions: onTapOptions,
@@ -60,7 +63,7 @@ struct CommentView: View {
                             .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
                                                               onTapStoryId: onTapStoryId,
                                                               onTapURL: onTapURL))
-                            .frame(height: frameHeight != 0 ? frameHeight - 40 : nil)
+                            .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
                     }
                 }
             }
@@ -84,7 +87,7 @@ struct CommentView: View {
             if frameHeight == 0 {
                 DispatchQueue.main.async {
                     let value = proxy.frame(in: .named(String(comment.id))).size.height
-                    if value > 30 { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
+                    if value > CommentView.collapsedHeight { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
                         frameHeight = value
                     }
                 }
@@ -106,7 +109,7 @@ struct CommentView: View {
         case .expanded:
             return frameHeight
         case .collapsed:
-            return 30
+            return CommentView.collapsedHeight
         case .hidden:
             return 0
         }

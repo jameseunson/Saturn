@@ -59,6 +59,17 @@ struct CommentHeaderView: View {
                                     onTapOptions(comment)
                                 }
                             }
+                        
+                    } else if comment.totalChildCount > 0 {
+                        Text(String(comment.totalChildCount))
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                            .padding([.leading, .trailing], 4)
+                            .padding([.top, .bottom], 0)
+                            .background {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .foregroundColor( Color(UIColor.systemGray6) )
+                            }
                     }
                 }
                 .contentShape(Rectangle())

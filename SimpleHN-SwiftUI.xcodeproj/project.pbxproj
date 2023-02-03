@@ -54,6 +54,8 @@
 		1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD229713BB300870A50 /* UserInteractor.swift */; };
 		1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD42971435B00870A50 /* UserViewModel.swift */; };
 		1A873AD72971461A00870A50 /* UserHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD62971461A00870A50 /* UserHeaderView.swift */; };
+		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
+		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -148,6 +150,8 @@
 		1A873AD229713BB300870A50 /* UserInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInteractor.swift; sourceTree = "<group>"; };
 		1A873AD42971435B00870A50 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		1A873AD62971461A00870A50 /* UserHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHeaderView.swift; sourceTree = "<group>"; };
+		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
+		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -208,6 +212,7 @@
 				1A111DFF298B705B005B29B6 /* View+Bindings.swift */,
 				1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */,
 				1A111E03298B7321005B29B6 /* View+Color.swift */,
+				1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -340,6 +345,7 @@
 				1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */,
 				1AE4A9D829792B5A00D0B0D3 /* APIResponseCache.swift */,
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
+				1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -541,12 +547,14 @@
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesInteractor.swift in Sources */,
+				1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */,
 				1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
+				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,

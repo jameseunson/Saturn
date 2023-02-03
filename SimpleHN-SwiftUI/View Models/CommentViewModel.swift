@@ -19,8 +19,9 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
     
     var expanded: Bool = true
     var children: [CommentViewModel] = []
+    var totalChildCount = 0
     
-    var isAnimating: Bool = false
+    var isAnimating: CommentAnimatingState = .none
     
     init(comment: Comment, indendation: Int, parent: CommentViewModel?) {
         self.id = comment.id
@@ -48,4 +49,10 @@ extension CommentViewModel {
     static func fakeComment() -> CommentViewModel {
         CommentViewModel(comment: Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date()), indendation: 0, parent: nil)
     }
+}
+
+enum CommentAnimatingState: Codable {
+    case expanding
+    case collapsing
+    case none
 }

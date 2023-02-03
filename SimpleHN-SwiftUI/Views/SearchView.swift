@@ -12,6 +12,7 @@ struct SearchView: View {
     @ObservedObject var interactor = SearchInteractor()
     
     @State var searchQuery: String = ""
+    @State var displayingSafariURL: URL?
     
     var body: some View {
         ZStack {
@@ -60,9 +61,11 @@ struct SearchView: View {
                                     if case let .searchResult(searchItem) = result {
                                         NavigationLink(value: result) {
                                             StoryRowView(story: StoryRowViewModel(searchItem: searchItem),
-                                                         onTapArticleLink: { _ in // TODO:
+                                                         onTapArticleLink: { url in
+                                                self.displayingSafariURL = url
                                             })
                                             .padding([.leading, .trailing])
+                                            .padding(.bottom, 15)
                                         }
                                         Divider()
                                     }
@@ -98,6 +101,12 @@ struct SearchView: View {
         }
         .onChange(of: searchQuery) { newValue in
             interactor.searchQueryChanged(newValue)
+        }
+        .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
+            if let displayingSafariURL {
+                SafariView(url: displayingSafariURL)
+                    .ignoresSafeArea()
+            }
         }
     }
 }

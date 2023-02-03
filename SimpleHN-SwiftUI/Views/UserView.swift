@@ -12,15 +12,16 @@ struct UserView: View {
     @StateObject var interactor: UserInteractor
     @State var user: UserViewModel?
     
-    @State var displayingSafariURL: URL?
     @State var items: [UserItemViewModel] = []
+    @State var contexts: [Int: CommentLoaderContainer] = [:]
     
     /// Infinite scroll
     @State private var readyToLoadMore = false
     @State private var itemsRemainingToLoad = false
     
+    /// Navigation
+    @State var displayingSafariURL: URL?
     @State var selectedCommentToShare: CommentViewModel?
-    
     @State var selectedStoryToView: StoryRowViewModel?
     @State var selectedCommentToView: CommentViewModel?
     
@@ -67,6 +68,27 @@ struct UserView: View {
                             } onTapURL: { url in
                                 self.displayingSafariURL = url
                             }
+                            VStack(alignment: .leading) {
+                                if let context = contexts[comment.id],
+                                   let story = context.story {
+                                    StoryRowView(story: StoryRowViewModel(story: story),
+                                                 onTapArticleLink: { url in self.displayingSafariURL = url })
+                                        .padding(10)
+                                        .onTapGesture {
+                                            selectedStoryToView = StoryRowViewModel(story: story)
+                                        }
+                                } else {
+                                    ProgressView()
+                                        .padding()
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .background {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .foregroundColor( Color(UIColor.systemGray6) )
+                            }
+                            .padding(10)
+                            .padding(.bottom, 20)
 
                         case let .story(story):
                             StoryRowView(story: story,
@@ -104,6 +126,11 @@ struct UserView: View {
             })
             .onReceive(interactor.$itemsRemainingToLoad, perform: { output in
                 itemsRemainingToLoad = output
+            })
+            .onReceive(interactor.commentContexts, perform: { output in
+                withAnimation {
+                    contexts = output
+                }
             })
             .refreshable {
                 await interactor.refreshUser()

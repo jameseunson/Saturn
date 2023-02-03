@@ -39,7 +39,8 @@ struct StoryDetailView: View {
                                        itemsRemainingToLoad: $commentsRemainingToLoad) {
                         
                         StoryRowView(story: StoryRowViewModel(story: story),
-                                     onTapArticleLink: { url in self.displayingSafariURL = url })
+                                     onTapArticleLink: { url in self.displayingSafariURL = url },
+                                     onTapUser: { user in self.selectedUser = user })
                             .padding()
                             .onTapGesture {
                                 if story.url != nil {
@@ -71,7 +72,7 @@ struct StoryDetailView: View {
                                 
                             } else {
                                 ForEach(comments, id: \.self) { comment in
-                                    if comment.isAnimating || self.commentsExpanded[comment] != .hidden {
+                                    if comment.isAnimating != .none || self.commentsExpanded[comment] != .hidden {
                                         CommentView(expanded: binding(for: comment), comment: comment) { comment in
                                             selectedComment = comment
                                             
@@ -199,10 +200,12 @@ struct StoryDetailView: View {
             }
         }
         .navigationDestination(isPresented: $displayFullComments) {
-            if let story = interactor.story {
-                StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
-            } else {
-                EmptyView()
+            if displayFullComments {
+                if let story = interactor.story {
+                    StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
+                } else {
+                    EmptyView()
+                }
             }
         }
     }
