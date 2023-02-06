@@ -136,6 +136,29 @@ final class APIManager {
         }
     }
     
+    func loadUserItems(ids: [Int]) -> AnyPublisher<[UserItem], Error> {
+        let userItems = ids.map { return self.loadUserItem(id: $0) }
+        return Publishers.MergeMany(userItems)
+            .collect()
+            .eraseToAnyPublisher()
+    }
+    
+    func loadUserItems(ids: [Int]) async throws -> [UserItem] {
+        return try await withThrowingTaskGroup(of: UserItem.self, body: { group in
+            for id in ids {
+                group.addTask {
+                    return try await self.loadUserItem(id: id)
+                }
+            }
+            var userItems = [UserItem]()
+            for try await userItem in group {
+                userItems.append(userItem)
+            }
+            
+            return userItems
+        })
+    }
+    
     func loadUser(id: String) -> AnyPublisher<User, Error> {
         return retrieve(from: "v0/user/\(id)")
             .flatMap { response in

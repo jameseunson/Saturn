@@ -50,6 +50,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 .store(in: &disposeBag)
         }
         
+        /// Retrieve context story for each comment
         $items
             .filter { $0.count > 0 }
             .setFailureType(to: Error.self)
@@ -69,7 +70,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 
                 if publishers.count > 0 {
                     return Publishers.MergeMany(publishers)
-                        .collect()
                         .eraseToAnyPublisher()
                 } else {
                     return Empty()
@@ -82,12 +82,12 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     print(error)
                     // TODO: 
                 }
-            }, receiveValue: { output in
+            }, receiveValue: { item in
                 var mutableContexts = self.commentContexts.value
-                for item in output {
-                    let (commentViewModel, container) = item
-                    mutableContexts[commentViewModel.id] = container
-                }
+                
+                let (commentViewModel, container) = item
+                mutableContexts[commentViewModel.id] = container
+                
                 self.commentContexts.send(mutableContexts)
             })
             .store(in: &disposeBag)
@@ -113,20 +113,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     func loadMoreItems() {
         getSubmittedIds()
-            .flatMap { _ -> AnyPublisher<[UserItem], Error> in
-                guard self.submittedIds.count > 0 else {
-                    return Just([]).setFailureType(to: Error.self).eraseToAnyPublisher()
-                }
-                
-                /// Calculate page offsets
-                let pageStart = self.currentPage * self.pageLength
-                let pageEnd = min(((self.currentPage + 1) * self.pageLength), self.submittedIds.count)
-                let idsPage = Array(self.submittedIds[pageStart..<pageEnd])
-                
-                let stories = idsPage.map { return self.apiManager.loadUserItem(id: $0) }
-                return Publishers.MergeMany(stories)
-                    .collect()
-                    .eraseToAnyPublisher()
+            .flatMap { ids -> AnyPublisher<[UserItem], Error> in
+                return self.apiManager.loadUserItems(ids: self.idsForCurrentPage(with: ids))
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -135,24 +123,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 
             } receiveValue: { items in
-                var viewModels = [UserItemViewModel]()
-                for item in items {
-                    switch item {
-                    case let .comment(comment):
-                        viewModels.append(UserItemViewModel.comment(CommentViewModel(comment: comment, indendation: 0, parent: nil)))
-                    case let .story(story):
-                        viewModels.append(UserItemViewModel.story(StoryRowViewModel(story: story)))
-                    }
-                }
-                
-                self.items.append(contentsOf: viewModels)
-                self.currentPage += 1
-                self.loadedItems.append(contentsOf: viewModels.map { $0.id })
-                self.readyToLoadMore = true
-                
-                if self.loadedItems.count == self.submittedIds.count {
-                    self.itemsRemainingToLoad = false
-                }
+                self.completeLoad(with: items)
             }
             .store(in: &disposeBag)
     }
@@ -172,7 +143,55 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     func refreshUser() async {
         Task {
-            // TODO: 
+            guard let user else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.items.removeAll()
+            }
+            self.loadedItems.removeAll()
+            self.submittedIds.removeAll()
+            
+            self.currentPage = 0
+            let items = try await self.apiManager.loadUserItems(ids: idsForCurrentPage(with: user.submitted))
+            
+            DispatchQueue.main.async {
+                self.readyToLoadMore = true
+                self.itemsRemainingToLoad = true
+                self.completeLoad(with: items)
+            }
+        }
+    }
+    
+    // MARK: -
+    /// Calculate page offsets
+    private func idsForCurrentPage(with ids: [Int]) -> [Int] {
+        let pageStart = self.currentPage * self.pageLength
+        let pageEnd = min(((self.currentPage + 1) * self.pageLength), ids.count)
+        let idsPage = Array(ids[pageStart..<pageEnd])
+        
+        return idsPage
+    }
+    
+    func completeLoad(with items: [UserItem]) {
+        var viewModels = [UserItemViewModel]()
+        for item in items {
+            switch item {
+            case let .comment(comment):
+                viewModels.append(UserItemViewModel.comment(CommentViewModel(comment: comment, indendation: 0, parent: nil)))
+            case let .story(story):
+                viewModels.append(UserItemViewModel.story(StoryRowViewModel(story: story)))
+            }
+        }
+        
+        self.items.append(contentsOf: viewModels)
+        self.currentPage += 1
+        self.loadedItems.append(contentsOf: viewModels.map { $0.id })
+        self.readyToLoadMore = true
+        
+        if self.loadedItems.count == self.submittedIds.count {
+            self.itemsRemainingToLoad = false
         }
     }
 }

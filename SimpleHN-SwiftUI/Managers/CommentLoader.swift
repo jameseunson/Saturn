@@ -10,6 +10,7 @@ import Combine
 
 final class CommentLoader {
     let apiManager = APIManager()
+    var userItemCache = [Int: UserItem]()
     
     func traverse(_ comment: Comment) async throws -> CommentLoaderContainer {
         var currentComment = comment
@@ -22,10 +23,12 @@ final class CommentLoader {
             case let .comment(comment):
                 loaderContainer.commentChain.insert(comment, at: 0)
                 currentComment = comment
+                userItemCache[comment.id] = item
 
             case let .story(story):
                 loaderContainer.story = story
                 loaderContainer.commentViewModels = self.processComments(commentChain: loaderContainer.commentChain)
+                userItemCache[story.id] = item
             }
         }
         
@@ -34,7 +37,11 @@ final class CommentLoader {
     
     // MARK: -
     private func traverseAux(_ comment: Comment) async throws -> UserItem {
-        return try await apiManager.loadUserItem(id: comment.parent)
+        if let cachedParent = userItemCache[comment.parent] {
+            return cachedParent
+        } else {
+            return try await apiManager.loadUserItem(id: comment.parent)
+        }
     }
 
     private func processComments(commentChain: [Comment]) -> [CommentViewModel] {

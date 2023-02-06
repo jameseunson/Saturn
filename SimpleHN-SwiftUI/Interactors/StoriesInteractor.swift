@@ -92,7 +92,7 @@ final class StoriesInteractor: Interactor {
             self.currentPage = 0
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type)
-            let stories = try await apiManager.loadStories(ids: storyIds)
+            let stories = try await apiManager.loadStories(ids: self.idsForCurrentPage(with: storyIds))
             
             DispatchQueue.main.async { [weak self] in
                 self?.completeLoad(with: stories)
