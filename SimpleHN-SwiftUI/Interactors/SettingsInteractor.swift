@@ -9,7 +9,7 @@ import Combine
 import Foundation
 
 final class SettingsInteractor: Interactor {
-    @Published var settingsValues: [SettingKey: Bool] = [:]
+    @Published var settingsValues: [SettingKey: SettingValue] = [:]
     
     override func didBecomeActive() {
         Settings.default.settings.sink { map in
@@ -18,7 +18,7 @@ final class SettingsInteractor: Interactor {
         .store(in: &disposeBag)
     }
     
-    func set(_ key: SettingKey, value: Bool) {
+    func set(_ key: SettingKey, value: SettingValue) {
         Settings.default.set(value: value, for: key)
     }
 }

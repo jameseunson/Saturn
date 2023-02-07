@@ -54,6 +54,8 @@
 		1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD229713BB300870A50 /* UserInteractor.swift */; };
 		1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD42971435B00870A50 /* UserViewModel.swift */; };
 		1A873AD72971461A00870A50 /* UserHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873AD62971461A00870A50 /* UserHeaderView.swift */; };
+		1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FBB299227F600490A74 /* Color+Codable.swift */; };
+		1A888FBF2992351900490A74 /* SettingsIndentationSelectColorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FBE2992351900490A74 /* SettingsIndentationSelectColorView.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
@@ -150,6 +152,8 @@
 		1A873AD229713BB300870A50 /* UserInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInteractor.swift; sourceTree = "<group>"; };
 		1A873AD42971435B00870A50 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		1A873AD62971461A00870A50 /* UserHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHeaderView.swift; sourceTree = "<group>"; };
+		1A888FBB299227F600490A74 /* Color+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Codable.swift"; sourceTree = "<group>"; };
+		1A888FBE2992351900490A74 /* SettingsIndentationSelectColorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsIndentationSelectColorView.swift; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -213,6 +217,7 @@
 				1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */,
 				1A111E03298B7321005B29B6 /* View+Color.swift */,
 				1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */,
+				1A888FBB299227F600490A74 /* Color+Codable.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -296,11 +301,11 @@
 		1A5DBC0B296AAF6700D4D86E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1A888FBD2992350E00490A74 /* Settings */,
 				1AE4A99929778F1900D0B0D3 /* Partial */,
 				1A5DBBB6296933BA00D4D86E /* StoriesView.swift */,
 				1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */,
 				1A873ABC296E767B00870A50 /* UserView.swift */,
-				1A873AC8296FCD1600870A50 /* SettingsView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
 			);
@@ -371,9 +376,19 @@
 			path = "View Models";
 			sourceTree = "<group>";
 		};
+		1A888FBD2992350E00490A74 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				1A888FBE2992351900490A74 /* SettingsIndentationSelectColorView.swift */,
+				1A873AC8296FCD1600870A50 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		1AE4A99929778F1900D0B0D3 /* Partial */ = {
 			isa = PBXGroup;
 			children = (
+				1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */,
 				1A873ABE296E76B200870A50 /* CommentView.swift */,
 				1A5DBC07296AA67300D4D86E /* LoadingView.swift */,
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
@@ -383,7 +398,6 @@
 				1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */,
 				1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */,
 				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
-				1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */,
 				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
 				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
 			);
@@ -543,6 +557,7 @@
 				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
 				1AE4A99B2977938F00D0B0D3 /* SearchAPIManager.swift in Sources */,
 				1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */,
+				1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */,
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
@@ -585,6 +600,7 @@
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
+				1A888FBF2992351900490A74 /* SettingsIndentationSelectColorView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
 				1AE4A99D2977B83E00D0B0D3 /* SearchInteractor.swift in Sources */,
 				1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */,

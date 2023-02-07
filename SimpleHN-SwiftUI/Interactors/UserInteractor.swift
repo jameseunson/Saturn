@@ -19,9 +19,9 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     private var currentPage: Int = 0
     private var submittedIds = [Int]()
-    private var loadedItems = [Int]()
     
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
+    @Published private var itemsLoaded = 0
     
     private let apiManager = APIManager()
     private let commentLoader = CommentLoader()
@@ -113,8 +113,11 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     func loadMoreItems() {
         getSubmittedIds()
-            .flatMap { ids -> AnyPublisher<[UserItem], Error> in
-                return self.apiManager.loadUserItems(ids: self.idsForCurrentPage(with: ids))
+            .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
+                let ids = self.idsForCurrentPage(with: ids)
+                return self.apiManager.loadUserItems(ids: ids)
+                    .map { ($0, ids) }
+                    .eraseToAnyPublisher()
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -122,8 +125,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     print(error)
                 }
                 
-            } receiveValue: { items in
-                self.completeLoad(with: items)
+            } receiveValue: { items, ids in
+                self.completeLoad(with: items, idsForPage: ids)
             }
             .store(in: &disposeBag)
     }
@@ -150,16 +153,17 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             DispatchQueue.main.async {
                 self.items.removeAll()
             }
-            self.loadedItems.removeAll()
+            self.itemsLoaded = 0
             self.submittedIds.removeAll()
             
             self.currentPage = 0
-            let items = try await self.apiManager.loadUserItems(ids: idsForCurrentPage(with: user.submitted))
+            let ids = idsForCurrentPage(with: user.submitted)
+            let items = try await self.apiManager.loadUserItems(ids: ids)
             
             DispatchQueue.main.async {
                 self.readyToLoadMore = true
                 self.itemsRemainingToLoad = true
-                self.completeLoad(with: items)
+                self.completeLoad(with: items, idsForPage: ids)
             }
         }
     }
@@ -168,13 +172,13 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     /// Calculate page offsets
     private func idsForCurrentPage(with ids: [Int]) -> [Int] {
         let pageStart = self.currentPage * self.pageLength
-        let pageEnd = min(((self.currentPage + 1) * self.pageLength), ids.count)
-        let idsPage = Array(ids[pageStart..<pageEnd])
+        let pageEnd = min(((self.currentPage + 1) * self.pageLength), self.submittedIds.count)
+        let idsPage = Array(self.submittedIds[pageStart..<pageEnd])
         
         return idsPage
     }
     
-    func completeLoad(with items: [UserItem]) {
+    func completeLoad(with items: [UserItem], idsForPage: [Int]) {
         var viewModels = [UserItemViewModel]()
         for item in items {
             switch item {
@@ -187,10 +191,10 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         
         self.items.append(contentsOf: viewModels)
         self.currentPage += 1
-        self.loadedItems.append(contentsOf: viewModels.map { $0.id })
+        self.itemsLoaded += idsForPage.count
         self.readyToLoadMore = true
         
-        if self.loadedItems.count == self.submittedIds.count {
+        if self.itemsLoaded == self.submittedIds.count {
             self.itemsRemainingToLoad = false
         }
     }

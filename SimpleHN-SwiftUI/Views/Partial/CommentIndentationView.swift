@@ -18,11 +18,37 @@ struct CommentIndentationView: View {
             
             RoundedRectangle(cornerSize: .init(width: 1, height: 1))
                 .frame(width: 2)
-//                .foregroundColor(.gray)
                 .padding(.trailing, 5)
-                .foregroundColor(Color.random)
+//                .foregroundColor(Color.random)
+                .foregroundColor(color())
         } else {
             EmptyView()
+        }
+        
+//        Color.init(hue: Double(Color.accentColor.hsbComponents?.hue ?? 1.0),
+//                                    saturation: 1.0 - (0.2 * Double(comment.indendation - 1)),
+//                                    brightness: 1)
+    }
+    
+    func color() -> Color {
+        let color = Settings.default.indentationColor()
+        switch color {
+        case .random:
+            return Color.random
+        case .none:
+            return Color.gray
+        case .some(.default):
+            return Color.gray
+        case .some(.hnOrange):
+            return Color.accentColor
+        case .some(.userSelected(color: let color)):
+            if let color {
+                return color
+            } else {
+                return Color.gray
+            }
+        case .some(.randomPost):
+            return Color.random
         }
     }
 }
