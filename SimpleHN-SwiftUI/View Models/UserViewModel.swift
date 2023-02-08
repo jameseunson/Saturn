@@ -11,14 +11,24 @@ struct UserViewModel: Codable, Hashable, Identifiable {
     let id: String
     let about: AttributedString?
     let created: String
-    let submissions: Int
-    let karma: Int
+    let submissions: String
+    let karma: String
     
     init(user: User) {
         self.id = user.id
         self.about = user.about
         self.created = "Created \(RelativeDateTimeFormatter().localizedString(for: user.created, relativeTo: Date()))"
-        self.submissions = user.submitted.count
-        self.karma = user.karma
+        
+        if user.submitted.count >= 1000 {
+            self.submissions = String(format: "%.1f", Double(user.submitted.count) / 1000) + "k"
+        } else {
+            self.submissions = String(user.submitted.count)
+        }
+        
+        if user.karma >= 1000 {
+            self.karma = String(format: "%.1f", Double(user.karma) / 1000) + "k"
+        } else {
+            self.karma = String(user.karma)
+        }
     }
 }

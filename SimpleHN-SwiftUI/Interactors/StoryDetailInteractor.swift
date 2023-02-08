@@ -80,8 +80,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
         #endif
         
-        loadComments()
-        
         /// Workaround for the fact that we have no idea when loading is complete
         /// and the backend always returns fewer comments than is indicated by
         /// `descendants` on the Story model
@@ -125,10 +123,14 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                         self.loadComments()
                         
                     case let .comment(comment):
+                        self.commentChain = [comment]
                         self.traverse(comment)
                     }
                 }
                 .store(in: &disposeBag)
+            
+        } else {
+            loadComments()
         }
     }
     
@@ -310,12 +312,13 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
 // MARK: - Comment Focused View
 extension StoryDetailInteractor {
     func traverse(_ comment: Comment) {
+        print("traverse comment, \(comment)")
         DispatchQueue.main.async { [weak self] in
             self?.commentsRemainingToLoad = false
         }
-        commentChain = [comment]
         
         apiManager.loadUserItem(id: comment.parent)
+            .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
                     print(error)
@@ -337,10 +340,15 @@ extension StoryDetailInteractor {
     
     func processComments() {
         var parent: CommentViewModel?
+        var mutableComments = self.comments.value
+        var mutableCommentsExpanded = self.commentsExpanded.value
+        
         for (i, comment) in commentChain.enumerated() {
             let model = CommentViewModel(comment: comment, indendation: i, parent: parent)
+            if let parent {
+                parent.children.append(model)
+            }
             
-            var mutableComments = self.comments.value
             mutableComments.append(model)
             
             if i == 0 {
@@ -349,16 +357,15 @@ extension StoryDetailInteractor {
                 self.loadedTopLevelComments.append(model.id)
             }
             
-            DispatchQueue.main.async {
-                var mutableCommentsExpanded = self.commentsExpanded.value
-                mutableCommentsExpanded[model] = .expanded
-                
-                self.commentsExpanded.send(mutableCommentsExpanded)
-                self.commentsLoaded.send(self.commentsLoaded.value + 1)
-            }
+            mutableCommentsExpanded[model] = .expanded
+            self.commentsLoaded.send(self.commentsLoaded.value + 1)
             
-            self.comments.send(mutableComments)
             parent = model
         }
+        
+        print("processComments: \(mutableComments)")
+        
+        self.comments.send(mutableComments)
+        self.commentsExpanded.send(mutableCommentsExpanded)
     }
 }

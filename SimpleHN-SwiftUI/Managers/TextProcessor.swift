@@ -12,8 +12,6 @@ import SwiftyMarkdown
 import RegexBuilder
 
 final class TextProcessor {
-    static var markdownSetupComplete = false
-    
     static func processCommentText(_ input: String, forceDetectLinks: Bool = false) throws -> TextProcessorResult {
         var outputString = input
         
@@ -43,10 +41,10 @@ final class TextProcessor {
         /// NOTE: This is not exhaustive, some less commonly used formatting still breaks
         // TODO: Fix # for code blocks
         
-        /// Replace html link with markdown link
         processLinks(&outputString)
         processCodeBlocks(&outputString)
         processItalicizedQuotes(&outputString)
+        processFootnotes(&outputString)
         
         if forceDetectLinks {
             detectLinks(&outputString)
@@ -67,18 +65,19 @@ final class TextProcessor {
                                    height: rect.size.height)
     }
     
+    /// Replace html link with markdown link
     /// Convert <a href="http://google.com">asdf</a> to [asdf](http://google.com)
-    static func processLinks(_ outputString: inout String) {
+    private static func processLinks(_ outputString: inout String) {
         let linkRegex = /<a href="(.*?)"(.*?)>(.*?)<\/a>/
         let linkMatches = outputString.matches(of: linkRegex)
         for linkMatch in linkMatches {
-            let markdownLink = "[\(linkMatch.output.3)](\(linkMatch.output.1))"
+            let markdownLink = "[\(linkMatch.output.3.replacingOccurrences(of: "_", with: "\\_"))](\(linkMatch.output.1))"
             outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
         }
     }
     
     /// Convert '<p>3.' to '\n\n3.\t'
-    static func processOrdinalListItems(_ outputString: inout String) {
+    private static func processOrdinalListItems(_ outputString: inout String) {
         let ordinalListItemRegex = /<p>([0-9]+)\.\s+/
         let ordinalListItemMatches = outputString.matches(of: ordinalListItemRegex)
         for ordinalListItemMatch in ordinalListItemMatches {
@@ -89,7 +88,7 @@ final class TextProcessor {
     
     /// Converts <pre><code> formatted code blocks to tab indented, which makes
     /// them function correctly as code blocks within the markdown library
-    static func processCodeBlocks(_ outputString: inout String) {
+    private static func processCodeBlocks(_ outputString: inout String) {
         guard outputString.contains("<pre><code>") else { return }
         
         let characterRules = [CharacterRule(primaryTag: CharacterRuleTag(tag: "<pre><code>", type: .open), otherTags: [CharacterRuleTag(tag: "</code></pre>", type: .close)], styles: [1: CharacterStyle.code])]
@@ -115,7 +114,7 @@ final class TextProcessor {
     
     /// Italicized quotes look broken and don't turn to grey correctly within the markdown library,
     /// so strip the italicization and leave them as only quotes
-    static func processItalicizedQuotes(_ outputString: inout String) {
+    private static func processItalicizedQuotes(_ outputString: inout String) {
         let italicizedQuoteRegex = /_>(.*?)_\n/
         let italicizedQuoteRegexMatches = outputString.matches(of: italicizedQuoteRegex)
         for italicizedQuoteRegexMatch in italicizedQuoteRegexMatches {
@@ -124,7 +123,16 @@ final class TextProcessor {
         }
     }
     
-    static func detectLinks(_ outputString: inout String) {
+    private static func processFootnotes(_ outputString: inout String) {
+        let footnoteRegex = /(\[[0-9]+\]):/
+        let footnoteMatches = outputString.matches(of: footnoteRegex)
+        for footnoteMatch in footnoteMatches {
+            let footnoteStringWithoutColon = "\(footnoteMatch.output.1)"
+            outputString = outputString.replacingOccurrences(of: footnoteMatch.output.0, with: footnoteStringWithoutColon)
+        }
+    }
+    
+    private static func detectLinks(_ outputString: inout String) {
         let linkRegex = Regex { Capture { .url() } }
 
         let linkMatches = outputString.matches(of: linkRegex)

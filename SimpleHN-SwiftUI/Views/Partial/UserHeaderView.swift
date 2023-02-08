@@ -30,7 +30,7 @@ struct UserHeaderView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 6) {
                     HStack {
-                        Text(String(user.karma))
+                        Text(user.karma)
                             .font(.callout)
                             .foregroundColor(Color.accentColor)
                         Image(systemName: "arrow.up.square.fill")
@@ -39,7 +39,7 @@ struct UserHeaderView: View {
                             .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                     }
                     HStack {
-                        Text(String(user.submissions))
+                        Text(user.submissions)
                             .font(.callout)
                             .foregroundColor(Color.gray)
                         Image(systemName: "text.bubble.fill")

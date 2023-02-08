@@ -12,8 +12,8 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let title: String
     let author: String
     let timeAgo: String
-    let score: Int
-    let comments: Int
+    let score: String
+    let comments: String
     let url: URL?
     let imageURL: URL?
     let text: AttributedString?
@@ -26,8 +26,17 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.author = story.by
         self.timeAgo = RelativeDateTimeFormatter().localizedString(for: story.time, relativeTo: Date())
         
-        self.score = story.score
-        self.comments = story.descendants ?? 0
+        if story.score >= 1000 {
+            self.score = String(format: "%.1f", Double(story.score) / 1000) + "k"
+        } else {
+            self.score = String(story.score)
+        }
+        let kids = story.descendants ?? 0
+        if kids >= 1000 {
+            self.comments = String(format: "%.1f", Double(kids) / 1000) + "k"
+        } else {
+            self.comments = String(kids)
+        }
         self.url = story.url
         self.imageURL = story.urlForFavicon()
     }
@@ -39,8 +48,17 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.author = searchItem.author
         self.timeAgo = RelativeDateTimeFormatter().localizedString(for: searchItem.createdAt, relativeTo: Date())
         
-        self.score = searchItem.points
-        self.comments = searchItem.numComments
+        if searchItem.points >= 1000 {
+            self.score = String(format: "%.1f", Double(searchItem.points) / 1000) + "k"
+        } else {
+            self.score = String(searchItem.points)
+        }
+        let kids = searchItem.numComments
+        if kids >= 1000 {
+            self.comments = String(format: "%.1f", Double(kids) / 1000) + "k"
+        } else {
+            self.comments = String(kids)
+        }
         self.url = searchItem.url
         
         self.imageURL = nil

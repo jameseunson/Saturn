@@ -13,6 +13,7 @@ struct StoryDetailView: View {
     @State private var comments: Array<CommentViewModel> = []
     @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
     
+    /// Navigation
     @State var selectedShareItem: StoryDetailShareItem?
     @State var selectedUser: String?
     @State var displayingInternalStoryId: Int?
@@ -24,107 +25,12 @@ struct StoryDetailView: View {
     @State private var commentsRemainingToLoad = false
     
     /// Comment focused view
-    @Namespace var bottom
     @State var displayFullComments = false
-    
-    /// NSUserActivity - handoff
-    static let userActivity = "com.JEON.SimpleHN.read-story"
     
     var body: some View {
         ZStack {
             if let story = interactor.story {
-                ScrollViewReader { reader in
-                    InfiniteScrollView(loader: interactor,
-                                       readyToLoadMore: $readyToLoadMore,
-                                       itemsRemainingToLoad: $commentsRemainingToLoad) {
-                        
-                        StoryRowView(story: StoryRowViewModel(story: story),
-                                     onTapArticleLink: { url in self.displayingSafariURL = url },
-                                     onTapUser: { user in self.selectedUser = user })
-                            .padding()
-                            .onTapGesture {
-                                if story.url != nil {
-                                    displayingSafariURL = story.url
-                                }
-                            }
-                        
-                        Divider()
-                        
-                        if let text = story.text {
-                            Text(text)
-                                .modifier(TextLinkHandlerModifier(onTapUser: { user in
-                                    selectedUser = user
-                                    
-                                }, onTapStoryId: { storyId in
-                                    displayingInternalStoryId = storyId
-                                    
-                                }, onTapURL: { url in
-                                    displayingSafariURL = url
-                                }))
-                                .padding(10)
-                            Divider()
-                        }
-                        
-                        if story.hasComments() {
-                            if comments.count == 0 {
-                                ListLoadingView()
-                                    .listRowSeparator(.hidden)
-                                
-                            } else {
-                                ForEach(comments, id: \.self) { comment in
-                                    if comment.isAnimating != .none || self.commentsExpanded[comment] != .hidden {
-                                        CommentView(expanded: binding(for: comment), comment: comment) { comment in
-                                            selectedComment = comment
-                                            
-                                        } onTapUser: { user in
-                                            selectedUser = user
-                                            
-                                        } onToggleExpanded: { comment, expanded in
-                                            self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
-                                            
-                                        } onTapStoryId: { storyId in
-                                            self.displayingInternalStoryId = storyId
-                                            
-                                        } onTapURL: { url in
-                                            displayingSafariURL = url
-                                        }
-                                        Divider()
-                                            .padding(.leading, CGFloat(comment.indendation) * 20)
-                                    }
-                                }
-                                
-                                if interactor.commentsRemainingToLoad {
-                                    ListLoadingView()
-                                }
-                                
-                                if interactor.focusedCommentViewModel != nil {
-                                    Spacer()
-                                        .padding([.bottom], 100)
-                                        .id(bottom)
-                                }
-                            }
-                        } else {
-                            HStack {
-                                Spacer()
-                                Text("No comments yet...")
-                                    .foregroundColor(.gray)
-                                Spacer()
-                            }
-                            .frame(height: UIScreen.main.bounds.height - 250)
-                            .listRowSeparator(.hidden)
-                        }
-                    }
-                   .refreshable {
-                       await interactor.refreshComments()
-                   }
-                   .onReceive(interactor.commentsDebounced) { output in
-                       if interactor.focusedCommentViewModel != nil {
-                           withAnimation {
-                               reader.scrollTo(bottom)
-                           }
-                       }
-                   }
-                }
+                contentView(for: story)
                 
                 if interactor.focusedCommentViewModel != nil {
                     ViewAllCommentsButton(displayFullComments: $displayFullComments)
@@ -148,7 +54,9 @@ struct StoryDetailView: View {
             comments = output
         }
         .onReceive(interactor.commentsExpanded) { output in
-            guard interactor.hasPendingExpandedUpdate else {
+            /// Handle expand/contract immediately, instead of using the debounce stream
+            /// Ensures expand/contract is as responsive as possible
+            if !interactor.hasPendingExpandedUpdate {
                 return
             }
             withAnimation(.easeInOut(duration: 0.3)) {
@@ -210,6 +118,110 @@ struct StoryDetailView: View {
         }
     }
     
+    func contentView(for story: Story) -> some View {
+        return ScrollViewReader { reader in
+            InfiniteScrollView(loader: interactor,
+                               readyToLoadMore: $readyToLoadMore,
+                               itemsRemainingToLoad: $commentsRemainingToLoad) {
+                
+                StoryRowView(story: StoryRowViewModel(story: story),
+                             onTapArticleLink: { url in self.displayingSafariURL = url },
+                             onTapUser: { user in self.selectedUser = user })
+                    .padding()
+                    .onTapGesture {
+                        if story.url != nil {
+                            displayingSafariURL = story.url
+                        }
+                    }
+                
+                Divider()
+                
+                if let text = story.text {
+                    Text(text)
+                        .modifier(TextLinkHandlerModifier(onTapUser: { user in
+                            selectedUser = user
+                            
+                        }, onTapStoryId: { storyId in
+                            displayingInternalStoryId = storyId
+                            
+                        }, onTapURL: { url in
+                            displayingSafariURL = url
+                        }))
+                        .padding(10)
+                    Divider()
+                }
+                
+                if story.hasComments() {
+                    if comments.count == 0 {
+                        ListLoadingView()
+                            .listRowSeparator(.hidden)
+                        
+                    } else {
+                        ForEach(comments, id: \.self) { comment in
+                            if comment.isAnimating != .none || self.commentsExpanded[comment] != .hidden {
+                                CommentView(expanded: binding(for: comment), comment: comment) { comment in
+                                    selectedComment = comment
+                                    
+                                } onTapUser: { user in
+                                    selectedUser = user
+                                    
+                                } onToggleExpanded: { comment, expanded in
+                                    if expanded == .collapsed {
+                                        withAnimation {
+                                            reader.scrollTo(comment.id, anchor: .top)
+                                        }
+                                    }
+                                    self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
+                                    
+                                } onTapStoryId: { storyId in
+                                    self.displayingInternalStoryId = storyId
+                                    
+                                } onTapURL: { url in
+                                    displayingSafariURL = url
+                                }
+                                .id(comment.id)
+                                .onAppear {
+                                    if interactor.focusedCommentViewModel != nil,
+                                       comment == comments.first,
+                                       let lastCommentId = comments.last?.id {
+                                        withAnimation {
+                                            reader.scrollTo(lastCommentId)
+                                        }
+                                    }
+                                }
+                                
+                                Divider()
+                                    .padding(.leading, CGFloat(comment.indendation) * 20)
+                            }
+                        }
+                        
+                        if interactor.commentsRemainingToLoad {
+                            ListLoadingView()
+                        }
+                        
+                        if interactor.focusedCommentViewModel != nil {
+                            Spacer()
+                                .padding([.bottom], 100)
+                        }
+                    }
+                    
+                } else {
+                    HStack {
+                        Spacer()
+                        Text("No comments yet...")
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                    .frame(height: UIScreen.main.bounds.height - 250)
+                    .listRowSeparator(.hidden)
+                }
+            }
+           .refreshable {
+               await interactor.refreshComments()
+           }
+        }
+    }
+    
     /// Binding that creates CommentExpandedState state for every individual comment
     /// Passed to CommentView
     func binding(for comment: CommentViewModel) -> Binding<CommentExpandedState> {
@@ -219,6 +231,9 @@ struct StoryDetailView: View {
             self.commentsExpanded[comment] = $0
         }
     }
+    
+    /// NSUserActivity - handoff
+    static let userActivity = "com.JEON.SimpleHN.read-story"
 }
 
 struct StoryDetailView_Previews: PreviewProvider {
