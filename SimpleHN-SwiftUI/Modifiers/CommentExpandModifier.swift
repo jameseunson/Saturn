@@ -10,9 +10,10 @@ import SwiftUI
 
 struct CommentExpandModifier: ViewModifier {
     let comment: CommentViewModel
-    let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
+    let onToggleExpanded: OnToggleExpandedCompletion?
     
     @Binding var expanded: CommentExpandedState
+    @Binding var commentOnScreen: Bool
     
     func body(content: Content) -> some View {
         content
@@ -21,7 +22,7 @@ struct CommentExpandModifier: ViewModifier {
                     toggleExpanded()
                 }
                 if let onToggleExpanded {
-                    onToggleExpanded(comment, expanded)
+                    onToggleExpanded(comment, expanded, commentOnScreen)
                 }
             }
     }

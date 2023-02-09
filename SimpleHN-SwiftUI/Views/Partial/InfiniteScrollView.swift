@@ -34,12 +34,12 @@ struct InfiniteScrollView<Content>: View where Content: View {
                 content
             }
             .background(GeometryReader { proxy -> Color in
-                            DispatchQueue.main.async {
-                                offset = -proxy.frame(in: .named("scroll")).origin.y
-                                contentHeight = proxy.frame(in: .named("scroll")).size.height
-                            }
-                            return Color.clear
-                        })
+                DispatchQueue.main.async {
+                    offset = -proxy.frame(in: .named("scroll")).origin.y
+                    contentHeight = proxy.frame(in: .named("scroll")).size.height
+                }
+                return Color.clear
+            })
         }
         .coordinateSpace(name: "scroll")
         .onChange(of: offset, perform: { _ in evaluateLoadMore() })

@@ -84,6 +84,9 @@
 		1A888FF62993719A00490A74 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF52993719A00490A74 /* FirebaseStorage */; };
 		1A888FF82993719A00490A74 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF72993719A00490A74 /* FirebaseStorageCombine-Community */; };
 		1A888FFA2993719A00490A74 /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF92993719A00490A74 /* SwiftyMarkdown */; };
+		1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */; };
+		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
+		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
@@ -182,6 +185,9 @@
 		1A888FBB299227F600490A74 /* Color+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Codable.swift"; sourceTree = "<group>"; };
 		1A888FBE2992351900490A74 /* SettingsIndentationSelectColorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsIndentationSelectColorView.swift; sourceTree = "<group>"; };
 		1A888FC02993707B00490A74 /* TextProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextProcessorTests.swift; sourceTree = "<group>"; };
+		1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavBarAccessor.swift; sourceTree = "<group>"; };
+		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
+		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -418,6 +424,9 @@
 				1A873ABA296D667500870A50 /* ActivityViewController.swift */,
 				1A5DBC18296BF8A200D4D86E /* SafariView.swift */,
 				1AE4A99E2977D7BF00D0B0D3 /* AppRemoteConfig.swift */,
+				1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */,
+				1A888FFD2994E76900490A74 /* LayoutManager.swift */,
+				1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -661,6 +670,7 @@
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
+				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
@@ -681,6 +691,7 @@
 				1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */,
 				1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
+				1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */,
 				1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */,
 				1AE4A9CF2979143E00D0B0D3 /* SearchResponse.swift in Sources */,
 				1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */,
@@ -702,6 +713,7 @@
 				1A111E04298B7321005B29B6 /* View+Color.swift in Sources */,
 				1A5DBBB5296933BA00D4D86E /* SimpleHN_SwiftUIApp.swift in Sources */,
 				1A5DBC13296BD46600D4D86E /* Story.swift in Sources */,
+				1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */,
 				1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */,
 				1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */,
 				1A7E5B452982697C00C6BBC0 /* SettingsNavigationView.swift in Sources */,

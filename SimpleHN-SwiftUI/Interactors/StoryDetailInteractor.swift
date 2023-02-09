@@ -312,7 +312,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
 // MARK: - Comment Focused View
 extension StoryDetailInteractor {
     func traverse(_ comment: Comment) {
-        print("traverse comment, \(comment)")
         DispatchQueue.main.async { [weak self] in
             self?.commentsRemainingToLoad = false
         }
@@ -362,8 +361,6 @@ extension StoryDetailInteractor {
             
             parent = model
         }
-        
-        print("processComments: \(mutableComments)")
         
         self.comments.send(mutableComments)
         self.commentsExpanded.send(mutableCommentsExpanded)

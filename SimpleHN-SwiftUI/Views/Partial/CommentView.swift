@@ -8,6 +8,8 @@
 import Foundation
 import SwiftUI
 
+typealias OnToggleExpandedCompletion = (CommentViewModel, CommentExpandedState, Bool) -> Void
+
 struct CommentView: View {
     @State var frameHeight: CGFloat = 0
     @Binding var expanded: CommentExpandedState
@@ -17,7 +19,7 @@ struct CommentView: View {
     
     let onTapOptions: (CommentViewModel) -> Void
     let onTapUser: ((String) -> Void)?
-    let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
+    let onToggleExpanded: ((CommentViewModel, CommentExpandedState, Bool) -> Void)?
     let onTapStoryId: ((Int) -> Void)?
     let onTapURL: ((URL) -> Void)?
     
@@ -25,12 +27,15 @@ struct CommentView: View {
     
     static let collapsedHeight: CGFloat = 30
     
+    @State private var navBarHeight: CGFloat = 0
+    @State private var commentOnScreen: Bool = true
+    
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
          displaysStory: Bool = false,
          onTapOptions: @escaping (CommentViewModel) -> Void,
          onTapUser: ((String) -> Void)? = nil,
-         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil,
+         onToggleExpanded: OnToggleExpandedCompletion? = nil,
          onTapStoryId: ((Int) -> Void)? = nil,
          onTapURL: ((URL) -> Void)? = nil) {
         _expanded = expanded
@@ -55,7 +60,8 @@ struct CommentView: View {
                                       onTapOptions: onTapOptions,
                                       onTapUser: onTapUser,
                                       onToggleExpanded: onToggleExpanded,
-                                      expanded: $expanded)
+                                      expanded: $expanded,
+                                      commentOnScreen: $commentOnScreen)
                     Divider()
                     if expanded == .expanded {
                         Text(comment.comment.processedText ?? AttributedString())
@@ -84,16 +90,23 @@ struct CommentView: View {
         })
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in
-            if frameHeight == 0 {
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                if frameHeight == 0 {
                     let value = proxy.frame(in: .named(String(comment.id))).size.height
                     if value > CommentView.collapsedHeight { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
                         frameHeight = value
                     }
                 }
+                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (LayoutManager.default.statusBarHeight + navBarHeight + 10)
             }
+            
             return Color.clear
         })
+        .background(NavBarAccessor { navBar in
+            if navBarHeight == 0 {
+                navBarHeight = navBar.bounds.height
+            }
+         })
         .if(frameHeight > 0, transform: { view in
             view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
         })
@@ -101,7 +114,8 @@ struct CommentView: View {
         .padding(expanded == .hidden ? 0 : 10)
         .modifier(CommentExpandModifier(comment: comment,
                                         onToggleExpanded: onToggleExpanded,
-                                        expanded: $expanded))
+                                        expanded: $expanded,
+                                        commentOnScreen: $commentOnScreen))
     }
     
     func heightForExpandedState() -> CGFloat {
@@ -113,32 +127,5 @@ struct CommentView: View {
         case .hidden:
             return 0
         }
-    }
-}
-
-struct AnimatingCellHeight: ViewModifier, Animatable {
-    var height: CGFloat = 0
-    
-    private var target: CGFloat
-    private var onEnded: () -> ()
-
-    init(height: CGFloat, onEnded: @escaping () -> () = {}) {
-        self.target = height
-        self.height = height
-        self.onEnded = onEnded // << callback
-    }
-
-    var animatableData: CGFloat {
-        get { height }
-        set {
-            height = newValue
-            if newValue == target {
-                onEnded()
-            }
-        }
-    }
-
-    func body(content: Content) -> some View {
-        content.frame(height: height)
     }
 }

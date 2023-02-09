@@ -165,8 +165,9 @@ struct StoryDetailView: View {
                                 } onTapUser: { user in
                                     selectedUser = user
                                     
-                                } onToggleExpanded: { comment, expanded in
-                                    if expanded == .collapsed {
+                                } onToggleExpanded: { comment, expanded, commentOnScreen in
+                                    if expanded == .collapsed,
+                                       !commentOnScreen {
                                         withAnimation {
                                             reader.scrollTo(comment.id, anchor: .top)
                                         }

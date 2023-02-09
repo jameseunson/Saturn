@@ -13,20 +13,23 @@ struct CommentHeaderView: View {
     
     let onTapOptions: ((CommentViewModel) -> Void)?
     let onTapUser: ((String) -> Void)?
-    let onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)?
+    let onToggleExpanded: OnToggleExpandedCompletion?
     
     @Binding var expanded: CommentExpandedState
+    @Binding var commentOnScreen: Bool
     
     init(comment: CommentViewModel,
          onTapOptions: ((CommentViewModel) -> Void)? = nil,
          onTapUser: ( (String) -> Void)? = nil,
-         onToggleExpanded: ((CommentViewModel, CommentExpandedState) -> Void)? = nil,
-         expanded: Binding<CommentExpandedState>) {
+         onToggleExpanded: OnToggleExpandedCompletion? = nil,
+         expanded: Binding<CommentExpandedState>,
+         commentOnScreen: Binding<Bool>) {
         self.comment = comment
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
         _expanded = expanded
+        _commentOnScreen = commentOnScreen
     }
     
     var body: some View {
@@ -78,7 +81,7 @@ struct CommentHeaderView: View {
                         toggleExpanded()
                     }
                     if let onToggleExpanded {
-                        onToggleExpanded(comment, expanded)
+                        onToggleExpanded(comment, expanded, commentOnScreen)
                     }
                 }
                 
@@ -92,7 +95,7 @@ struct CommentHeaderView: View {
                                 toggleExpanded()
                             }
                             if let onToggleExpanded {
-                                onToggleExpanded(comment, expanded)
+                                onToggleExpanded(comment, expanded, commentOnScreen)
                             }
                         }
                 }

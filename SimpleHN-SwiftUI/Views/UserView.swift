@@ -62,7 +62,7 @@ struct UserView: View {
                                     reader.scrollTo("top")
                                 }
                                 
-                            } onToggleExpanded: { comment, expanded in
+                            } onToggleExpanded: { comment, expanded, commentOnScreen in
                                 selectedCommentToView = comment
                                 
                             } onTapURL: { url in

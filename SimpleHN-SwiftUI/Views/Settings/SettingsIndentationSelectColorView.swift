@@ -42,8 +42,14 @@ struct SettingsIndentationSelectColorView: View {
                         
                         Text(key.toString())
                         Spacer()
-                        if selectedColor == key {
-                            Image(systemName: "checkmark")
+                        
+                        switch key {
+                        case .`default`, .hnOrange, .random, .randomPost:
+                            if selectedColor == key { Image(systemName: "checkmark") }
+                        case .userSelected(color: _):
+                            if case .userSelected(_) = selectedColor {
+                                Image(systemName: "checkmark")
+                            }
                         }
                     }
                     .contentShape(Rectangle())
