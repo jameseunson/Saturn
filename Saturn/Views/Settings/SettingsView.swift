@@ -43,6 +43,27 @@ struct SettingsView: View {
             
             Section {
                 HStack {
+                    Text("Cache Size")
+                    Spacer()
+                    Text("0.1mb")
+                        .foregroundColor(.gray)
+                }
+                HStack {
+                    Spacer()
+                    Text("Clear Cache")
+                        .foregroundColor(.accentColor)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    print("Clear cache")
+                }
+            } header: {
+                Text("Cache")
+            }
+            
+            Section {
+                HStack {
                     Text("Author")
                     Spacer()
                     Text("James Eunson")
@@ -51,7 +72,7 @@ struct SettingsView: View {
                 HStack {
                     Text("Support")
                     Spacer()
-                    Text("https://simple.hn")
+                    Text("https://saturn.hn")
                         .foregroundColor(.gray)
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
