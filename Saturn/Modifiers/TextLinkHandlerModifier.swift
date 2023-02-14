@@ -31,8 +31,10 @@ struct TextLinkHandlerModifier: ViewModifier {
                 onTapUser(String(userId))
                 
             /// Handle email addresses
-            } else if let _ = url.absoluteString.firstMatch(of: /[A-Z0-9a-z]+([._%+-]{1}[A-Z0-9a-z]+)*@[A-Z0-9a-z]+([.-]{1}[A-Z0-9a-z]+)*(\\.[A-Za-z]{2,4}){0,1}/) {
-                UIApplication.shared.open(url)
+            } else if let _ = url.absoluteString.firstMatch(of: /[A-Z0-9a-z]+([._%+-]{1}[A-Z0-9a-z]+)*@[A-Z0-9a-z]+([.-]{1}[A-Z0-9a-z]+)*(\\.[A-Za-z]{2,4}){0,1}/),
+                      let formattedURL = URL(string: "mailto:" + url.absoluteString) {
+                
+                UIApplication.shared.open(formattedURL)
                 
             } else {
                 /// Otherwise fall through to generic URL handler (SafariView)

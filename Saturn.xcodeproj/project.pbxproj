@@ -24,7 +24,6 @@
 		1A5DBBBC296933BB00D4D86E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBBB296933BB00D4D86E /* Preview Assets.xcassets */; };
 		1A5DBBD0296933BB00D4D86E /* SaturnUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBCF296933BB00D4D86E /* SaturnUITests.swift */; };
 		1A5DBBD2296933BB00D4D86E /* SaturnUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBD1296933BB00D4D86E /* SaturnUITestsLaunchTests.swift */; };
-		1A5DBBE629693DEB00D4D86E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBE529693DEA00D4D86E /* GoogleService-Info.plist */; };
 		1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC032969548E00D4D86E /* APIManager.swift */; };
 		1A5DBC06296A892B00D4D86E /* StoriesInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC05296A892B00D4D86E /* StoriesInteractor.swift */; };
 		1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC07296AA67300D4D86E /* LoadingView.swift */; };
@@ -88,6 +87,8 @@
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
+		1AAFFF5D299A6A4100D06EF4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */; };
+		1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
@@ -155,7 +156,6 @@
 		1A5DBBCB296933BB00D4D86E /* SaturnUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SaturnUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBCF296933BB00D4D86E /* SaturnUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITests.swift; sourceTree = "<group>"; };
 		1A5DBBD1296933BB00D4D86E /* SaturnUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		1A5DBBE529693DEA00D4D86E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1A5DBC032969548E00D4D86E /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
 		1A5DBC05296A892B00D4D86E /* StoriesInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesInteractor.swift; sourceTree = "<group>"; };
 		1A5DBC07296AA67300D4D86E /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
@@ -190,6 +190,8 @@
 		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
+		1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+IndentationColor.swift"; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 				1A111E03298B7321005B29B6 /* View+Color.swift */,
 				1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */,
 				1A888FBB299227F600490A74 /* Color+Codable.swift */,
+				1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -329,9 +332,9 @@
 				1A5DBC15296BDAB400D4D86E /* Interactors */,
 				1A5DBC14296BDAAC00D4D86E /* Models */,
 				1A5DBC0B296AAF6700D4D86E /* Views */,
-				1A5DBBE529693DEA00D4D86E /* GoogleService-Info.plist */,
 				1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */,
 				1AE4A9C62977DC5000D0B0D3 /* remote_config_defaults.plist */,
+				1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */,
 				1A5DBBB8296933BB00D4D86E /* Assets.xcassets */,
 				1A5DBBBA296933BB00D4D86E /* Preview Content */,
 				1A5DBC10296BD44D00D4D86E /* BaseUtils.swift */,
@@ -640,9 +643,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A5DBBBC296933BB00D4D86E /* Preview Assets.xcassets in Resources */,
+				1AAFFF5D299A6A4100D06EF4 /* GoogleService-Info.plist in Resources */,
 				1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */,
 				1AE4A9C72977DC5000D0B0D3 /* remote_config_defaults.plist in Resources */,
-				1A5DBBE629693DEB00D4D86E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,6 +696,7 @@
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
 				1AE4A9D32979146700D0B0D3 /* StoryListType.swift in Sources */,
+				1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */,
 				1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */,
 				1AE4A99F2977D7BF00D0B0D3 /* AppRemoteConfig.swift in Sources */,
 				1AE4A9D929792B5A00D0B0D3 /* APIMemoryResponseCache.swift in Sources */,

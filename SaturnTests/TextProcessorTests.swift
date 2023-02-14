@@ -33,4 +33,23 @@ final class TestProcessorTests: XCTestCase {
             XCTFail(error.localizedDescription)
         }
     }
+    
+    func test_parenthesisInUrl() {
+        let rawText = "Honestly this espionage thing is overrated. Plenty of employees in the US take their knowledge to (domestic) competitors and find it quite hard to just clone a business. The Russians and US were stealing each other&#x27;s plans during the space race but this often led to misunderstood and suboptimal designs. See Buran<p><a href=\"https:&#x2F;&#x2F;wikipedia.org&#x2F;wiki&#x2F;Buran_(spacecraft)\" rel=\"nofollow\">https:&#x2F;&#x2F;wikipedia.org&#x2F;wiki&#x2F;Buran_(spacecraft)</a>"
+        
+        do {
+            let attributedString = try TextProcessor.processCommentText(rawText)
+            let string = String(attributedString.output.characters)
+            
+            var urlStringFound = false
+            if string.contains("https://wikipedia.org/wiki/Buran_(spacecraft)") {
+                urlStringFound = true
+            }
+            
+            XCTAssert(urlStringFound)
+            
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
 }

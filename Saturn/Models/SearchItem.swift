@@ -43,7 +43,7 @@ struct SearchItem: Codable, Hashable {
         self.createdAt = Date(timeIntervalSince1970: rawDate)
         
         self.title = try container.decode(String.self, forKey: .title)
-        self.url = try container.decodeIfPresent(URL.self, forKey: .url)
+        self.url = try? container.decodeIfPresent(URL.self, forKey: .url)
         self.author = try container.decode(String.self, forKey: .author)
         self.points = try container.decode(Int.self, forKey: .points)
         self.numComments = try container.decode(Int.self, forKey: .numComments)

@@ -26,6 +26,7 @@ struct StoryDetailView: View {
     
     /// Comment focused view
     @State var displayFullComments = false
+    @State var didScrollToFocusedComment = false
     
     var body: some View {
         ZStack {
@@ -184,7 +185,9 @@ struct StoryDetailView: View {
                                 .onAppear {
                                     if interactor.focusedCommentViewModel != nil,
                                        comment == comments.first,
-                                       let lastCommentId = comments.last?.id {
+                                       let lastCommentId = comments.last?.id,
+                                       !didScrollToFocusedComment {
+                                        didScrollToFocusedComment = true
                                         withAnimation {
                                             reader.scrollTo(lastCommentId)
                                         }

@@ -14,7 +14,7 @@ import RegexBuilder
 final class TextProcessor {
     static func processCommentText(_ input: String, forceDetectLinks: Bool = false) throws -> TextProcessorResult {
         var outputString = input
-        
+
         /// This is faster than using any other html entity decoding (eg interpreting as html using WKWebView, which is very slow)
         /// HN formatting has lots of quirks (for one, it's *not* valid html nor valid markdown) and AttributedString handling of even
         /// valid markdown is somewhat broken, so we can work around it here
@@ -22,7 +22,7 @@ final class TextProcessor {
         outputString = outputString.replacingOccurrences(of: "<p>- ", with: "\n\n•\t")
         processOrdinalListItems(&outputString)
         
-        outputString = outputString.replacingOccurrences(of: "<p>", with: "\n\n")
+        outputString = outputString.replacingOccurrences(of: "<p>", with: "\n\n ")
         outputString = outputString.replacingOccurrences(of: "&lt;", with: "<")
         outputString = outputString.replacingOccurrences(of: "&gt;", with: ">")
         outputString = outputString.replacingOccurrences(of: "&#x27;", with: "'")
@@ -71,7 +71,16 @@ final class TextProcessor {
         let linkRegex = /<a href="(.*?)"(.*?)>(.*?)<\/a>/
         let linkMatches = outputString.matches(of: linkRegex)
         for linkMatch in linkMatches {
-            let markdownLink = "[\(linkMatch.output.3.replacingOccurrences(of: "_", with: "\\_"))](\(linkMatch.output.1))"
+            let escapedURL = linkMatch.output.3
+                .replacingOccurrences(of: "_", with: "\\_")
+                .replacingOccurrences(of: ")", with: "\\)")
+                .replacingOccurrences(of: "(", with: "\\(")
+            let escapedLabel = linkMatch.output.1
+                .replacingOccurrences(of: "_", with: "\\_")
+                .replacingOccurrences(of: ")", with: "\\)")
+                .replacingOccurrences(of: "(", with: "\\(")
+            
+            let markdownLink = "[\(escapedURL)](\(escapedLabel))"
             outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
         }
     }
@@ -133,11 +142,16 @@ final class TextProcessor {
     }
     
     private static func detectLinks(_ outputString: inout String) {
-        let linkRegex = Regex { Capture { .url() } }
+        let linkRegex = /(?m)((?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$]))/.ignoresCase()
 
         let linkMatches = outputString.matches(of: linkRegex)
         linkMatches.forEach { linkMatch in
-            let markdownLink = "[\(linkMatch.output.0)](\(linkMatch.output.0))"
+            /// Assume https
+            var linkMatchString = linkMatch.output.0
+            if linkMatchString.starts(with: /www/) {
+                linkMatchString = "https://" + linkMatchString
+            }
+            let markdownLink = "[\(linkMatchString)](\(linkMatchString))"
             outputString = outputString.replacingOccurrences(of: linkMatch.output.0, with: markdownLink)
         }
         

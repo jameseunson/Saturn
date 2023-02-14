@@ -52,8 +52,10 @@ final class SearchAPIManager {
         mutableRequest.httpBody = queryPostBody.data(using: .utf8)
         
         if query.components(separatedBy: CharacterSet.whitespaces).count == 1 {
-            return Publishers.MergeMany(publisherForQuery(request: mutableRequest),
-                                        publisherForUser(query: query))
+            return Publishers.Zip(publisherForQuery(request: mutableRequest), publisherForUser(query: query))
+                .map { results, user in
+                    return results + [user]
+                }
                 .eraseToAnyPublisher()
             
         } else {
@@ -75,9 +77,9 @@ final class SearchAPIManager {
             .eraseToAnyPublisher()
     }
     
-    private func publisherForUser(query: String) -> AnyPublisher<[SearchResultItem], Error> {
+    private func publisherForUser(query: String) -> AnyPublisher<SearchResultItem, Error> {
         return apiManager.loadUser(id: query)
-            .map { [SearchResultItem.user($0)] }
+            .map { SearchResultItem.user($0) }
             .eraseToAnyPublisher()
     }
 }

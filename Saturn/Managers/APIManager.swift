@@ -83,7 +83,7 @@ final class APIManager {
                 return (id, type)
             }
             .flatMap { id, type -> AnyPublisher<UserItem, Error> in
-                if type == "story" {
+                if type == "story" || type == "poll" {
                     return self.loadStory(id: id)
                         .catch { _ in
                             return Empty().eraseToAnyPublisher()
@@ -168,21 +168,20 @@ final class APIManager {
     
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
-        if let response = APIMemoryResponseCache.default.get(for: id) {
-            return Just(response)
-                .handleEvents(receiveOutput: { _ in
-                    print("cache hit: \(id)")
-                })
-                .flatMap { response in
-                    self.decodeResponse(response)
-                }
-                .compactMap { $0 }
-                .eraseToAnyPublisher()
-        }
+//        if let response = APIMemoryResponseCache.default.get(for: id) {
+//            return Just(response)
+//                .handleEvents(receiveOutput: { _ in
+//                    print("cache hit: \(id)")
+//                })
+//                .flatMap { response in
+//                    self.decodeResponse(response)
+//                }
+//                .compactMap { $0 }
+//                .eraseToAnyPublisher()
+//        }
         
         return retrieve(from: "v0/item/\(id)")
             .handleEvents(receiveOutput: { response in
-                print("cache miss: \(id)")
                 APIMemoryResponseCache.default.set(value: response, for: id)
             })
             .flatMap { response in
@@ -218,7 +217,7 @@ final class APIManager {
         let didComplete = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
         
         return try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(15)) {
                 if didComplete.pointee {
                     return
                 }
@@ -230,8 +229,10 @@ final class APIManager {
                 guard error == nil,
                       let value = snapshot?.value else {
                     if let error {
+                        if didTimeout.pointee { return }
                         continuation.resume(throwing: error)
                     } else {
+                        if didTimeout.pointee { return }
                         continuation.resume(throwing: APIManagerError.generic)
                     }
                     return

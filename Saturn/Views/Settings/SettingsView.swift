@@ -33,7 +33,22 @@ struct SettingsView: View {
                         NavigationLink {
                             SettingsIndentationSelectColorView(selectedColor: indentationColor())
                         } label: {
-                            Text(key.rawValue)
+                            HStack {
+                                Text(key.rawValue)
+                                Spacer()
+                                if case let .indentationColor(value) = settingsMap[.indentationColor] {
+                                    switch value {
+                                    case .hnOrange, .default, .userSelected(color: _):
+                                        Circle()
+                                            .fill(Color.indentationColor())
+                                            .frame(width: 25, height: 25)
+                                    default:
+                                        SettingsIndentationUnknownColorView()
+                                    }
+                                } else {
+                                    SettingsIndentationUnknownColorView()
+                                }
+                            }
                         }
                     case .none:
                         EmptyView()
@@ -43,38 +58,9 @@ struct SettingsView: View {
             
             Section {
                 HStack {
-                    Text("Cache Size")
-                    Spacer()
-                    Text("0.1mb")
-                        .foregroundColor(.gray)
-                }
-                HStack {
-                    Spacer()
-                    Text("Clear Cache")
-                        .foregroundColor(.accentColor)
-                    Spacer()
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    print("Clear cache")
-                }
-            } header: {
-                Text("Cache")
-            }
-            
-            Section {
-                HStack {
                     Text("Author")
                     Spacer()
                     Text("James Eunson")
-                        .foregroundColor(.gray)
-                }
-                HStack {
-                    Text("Support")
-                    Spacer()
-                    Text("https://saturn.hn")
-                        .foregroundColor(.gray)
-                    Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
                 }
                 HStack {
@@ -86,7 +72,7 @@ struct SettingsView: View {
                         .foregroundColor(.gray)
                 }
                 .onTapGesture {
-                    if let url = URL(string: "https://simple.hn/feedback") {
+                    if let url = URL(string: "mailto:saturnhnapp@gmail.com") {
                         UIApplication.shared.open(url)
                     }
                 }
