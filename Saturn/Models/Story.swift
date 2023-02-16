@@ -95,11 +95,37 @@ struct Story: Codable, Identifiable, Hashable {
 }
 
 extension Story {
-    static func fakeStory() -> Story {
-        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [1234], type: "story", url: nil, text: nil)
+    static func fakeStory() -> Story? {
+        guard let data = try? JSONSerialization.data(withJSONObject: fakeStoryDict(), options: []) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(Story.self, from: data)
     }
     
-    static func fakeStoryWithNoComments() -> Story {
-        Story.init(id: 1234, score: 100, time: Date(), descendants: nil, by: "fakeperson", title: "A fake story with a convincing headline", kids: [], type: "story", url: nil, text: nil)
+    static func fakeStoryWithNoComments() -> Story? {
+        guard let data = try? JSONSerialization.data(withJSONObject: fakeStoryDict(), options: []),
+              let story = try? JSONDecoder().decode(Story.self, from: data) else {
+            return nil
+        }
+        return Story(id: story.id, score: story.score, time: story.time, descendants: story.descendants, by: story.by, title: story.title, kids: [], type: story.type, url: story.url, text: story.text)
+    }
+    
+    static func fakeStoryDict() -> Dictionary<String, JSONEncoding> {
+        return [
+            "by" : "gslin",
+            "descendants" : 41,
+            "id" : 34814070,
+            "kids" : [ 34814718, 34815313, 34815345, 34814595, 34814734, 34815137, 34814761, 34814742, 34814765, 34814973, 34814951, 34814975, 34814979, 34814754, 34815005 ],
+            "score" : 108,
+            "time" : 1676513550,
+            "title" : "WebKit Supports Nested CSS",
+            "type" : "story",
+            "url" : "https://webkit.org/blog/13813/try-css-nesting-today-in-safari-technology-preview/"
+        ]
     }
 }
+
+protocol JSONEncoding where Self: Encodable { }
+extension String: JSONEncoding { }
+extension Int: JSONEncoding { }
+extension Array<Int>: JSONEncoding { }

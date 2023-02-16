@@ -49,7 +49,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     /// Entry from StoriesView, we already have a `Story` object
     init(story: Story, comments: [CommentViewModel] = []) {
-        self.story = story
+        self.itemId = story.id
         
         #if DEBUG
         if comments.count > 0 {
@@ -169,8 +169,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
-    func refreshComments() async {
-        Task {
+    func refreshStory() async {
+        Task { @MainActor in
+            guard let story else { return }
             DispatchQueue.main.async { [weak self] in
                 self?.comments.send([])
                 self?.commentsExpanded.send([:])
@@ -179,6 +180,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             topLevelComments.removeAll()
             loadedTopLevelComments.removeAll()
             
+            self.story = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore)
             loadComments()
         }
     }

@@ -12,7 +12,20 @@ import Firebase
 import FirebaseDatabase
 
 final class APIManager {
-    let ref: DatabaseReference! = Database.database(url: "https://hacker-news.firebaseio.com").reference()
+    let ref: DatabaseReferencing
+    let cache: APIMemoryResponseCaching
+    
+    #if DEBUG
+    let isDebugLoggingEnabled = true
+    #else
+    let isDebugLoggingEnabled = false
+    #endif
+    
+    init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
+         ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference()) {
+        self.cache = cache
+        self.ref = ref
+    }
 
     func loadStories(ids: [Int]) -> AnyPublisher<[Story], Error> {
         let stories = ids.map { return self.loadStory(id: $0) }
@@ -56,19 +69,19 @@ final class APIManager {
         }
     }
     
-    func loadStory(id: Int) -> AnyPublisher<Story, Error> {
+    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Story, Error> {
         return retrieveObject(id: id)
     }
     
-    func loadStory(id: Int) async throws -> Story {
+    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Story {
         return try await retrieveObject(id: id)
     }
     
-    func loadComment(id: Int) -> AnyPublisher<Comment, Error> {
+    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Comment, Error> {
         return retrieveObject(id: id)
     }
     
-    func loadComment(id: Int) async throws -> Comment {
+    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Comment {
         return try await retrieveObject(id: id)
     }
     
@@ -167,22 +180,28 @@ final class APIManager {
     }
     
     // MARK: -
-    private func retrieveObject<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
-//        if let response = APIMemoryResponseCache.default.get(for: id) {
-//            return Just(response)
-//                .handleEvents(receiveOutput: { _ in
-//                    print("cache hit: \(id)")
-//                })
-//                .flatMap { response in
-//                    self.decodeResponse(response)
-//                }
-//                .compactMap { $0 }
-//                .eraseToAnyPublisher()
-//        }
-        
+    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<T, Error> {
+        if let response = cache.get(for: id),
+           response.isValid(cacheBehavior: cacheBehavior) {
+            return Just(response)
+                .handleEvents(receiveOutput: { _ in
+                    if self.isDebugLoggingEnabled { print("cache hit: \(id)") }
+                })
+                .flatMap { response in
+                    return self.decodeResponse(response.value)
+                }
+                .compactMap { $0 }
+                .eraseToAnyPublisher()
+        } else {
+            if isDebugLoggingEnabled { print("cache miss: \(id)") }
+            return self.retrieveObjectFromNetwork(id: id)
+        }
+    }
+    
+    private func retrieveObjectFromNetwork<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
             .handleEvents(receiveOutput: { response in
-                APIMemoryResponseCache.default.set(value: response, for: id)
+                self.cache.set(value: response, for: id)
             })
             .flatMap { response in
                 self.decodeResponse(response)
@@ -207,9 +226,18 @@ final class APIManager {
         .eraseToAnyPublisher()
     }
     
-    private func retrieveObject<T: Codable>(id: Int) async throws -> T {
-        let response = try await retrieve(from: "v0/item/\(id)")
-        return try self.decodeResponse(response)
+    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> T {
+        if let response = cache.get(for: id),
+           response.isValid(cacheBehavior: cacheBehavior) {
+            if isDebugLoggingEnabled { print("cache hit (async): \(id)") }
+            return try self.decodeResponse(response.value)
+            
+        } else {
+            if isDebugLoggingEnabled { print("cache miss (async): \(id)") }
+            let response = try await retrieve(from: "v0/item/\(id)")
+            self.cache.set(value: response, for: id)
+            return try self.decodeResponse(response)
+        }
     }
     
     private func retrieve(from url: String) async throws -> Any {
@@ -225,7 +253,7 @@ final class APIManager {
 
                 continuation.resume(throwing: TimeoutError())
             }
-            self.ref.child(url).getData { error, snapshot in
+            self.ref.childPath(url).getChildData { error, snapshot in
                 guard error == nil,
                       let value = snapshot?.value else {
                     if let error {
@@ -290,4 +318,25 @@ enum APIManagerError: Error {
 
 private struct TimeoutError: LocalizedError {
   var errorDescription: String? = "Task timed out before completion"
+}
+
+protocol DatabaseReferencing: AnyObject {
+    func childPath(_ pathString: String) -> DatabaseReferencing
+    func getChildData(completion block: @escaping (Error?, DataShapshotting?) -> Void)
+}
+
+protocol DataShapshotting: AnyObject {
+    var value: Any? { get }
+}
+
+extension DataSnapshot: DataShapshotting {}
+
+extension DatabaseReference: DatabaseReferencing {
+    func childPath(_ pathString: String) -> DatabaseReferencing {
+        child(pathString)
+    }
+    
+    func getChildData(completion block: @escaping (Error?, DataShapshotting?) -> Void) {
+        getData(completion: block)
+    }
 }

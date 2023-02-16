@@ -123,7 +123,8 @@ struct StoryDetailView: View {
         return ScrollViewReader { reader in
             InfiniteScrollView(loader: interactor,
                                readyToLoadMore: $readyToLoadMore,
-                               itemsRemainingToLoad: $commentsRemainingToLoad) {
+                               itemsRemainingToLoad: $commentsRemainingToLoad,
+                               requiresLazy: (story.descendants ?? 0) > 100) { /// More than 100 comments requires a LazyVStack to remain performant
                 
                 StoryRowView(story: StoryRowViewModel(story: story),
                              onTapArticleLink: { url in self.displayingSafariURL = url },
@@ -221,7 +222,7 @@ struct StoryDetailView: View {
                 }
             }
            .refreshable {
-               await interactor.refreshComments()
+               await interactor.refreshStory()
            }
         }
     }
@@ -243,9 +244,13 @@ struct StoryDetailView: View {
 struct StoryDetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            StoryDetailView(interactor: StoryDetailInteractor(story: Story.fakeStoryWithNoComments(), comments: [])) // CommentViewModel.fakeComment()
-                .navigationTitle("Story")
-                .navigationBarTitleDisplayMode(.inline)
+            if let story = Story.fakeStoryWithNoComments() {
+                StoryDetailView(interactor: StoryDetailInteractor(story: story, comments: [])) // CommentViewModel.fakeComment()
+                    .navigationTitle("Story")
+                    .navigationBarTitleDisplayMode(.inline)
+            } else {
+                EmptyView()
+            }
         }
     }
 }

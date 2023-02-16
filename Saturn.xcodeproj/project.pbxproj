@@ -16,6 +16,7 @@
 		1A111E00298B705B005B29B6 /* View+Bindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFF298B705B005B29B6 /* View+Bindings.swift */; };
 		1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */; };
 		1A111E04298B7321005B29B6 /* View+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111E03298B7321005B29B6 /* View+Color.swift */; };
+		1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13B841299DEA25009E3E70 /* APIManagerTests.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
@@ -146,6 +147,7 @@
 		1A111DFF298B705B005B29B6 /* View+Bindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Bindings.swift"; sourceTree = "<group>"; };
 		1A111E01298B7307005B29B6 /* View+ConditionalModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ConditionalModifier.swift"; sourceTree = "<group>"; };
 		1A111E03298B7321005B29B6 /* View+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Color.swift"; sourceTree = "<group>"; };
+		1A13B841299DEA25009E3E70 /* APIManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManagerTests.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 			isa = PBXGroup;
 			children = (
 				1A888FC02993707B00490A74 /* TextProcessorTests.swift */,
+				1A13B841299DEA25009E3E70 /* APIManagerTests.swift */,
 			);
 			path = SaturnTests;
 			sourceTree = "<group>";
@@ -742,6 +745,7 @@
 			files = (
 				1A873ACE2970F64800870A50 /* TextProcessor.swift in Sources */,
 				1A888FC12993707B00490A74 /* TextProcessorTests.swift in Sources */,
+				1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

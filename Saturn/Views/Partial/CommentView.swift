@@ -91,22 +91,26 @@ struct CommentView: View {
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in
             DispatchQueue.main.async {
-                if frameHeight == 0 {
+                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (LayoutManager.default.statusBarHeight + navBarHeight + 10)
+            }
+            return Color.clear
+        })
+        .if(frameHeight == 0, transform: { view in
+            view.background(GeometryReader { proxy -> Color in
+                DispatchQueue.main.async {
                     let value = proxy.frame(in: .named(String(comment.id))).size.height
                     if value > CommentView.collapsedHeight { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
                         frameHeight = value
                     }
                 }
-                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (LayoutManager.default.statusBarHeight + navBarHeight + 10)
-            }
-            
-            return Color.clear
+                return Color.clear
+            })
         })
-        .background(NavBarAccessor { navBar in
-            if navBarHeight == 0 {
+        .if(navBarHeight == 0, transform: { view in
+            view.background(NavBarAccessor { navBar in
                 navBarHeight = navBar.bounds.height
-            }
-         })
+             })
+        })
         .if(frameHeight > 0, transform: { view in
             view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
         })

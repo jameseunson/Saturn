@@ -8,6 +8,7 @@ import Foundation
 
 final class APIDiskResponseCache {
     let fm = FileManager.default
+    private let queue = DispatchQueue(label: "APIDiskResponseCache")
     
     func store(id: Int, value: Any) throws {
         let url = try self.urlForPath(id)
@@ -32,18 +33,21 @@ final class APIDiskResponseCache {
         return try JSONSerialization.jsonObject(with: data)
     }
     
-    func loadAll() -> [Int: Any] {
+    func loadAll() -> [Int: APIMemoryResponseCacheItem] {
         do {
             let cacheDirURL = try urlForCacheDirectory()
             let cacheItems = try fm.contentsOfDirectory(at: cacheDirURL, includingPropertiesForKeys: nil)
-            var cache = [Int: Any]()
+            var cache = [Int: APIMemoryResponseCacheItem]()
             
             for url in cacheItems {
                 if let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last,
                 let filenameId = Int(filename) {
                     if let data = fm.contents(atPath: url.path) {
+                        let attributes = try fm.attributesOfItem(atPath: url.path)
+                        let creationDate = attributes[.creationDate] as? Date
+                        
                         let obj = try JSONSerialization.jsonObject(with: data)
-                        cache[filenameId] = obj
+                        cache[filenameId] = APIMemoryResponseCacheItem(value: obj, timestamp: creationDate ?? Date.distantPast)
                         
                     } else {
                         throw APIDiskResponseCacheError.responseDoesNotExist
