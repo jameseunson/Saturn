@@ -1,5 +1,5 @@
 # Saturn
-![Saturn-small](https://user-images.githubusercontent.com/51029/218449651-a03d854b-d730-49f9-8db3-285621397bff.png)
+![N8UF-zkbKLLfGHCjq_lgb](https://user-images.githubusercontent.com/51029/219298277-79bdf16d-a7ea-4b19-846b-f3622aef549b.png)
 
 A Hacker News client for iOS using the Swift 5.7, Combine, async/await and SwiftUI.
 
