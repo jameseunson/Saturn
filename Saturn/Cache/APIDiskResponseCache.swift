@@ -7,8 +7,12 @@
 import Foundation
 
 final class APIDiskResponseCache {
-    let fm = FileManager.default
+    let fm: FileManaging
     private let queue = DispatchQueue(label: "APIDiskResponseCache")
+    
+    init(fileManager: FileManaging = FileManager.default) {
+        self.fm = fileManager
+    }
     
     func store(id: Int, value: Any) throws {
         let url = try self.urlForPath(id)
@@ -18,7 +22,9 @@ final class APIDiskResponseCache {
         }
         
         let jsonData = try JSONSerialization.data(withJSONObject: value)
-        FileManager.default.createFile(atPath: url.path, contents: jsonData)
+        if !fm.createFile(atPath: url.path, contents: jsonData, attributes: nil) {
+            throw APIDiskResponseCacheError.generic
+        }
     }
     
     func retrieve(id: Int) throws -> Any {
@@ -36,8 +42,9 @@ final class APIDiskResponseCache {
     func loadAll() -> [Int: APIMemoryResponseCacheItem] {
         do {
             let cacheDirURL = try urlForCacheDirectory()
-            let cacheItems = try fm.contentsOfDirectory(at: cacheDirURL, includingPropertiesForKeys: nil)
+            let cacheItems = try fm.contentsOfDirectory(at: cacheDirURL, includingPropertiesForKeys: nil, options: [])
             var cache = [Int: APIMemoryResponseCacheItem]()
+            let diskCacheExpiry = diskCacheExpiry()
             
             for url in cacheItems {
                 if let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last,
@@ -45,6 +52,13 @@ final class APIDiskResponseCache {
                     if let data = fm.contents(atPath: url.path) {
                         let attributes = try fm.attributesOfItem(atPath: url.path)
                         let creationDate = attributes[.creationDate] as? Date
+                        if let diskCacheExpiry,
+                           let creationDate,
+                           creationDate < diskCacheExpiry {
+                            print("delete expired disk cache for \(filenameId)")
+                            try? fm.removeItem(atPath: url.pathExtension)
+                            continue
+                        }
                         
                         let obj = try JSONSerialization.jsonObject(with: data)
                         cache[filenameId] = APIMemoryResponseCacheItem(value: obj, timestamp: creationDate ?? Date.distantPast)
@@ -63,6 +77,11 @@ final class APIDiskResponseCache {
     }
     
     // MARK: -
+    private func diskCacheExpiry() -> Date? {
+        let calendar = Calendar.current
+        return calendar.date(byAdding: .day, value: -7, to: Date())
+    }
+    
     private func urlForPath(_ id: Int) throws -> URL {
         let cacheKey = String(id)
         return try urlForCacheDirectory().appendingPathComponent(cacheKey)
@@ -73,7 +92,7 @@ final class APIDiskResponseCache {
         let cachesDirectory = paths[0].appendingPathComponent("HNCache/")
         
         if !self.fm.fileExists(atPath: cachesDirectory.path()) {
-            try self.fm.createDirectory(at: cachesDirectory, withIntermediateDirectories: false)
+            try self.fm.createDirectory(at: cachesDirectory, withIntermediateDirectories: false, attributes: nil)
         }
         
         return cachesDirectory
@@ -82,4 +101,18 @@ final class APIDiskResponseCache {
 
 enum APIDiskResponseCacheError: Error {
     case responseDoesNotExist
+    case generic
 }
+
+protocol FileManaging: AnyObject {
+    func fileExists(atPath path: String) -> Bool
+    func removeItem(atPath path: String) throws
+    func createFile(atPath path: String, contents data: Data?, attributes attr: [FileAttributeKey : Any]?) -> Bool
+    func contents(atPath path: String) -> Data?
+    func attributesOfItem(atPath path: String) throws -> [FileAttributeKey : Any]
+    func contentsOfDirectory(at url: URL, includingPropertiesForKeys keys: [URLResourceKey]?, options mask: FileManager.DirectoryEnumerationOptions) throws -> [URL]
+    func createDirectory(at url: URL, withIntermediateDirectories createIntermediates: Bool, attributes: [FileAttributeKey : Any]?) throws
+    func urls(for directory: FileManager.SearchPathDirectory, in domainMask: FileManager.SearchPathDomainMask) -> [URL]
+}
+
+extension FileManager: FileManaging {}

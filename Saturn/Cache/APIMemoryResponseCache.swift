@@ -18,6 +18,12 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
     static let `default` = APIMemoryResponseCache()
     let diskCache = APIDiskResponseCache()
     
+    #if DEBUG
+    let isDebugLoggingEnabled = true
+    #else
+    let isDebugLoggingEnabled = false
+    #endif
+    
     private let queue = DispatchQueue(label: "APIMemoryResponseCache")
     
     init() {
@@ -28,7 +34,7 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
             self.cache = self.diskCache.loadAll()
             
             let diff = CFAbsoluteTimeGetCurrent() - start
-            print("disk cache load complete, took \(diff) seconds")
+            if self.isDebugLoggingEnabled { print("disk cache load complete, took \(diff) seconds") }
         }
     }
     
