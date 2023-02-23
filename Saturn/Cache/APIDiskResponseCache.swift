@@ -14,7 +14,7 @@ final class APIDiskResponseCache {
         self.fm = fileManager
     }
     
-    func store(id: Int, value: Any) throws {
+    func store(id: String, value: Any) throws {
         let url = try self.urlForPath(id)
 
         if self.fm.fileExists(atPath: url.path) {
@@ -27,7 +27,7 @@ final class APIDiskResponseCache {
         }
     }
     
-    func retrieve(id: Int) throws -> Any {
+    func retrieve(id: String) throws -> Any {
         let url = try urlForPath(id)
         
         if !fm.fileExists(atPath: url.path) {
@@ -39,29 +39,28 @@ final class APIDiskResponseCache {
         return try JSONSerialization.jsonObject(with: data)
     }
     
-    func loadAll() -> [Int: APIMemoryResponseCacheItem] {
+    func loadAll() -> [String: APIMemoryResponseCacheItem] {
         do {
             let cacheDirURL = try urlForCacheDirectory()
             let cacheItems = try fm.contentsOfDirectory(at: cacheDirURL, includingPropertiesForKeys: nil, options: [])
-            var cache = [Int: APIMemoryResponseCacheItem]()
+            var cache = [String: APIMemoryResponseCacheItem]()
             let diskCacheExpiry = diskCacheExpiry()
             
             for url in cacheItems {
-                if let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last,
-                let filenameId = Int(filename) {
+                if let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last {
                     if let data = fm.contents(atPath: url.path) {
                         let attributes = try fm.attributesOfItem(atPath: url.path)
                         let creationDate = attributes[.creationDate] as? Date
                         if let diskCacheExpiry,
                            let creationDate,
                            creationDate < diskCacheExpiry {
-                            print("delete expired disk cache for \(filenameId)")
-                            try? fm.removeItem(atPath: url.pathExtension)
+                            print("delete expired disk cache for \(filename)")
+                            try? fm.removeItem(atPath: url.path)
                             continue
                         }
                         
                         let obj = try JSONSerialization.jsonObject(with: data)
-                        cache[filenameId] = APIMemoryResponseCacheItem(value: obj, timestamp: creationDate ?? Date.distantPast)
+                        cache[filename] = APIMemoryResponseCacheItem(value: obj, timestamp: creationDate ?? Date.distantPast)
                         
                     } else {
                         throw APIDiskResponseCacheError.responseDoesNotExist
@@ -82,7 +81,7 @@ final class APIDiskResponseCache {
         return calendar.date(byAdding: .day, value: -7, to: Date())
     }
     
-    private func urlForPath(_ id: Int) throws -> URL {
+    private func urlForPath(_ id: String) throws -> URL {
         let cacheKey = String(id)
         return try urlForCacheDirectory().appendingPathComponent(cacheKey)
     }

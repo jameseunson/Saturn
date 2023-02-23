@@ -25,4 +25,17 @@ enum StoryListType {
             return "v0/askstories"
         }
     }
+    
+    var cacheKey: String {
+        switch self {
+        case .top:
+            return "topstories"
+        case .new:
+            return "newstories"
+        case .show:
+            return "showstories"
+        case .ask:
+            return "askstories"
+        }
+    }
 }

@@ -9,12 +9,12 @@ import Foundation
 import os
 
 protocol APIMemoryResponseCaching: AnyObject {
-    func set(value: Any, for key: Int)
-    func get(for key: Int) -> APIMemoryResponseCacheItem?
+    func set(value: Any, for key: String)
+    func get(for key: String) -> APIMemoryResponseCacheItem?
 }
 
 final class APIMemoryResponseCache: APIMemoryResponseCaching {
-    var cache = [Int: APIMemoryResponseCacheItem]()
+    var cache = [String: APIMemoryResponseCacheItem]()
     static let `default` = APIMemoryResponseCache()
     let diskCache = APIDiskResponseCache()
     
@@ -38,7 +38,7 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
         }
     }
     
-    func set(value: Any, for key: Int) {
+    func set(value: Any, for key: String) {
         queue.sync {
             cache[key] = APIMemoryResponseCacheItem(value: value, timestamp: Date())
         }
@@ -52,7 +52,7 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
         }
     }
     
-    func get(for key: Int) -> APIMemoryResponseCacheItem? {
+    func get(for key: String) -> APIMemoryResponseCacheItem? {
         queue.sync {
             return cache[key]
         }
@@ -69,7 +69,7 @@ struct APIMemoryResponseCacheItem {
             return timestamp >= Date().addingTimeInterval(-(60*10))
         case .ignore:
             return false
-        case .offline:
+        case .offlineOnly:
             return true
         }
     }
@@ -78,5 +78,5 @@ struct APIMemoryResponseCacheItem {
 enum APIMemoryResponseCacheBehavior {
     case `default` /// Ignores any cache more than 10 minutes old
     case ignore /// Ignores cache, even if still valid, always hits network
-    case offline /// Uses any cache regardless of expiry
+    case offlineOnly /// Uses any cache regardless of expiry
 }

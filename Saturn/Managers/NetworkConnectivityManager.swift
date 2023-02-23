@@ -9,7 +9,11 @@ import Network
 import SwiftUI
 
 final class NetworkConnectivityManager {
-    @Published private(set) var isConnected = false
+    @Published var isConnected = false {
+        didSet {
+            print("isConnected: \(isConnected)")
+        }
+    }
     
     private let nwMonitor = NWPathMonitor()
     static let instance = NetworkConnectivityManager()

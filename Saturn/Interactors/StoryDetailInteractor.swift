@@ -50,6 +50,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     /// Entry from StoriesView, we already have a `Story` object
     init(story: Story, comments: [CommentViewModel] = []) {
         self.itemId = story.id
+        self.story = story
         
         #if DEBUG
         if comments.count > 0 {

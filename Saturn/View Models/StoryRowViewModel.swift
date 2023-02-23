@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let id: Int
@@ -18,7 +19,9 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let imageURL: URL?
     let text: AttributedString?
     
-    init(story: Story) {
+    var image: Image?
+    
+    init(story: Story, image: Image? = nil) {
         self.id = story.id
         self.title = story.title
         self.text = story.text
@@ -39,6 +42,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         }
         self.url = story.url
         self.imageURL = story.urlForFavicon()
+        self.image = image
     }
     
     init(searchItem: SearchItem) {
@@ -81,5 +85,17 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         hasher.combine(timeAgo)
         hasher.combine(score)
         hasher.combine(comments)
+    }
+    
+    enum CodingKeys: CodingKey {
+        case id
+        case title
+        case author
+        case timeAgo
+        case score
+        case comments
+        case url
+        case imageURL
+        case text
     }
 }

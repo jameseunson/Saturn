@@ -21,13 +21,13 @@
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
-		1A5DBBB7296933BA00D4D86E /* StoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesView.swift */; };
+		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
 		1A5DBBBC296933BB00D4D86E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBBB296933BB00D4D86E /* Preview Assets.xcassets */; };
 		1A5DBBD0296933BB00D4D86E /* SaturnUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBCF296933BB00D4D86E /* SaturnUITests.swift */; };
 		1A5DBBD2296933BB00D4D86E /* SaturnUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBD1296933BB00D4D86E /* SaturnUITestsLaunchTests.swift */; };
 		1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC032969548E00D4D86E /* APIManager.swift */; };
-		1A5DBC06296A892B00D4D86E /* StoriesInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC05296A892B00D4D86E /* StoriesInteractor.swift */; };
+		1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC05296A892B00D4D86E /* StoriesListInteractor.swift */; };
 		1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC07296AA67300D4D86E /* LoadingView.swift */; };
 		1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */; };
 		1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC0E296BD43800D4D86E /* StoryDetailInteractor.swift */; };
@@ -89,6 +89,7 @@
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
+		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
 		1AAFFF5D299A6A4100D06EF4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */; };
 		1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
@@ -153,7 +154,7 @@
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
-		1A5DBBB6296933BA00D4D86E /* StoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesView.swift; sourceTree = "<group>"; };
+		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
 		1A5DBBB8296933BB00D4D86E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1A5DBBBB296933BB00D4D86E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1A5DBBC1296933BB00D4D86E /* SaturnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SaturnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -161,7 +162,7 @@
 		1A5DBBCF296933BB00D4D86E /* SaturnUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITests.swift; sourceTree = "<group>"; };
 		1A5DBBD1296933BB00D4D86E /* SaturnUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		1A5DBC032969548E00D4D86E /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
-		1A5DBC05296A892B00D4D86E /* StoriesInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesInteractor.swift; sourceTree = "<group>"; };
+		1A5DBC05296A892B00D4D86E /* StoriesListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractor.swift; sourceTree = "<group>"; };
 		1A5DBC07296AA67300D4D86E /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailView.swift; sourceTree = "<group>"; };
 		1A5DBC0E296BD43800D4D86E /* StoryDetailInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailInteractor.swift; sourceTree = "<group>"; };
@@ -230,6 +231,7 @@
 				1AE4A9BD2977D92900D0B0D3 /* FirebaseFirestore in Frameworks */,
 				1AE4A9C52977D92900D0B0D3 /* FirebaseRemoteConfigSwift in Frameworks */,
 				1AE4A9BF2977D92900D0B0D3 /* FirebaseFirestoreCombine-Community in Frameworks */,
+				1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */,
 				1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */,
 				1AE4A9C12977D92900D0B0D3 /* FirebaseFirestoreSwift in Frameworks */,
 			);
@@ -378,7 +380,7 @@
 			children = (
 				1A888FBD2992350E00490A74 /* Settings */,
 				1AE4A99929778F1900D0B0D3 /* Partial */,
-				1A5DBBB6296933BA00D4D86E /* StoriesView.swift */,
+				1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */,
 				1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */,
 				1A873ABC296E767B00870A50 /* UserView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
@@ -406,7 +408,7 @@
 		1A5DBC15296BDAB400D4D86E /* Interactors */ = {
 			isa = PBXGroup;
 			children = (
-				1A5DBC05296A892B00D4D86E /* StoriesInteractor.swift */,
+				1A5DBC05296A892B00D4D86E /* StoriesListInteractor.swift */,
 				1A5DBC0E296BD43800D4D86E /* StoryDetailInteractor.swift */,
 				1A873AD229713BB300870A50 /* UserInteractor.swift */,
 				1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */,
@@ -525,6 +527,7 @@
 				1AE4A9C22977D92900D0B0D3 /* FirebaseRemoteConfig */,
 				1AE4A9C42977D92900D0B0D3 /* FirebaseRemoteConfigSwift */,
 				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
+				1A9C75AF29A4981900DE94C6 /* AlertToast */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* Saturn.app */;
@@ -631,6 +634,7 @@
 			packageReferences = (
 				1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
+				1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -684,7 +688,7 @@
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
-				1A5DBC06296A892B00D4D86E /* StoriesInteractor.swift in Sources */,
+				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
 				1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */,
 				1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
@@ -697,7 +701,7 @@
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,
-				1A5DBBB7296933BA00D4D86E /* StoriesView.swift in Sources */,
+				1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */,
 				1AE4A9D52979147200D0B0D3 /* UserItem.swift in Sources */,
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
@@ -900,7 +904,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -923,9 +927,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -935,7 +942,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -958,9 +965,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -1085,6 +1095,14 @@
 		1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SimonFairbairn/SwiftyMarkdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/elai950/AlertToast";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;
@@ -1245,6 +1263,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
 			productName = SwiftyMarkdown;
+		};
+		1A9C75AF29A4981900DE94C6 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
 		};
 		1AE4A9B22977D92900D0B0D3 /* FirebaseAnalyticsSwift */ = {
 			isa = XCSwiftPackageProductDependency;

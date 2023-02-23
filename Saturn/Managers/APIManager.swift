@@ -10,6 +10,7 @@ import Foundation
 import FirebaseCore
 import Firebase
 import FirebaseDatabase
+import SwiftUI
 
 final class APIManager {
     let ref: DatabaseReferencing
@@ -27,18 +28,18 @@ final class APIManager {
         self.ref = ref
     }
 
-    func loadStories(ids: [Int]) -> AnyPublisher<[Story], Error> {
-        let stories = ids.map { return self.loadStory(id: $0) }
+    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[Story], Error> {
+        let stories = ids.map { return self.loadStory(id: $0, cacheBehavior: cacheBehavior) }
         return Publishers.MergeMany(stories)
             .collect()
             .eraseToAnyPublisher()
     }
     
-    func loadStories(ids: [Int]) async throws -> [Story] {
+    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> [Story] {
         return try await withThrowingTaskGroup(of: Story.self, body: { group in
             for id in ids {
                 group.addTask {
-                    return try await self.loadStory(id: id)
+                    return try await self.loadStory(id: id, cacheBehavior: cacheBehavior)
                 }
             }
             var stories = [Story]()
@@ -50,19 +51,46 @@ final class APIManager {
         })
     }
     
-    func loadStoryIds(type: StoryListType) -> AnyPublisher<Array<Int>, Error> {
-        return retrieve(from: type.path)
-            .tryMap { response in
-                guard let ids = response as? Array<Int> else {
-                    throw APIManagerError.generic
+    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Array<Int>, Error> {
+        if cacheBehavior == .offlineOnly,
+           cache.get(for: type.cacheKey) == nil {
+            return Empty()
+                .eraseToAnyPublisher()
+        }
+        
+        if let response = cache.get(for: type.cacheKey),
+           response.isValid(cacheBehavior: cacheBehavior) {
+            return Just(response)
+                .tryMap { response in
+                    guard let ids = response.value as? Array<Int> else {
+                        throw APIManagerError.generic
+                    }
+                    return ids
                 }
-                return ids
-            }
-            .eraseToAnyPublisher()
+                .eraseToAnyPublisher()
+            
+        } else {
+            return retrieve(from: type.path)
+                .tryMap { response in
+                    guard let ids = response as? Array<Int> else {
+                        throw APIManagerError.generic
+                    }
+                    return ids
+                }
+                .handleEvents(receiveOutput: { ids in
+                    APIMemoryResponseCache.default.set(value: ids, for: type.cacheKey)
+                })
+                .eraseToAnyPublisher()
+        }
     }
     
-    func loadStoryIds(type: StoryListType) async throws -> Array<Int> {
-        if let response = try await retrieve(from: type.path) as? Array<Int> {
+    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Array<Int> {
+        if let response = cache.get(for: type.cacheKey),
+           response.isValid(cacheBehavior: cacheBehavior),
+            let responseArray = response.value as? Array<Int> {
+            return responseArray
+            
+        } else if let response = try await retrieve(from: type.path) as? Array<Int> {
             return response
         } else {
             throw APIManagerError.generic
@@ -70,19 +98,19 @@ final class APIManager {
     }
     
     func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Story, Error> {
-        return retrieveObject(id: id)
+        return retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
     func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Story {
-        return try await retrieveObject(id: id)
+        return try await retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
     func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Comment, Error> {
-        return retrieveObject(id: id)
+        return retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
     func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Comment {
-        return try await retrieveObject(id: id)
+        return try await retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
     func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error> {
@@ -179,9 +207,43 @@ final class APIManager {
             .eraseToAnyPublisher()
     }
     
+    
+    func loadImage(for story: Story, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Image, Never> {
+        guard let imageURL = StoryRowViewModel(story: story).imageURL else {
+            return Empty().eraseToAnyPublisher()
+        }
+  
+        let cacheKey = imageURL.absoluteString
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ".", with: "-")
+            .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted)
+            .joined()
+        
+        if let response = cache.get(for: cacheKey),
+           response.isValid(cacheBehavior: cacheBehavior),
+           let data = response.value as? Data,
+           let image = UIImage(data: data) {
+            return Just(Image(uiImage: image)).eraseToAnyPublisher()
+        }
+        
+        return URLSession.DataTaskPublisher(request: URLRequest(url: imageURL), session: .shared)
+            .mapError { _ in APIManagerError.generic }
+            .tryMap { (data: Data, urlResponse: URLResponse) -> Image in
+                guard let image = UIImage(data: data) else {
+                    throw APIManagerError.generic
+                }
+                self.cache.set(value: data, for: cacheKey)
+                return Image(uiImage: image)
+            }
+            .catch { _ in
+                return Empty().eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+    
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<T, Error> {
-        if let response = cache.get(for: id),
+        if let response = cache.get(for: String(id)),
            response.isValid(cacheBehavior: cacheBehavior) {
             return Just(response)
                 .handleEvents(receiveOutput: { _ in
@@ -201,7 +263,7 @@ final class APIManager {
     private func retrieveObjectFromNetwork<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
             .handleEvents(receiveOutput: { response in
-                self.cache.set(value: response, for: id)
+                self.cache.set(value: response, for: String(id))
             })
             .flatMap { response in
                 self.decodeResponse(response)
@@ -227,7 +289,7 @@ final class APIManager {
     }
     
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> T {
-        if let response = cache.get(for: id),
+        if let response = cache.get(for: String(id)),
            response.isValid(cacheBehavior: cacheBehavior) {
             if isDebugLoggingEnabled { print("cache hit (async): \(id)") }
             return try self.decodeResponse(response.value)
@@ -235,7 +297,7 @@ final class APIManager {
         } else {
             if isDebugLoggingEnabled { print("cache miss (async): \(id)") }
             let response = try await retrieve(from: "v0/item/\(id)")
-            self.cache.set(value: response, for: id)
+            self.cache.set(value: response, for: String(id))
             return try self.decodeResponse(response)
         }
     }
@@ -246,9 +308,7 @@ final class APIManager {
         
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(15)) {
-                if didComplete.pointee {
-                    return
-                }
+                if didComplete.pointee { return }
                 didTimeout.pointee = true
 
                 continuation.resume(throwing: TimeoutError())
@@ -256,19 +316,29 @@ final class APIManager {
             self.ref.childPath(url).getChildData { error, snapshot in
                 guard error == nil,
                       let value = snapshot?.value else {
+                    
                     if let error {
                         if didTimeout.pointee { return }
+                        didComplete.pointee = true
+                        
+                        if error.localizedDescription.contains("offline"),
+                           NetworkConnectivityManager.instance.isConnected {
+                            NetworkConnectivityManager.instance.isConnected = false
+                        }
                         continuation.resume(throwing: error)
+                        
                     } else {
                         if didTimeout.pointee { return }
+                        didComplete.pointee = true
+                        
                         continuation.resume(throwing: APIManagerError.generic)
                     }
                     return
                 }
-                if didTimeout.pointee {
-                    return
-                }
+                
+                if didTimeout.pointee { return }
                 didComplete.pointee = true
+                
                 continuation.resume(with: .success(value))
             }
         }
