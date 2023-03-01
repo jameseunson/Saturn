@@ -20,7 +20,6 @@ final class StoriesInteractor: Interactor {
     var storyIds = [Int]()
     @Published var stories = [Story]()
     @Published var loadingState: LoadingState = .initialLoad
-    @Published var favIcons = [Story: Image]()
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -57,32 +56,6 @@ final class StoriesInteractor: Interactor {
                 .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
                 .store(in: &disposeBag)
         }
-        
-        $stories
-            .flatMap { (stories: [Story]) in
-                let publishers = stories.map { story in
-                    if let image = self.favIcons[story] {
-                        return Just((image, story))
-                            .eraseToAnyPublisher()
-                    } else {
-                        return self.apiManager.loadImage(for: story)
-                            .map { ($0, story) }
-                            .eraseToAnyPublisher()
-                    }
-                }
-                return Publishers.MergeMany(publishers)
-                    .eraseToAnyPublisher()
-            }
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { completion in
-                if case let .failure(error) = completion {
-                    print(error)
-                }
-            }, receiveValue: { output in
-                let (image, story) = output
-                self.favIcons[story] = image
-            })
-            .store(in: &disposeBag)
     }
     
     @discardableResult

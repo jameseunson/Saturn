@@ -10,25 +10,40 @@ final class APIDiskResponseCache {
     let fm: FileManaging
     private let queue = DispatchQueue(label: "APIDiskResponseCache")
     
+    #if DEBUG
+    let isDebugLoggingEnabled = true
+    #else
+    let isDebugLoggingEnabled = false
+    #endif
+    
     init(fileManager: FileManaging = FileManager.default) {
         self.fm = fileManager
     }
     
-    func store(id: String, value: Any) throws {
-        let url = try self.urlForPath(id)
-
+    func store(id: String, value: APIMemoryResponseCacheValue) throws {
+        let contents: Data
+        let url: URL
+        
+        switch value {
+        case let .json(value):
+            url = try self.urlForPath(id, type: .json)
+            contents = try JSONSerialization.data(withJSONObject: value)
+            
+        case let .data(value):
+            url = try self.urlForPath(id, type: .data)
+            contents = value
+        }
+        
         if self.fm.fileExists(atPath: url.path) {
             try self.fm.removeItem(atPath: url.path)
         }
-        
-        let jsonData = try JSONSerialization.data(withJSONObject: value)
-        if !fm.createFile(atPath: url.path, contents: jsonData, attributes: nil) {
+        if !fm.createFile(atPath: url.path, contents: contents, attributes: nil) {
             throw APIDiskResponseCacheError.generic
         }
     }
     
-    func retrieve(id: String) throws -> Any {
-        let url = try urlForPath(id)
+    func retrieve(id: String, type: APIDiskResponseCacheType = .json) throws -> APIMemoryResponseCacheValue {
+        let url = try urlForPath(id, type: type)
         
         if !fm.fileExists(atPath: url.path) {
             throw APIDiskResponseCacheError.responseDoesNotExist
@@ -36,7 +51,12 @@ final class APIDiskResponseCache {
         guard let data = fm.contents(atPath: url.path) else {
             throw APIDiskResponseCacheError.responseDoesNotExist
         }
-        return try JSONSerialization.jsonObject(with: data)
+        switch type {
+        case .json:
+            return try .json(JSONSerialization.jsonObject(with: data))
+        case .data:
+            return .data(data)
+        }
     }
     
     func loadAll() -> [String: APIMemoryResponseCacheItem] {
@@ -47,24 +67,35 @@ final class APIDiskResponseCache {
             let diskCacheExpiry = diskCacheExpiry()
             
             for url in cacheItems {
-                if let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last {
-                    if let data = fm.contents(atPath: url.path) {
-                        let attributes = try fm.attributesOfItem(atPath: url.path)
-                        let creationDate = attributes[.creationDate] as? Date
-                        if let diskCacheExpiry,
-                           let creationDate,
-                           creationDate < diskCacheExpiry {
-                            print("delete expired disk cache for \(filename)")
-                            try? fm.removeItem(atPath: url.path)
-                            continue
-                        }
-                        
-                        let obj = try JSONSerialization.jsonObject(with: data)
-                        cache[filename] = APIMemoryResponseCacheItem(value: obj, timestamp: creationDate ?? Date.distantPast)
-                        
-                    } else {
-                        throw APIDiskResponseCacheError.responseDoesNotExist
-                    }
+                /// Extract filename, type and file contents. Supported types are listed in APIDiskResponseCacheType
+                guard let filename = url.absoluteString.components(separatedBy: CharacterSet(arrayLiteral: "/")).last,
+                      let filenameNoExtension = filename.components(separatedBy: ".").first,
+                      let filetypeString = filename.components(separatedBy: ".").last,
+                      let filetype = APIDiskResponseCacheType(rawValue: filetypeString),
+                      let data = fm.contents(atPath: url.path) else {
+                    continue
+                }
+                
+                /// Check if response is outdated, delete and skip if so
+                let attributes = try fm.attributesOfItem(atPath: url.path)
+                let creationDate = attributes[.creationDate] as? Date
+                if let diskCacheExpiry,
+                   let creationDate,
+                   creationDate < diskCacheExpiry {
+                    if isDebugLoggingEnabled { print("delete expired disk cache for \(filename)") }
+                    try? fm.removeItem(atPath: url.path)
+                    continue
+                }
+                
+                /// Box up response as either json or data and return
+                switch filetype {
+                case .json:
+                    let obj = try JSONSerialization.jsonObject(with: data)
+                    cache[filenameNoExtension] = APIMemoryResponseCacheItem(value: .json(obj),
+                                                                 timestamp: creationDate ?? Date.distantPast)
+                case .data:
+                    cache[filenameNoExtension] = APIMemoryResponseCacheItem(value: .data(data),
+                                                                 timestamp: creationDate ?? Date.distantPast)
                 }
             }
             
@@ -81,9 +112,9 @@ final class APIDiskResponseCache {
         return calendar.date(byAdding: .day, value: -7, to: Date())
     }
     
-    private func urlForPath(_ id: String) throws -> URL {
+    private func urlForPath(_ id: String, type: APIDiskResponseCacheType) throws -> URL {
         let cacheKey = String(id)
-        return try urlForCacheDirectory().appendingPathComponent(cacheKey)
+        return try urlForCacheDirectory().appendingPathComponent(cacheKey).appendingPathExtension(type.rawValue)
     }
     
     private func urlForCacheDirectory() throws -> URL {
@@ -101,6 +132,11 @@ final class APIDiskResponseCache {
 enum APIDiskResponseCacheError: Error {
     case responseDoesNotExist
     case generic
+}
+
+enum APIDiskResponseCacheType: String {
+    case json
+    case data
 }
 
 protocol FileManaging: AnyObject {

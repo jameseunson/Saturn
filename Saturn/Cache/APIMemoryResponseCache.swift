@@ -9,7 +9,7 @@ import Foundation
 import os
 
 protocol APIMemoryResponseCaching: AnyObject {
-    func set(value: Any, for key: String)
+    func set(value: APIMemoryResponseCacheValue, for key: String)
     func get(for key: String) -> APIMemoryResponseCacheItem?
 }
 
@@ -38,7 +38,7 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
         }
     }
     
-    func set(value: Any, for key: String) {
+    func set(value: APIMemoryResponseCacheValue, for key: String) {
         queue.sync {
             cache[key] = APIMemoryResponseCacheItem(value: value, timestamp: Date())
         }
@@ -60,7 +60,7 @@ final class APIMemoryResponseCache: APIMemoryResponseCaching {
 }
 
 struct APIMemoryResponseCacheItem {
-    let value: Any
+    let value: APIMemoryResponseCacheValue
     let timestamp: Date
     
     func isValid(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> Bool {
@@ -73,6 +73,11 @@ struct APIMemoryResponseCacheItem {
             return true
         }
     }
+}
+
+enum APIMemoryResponseCacheValue {
+    case json(Any)
+    case data(Data)
 }
 
 enum APIMemoryResponseCacheBehavior {

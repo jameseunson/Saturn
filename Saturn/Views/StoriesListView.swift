@@ -18,7 +18,6 @@ struct StoriesView: View {
     @State var displayingSafariURL: URL?
     
     @State var isLoading: Bool = false
-    @State var favIcons: [Story: Image] = [:]
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -168,24 +167,12 @@ struct StoriesView: View {
     func isFailedBinding() -> Binding<Bool> {
         Binding {
             interactor.loadingState == .failed
-        } set: { _ in
-//            if !value {
-//                interactor.loadingState = .initialLoad
-//                interactor.loadNextPage()
-//            }
-        }
+        } set: { _ in }
     }
 }
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
         StoriesView(interactor: StoriesInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
-    }
-}
-
-extension UIColor {
-    var inverted: UIColor {
-        var a: CGFloat = 0.0, r: CGFloat = 0.0, g: CGFloat = 0.0, b: CGFloat = 0.0
-        return getRed(&r, green: &g, blue: &b, alpha: &a) ? UIColor(red: 1.0-r, green: 1.0-g, blue: 1.0-b, alpha: a) : .black
     }
 }

@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 struct StoryRowView: View {
+    @State var image: Image?
+    
     let formatter = RelativeDateTimeFormatter()
     let story: StoryRowViewModel
     let onTapArticleLink: ((URL) -> Void)?
@@ -76,13 +78,15 @@ struct StoryRowView: View {
             if let url = story.url {
                 HStack {
                     HStack {
-                        AsyncImage(url: story.imageURL) { image in
+                        if let image {
                             ZStack {
-                                Color.white
-                                image.resizable()
-                                    .padding(4)
+                                Rectangle().foregroundColor(.white)
+                                image
+                                    .resizable()
+                                    .frame(width: 33, height: 33)
+                                    .aspectRatio(contentMode: .fit)
                             }
-                        } placeholder: {
+                        } else {
                             Image(systemName: "link")
                                 .foregroundColor(.gray)
                                 .font(.title3)
@@ -125,6 +129,14 @@ struct StoryRowView: View {
                     .font(.callout)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.leading)
+            }
+        }
+        .onAppear {
+            Task {
+                let storyImage = await StoryImageLoader.default.get(for: story)
+                withAnimation {
+                    image = storyImage
+                }
             }
         }
     }

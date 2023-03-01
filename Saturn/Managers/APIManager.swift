@@ -62,7 +62,8 @@ final class APIManager {
            response.isValid(cacheBehavior: cacheBehavior) {
             return Just(response)
                 .tryMap { response in
-                    guard let ids = response.value as? Array<Int> else {
+                    guard case let .json(value) = response.value,
+                        let ids = value as? Array<Int> else {
                         throw APIManagerError.generic
                     }
                     return ids
@@ -78,7 +79,8 @@ final class APIManager {
                     return ids
                 }
                 .handleEvents(receiveOutput: { ids in
-                    APIMemoryResponseCache.default.set(value: ids, for: type.cacheKey)
+                    APIMemoryResponseCache.default.set(value: .json(ids),
+                                                       for: type.cacheKey)
                 })
                 .eraseToAnyPublisher()
         }
@@ -87,7 +89,8 @@ final class APIManager {
     func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Array<Int> {
         if let response = cache.get(for: type.cacheKey),
            response.isValid(cacheBehavior: cacheBehavior),
-            let responseArray = response.value as? Array<Int> {
+           case let .json(value) = response.value,
+            let responseArray = value as? Array<Int> {
             return responseArray
             
         } else if let response = try await retrieve(from: type.path) as? Array<Int> {
@@ -207,50 +210,17 @@ final class APIManager {
             .eraseToAnyPublisher()
     }
     
-    
-    func loadImage(for story: Story, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<Image, Never> {
-        guard let imageURL = StoryRowViewModel(story: story).imageURL else {
-            return Empty().eraseToAnyPublisher()
-        }
-  
-        let cacheKey = imageURL.absoluteString
-            .replacingOccurrences(of: "/", with: "-")
-            .replacingOccurrences(of: ".", with: "-")
-            .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted)
-            .joined()
-        
-        if let response = cache.get(for: cacheKey),
-           response.isValid(cacheBehavior: cacheBehavior),
-           let data = response.value as? Data,
-           let image = UIImage(data: data) {
-            return Just(Image(uiImage: image)).eraseToAnyPublisher()
-        }
-        
-        return URLSession.DataTaskPublisher(request: URLRequest(url: imageURL), session: .shared)
-            .mapError { _ in APIManagerError.generic }
-            .tryMap { (data: Data, urlResponse: URLResponse) -> Image in
-                guard let image = UIImage(data: data) else {
-                    throw APIManagerError.generic
-                }
-                self.cache.set(value: data, for: cacheKey)
-                return Image(uiImage: image)
-            }
-            .catch { _ in
-                return Empty().eraseToAnyPublisher()
-            }
-            .eraseToAnyPublisher()
-    }
-    
     // MARK: -
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<T, Error> {
         if let response = cache.get(for: String(id)),
-           response.isValid(cacheBehavior: cacheBehavior) {
+           response.isValid(cacheBehavior: cacheBehavior),
+           case let .json(value) = response.value {
             return Just(response)
                 .handleEvents(receiveOutput: { _ in
                     if self.isDebugLoggingEnabled { print("cache hit: \(id)") }
                 })
                 .flatMap { response in
-                    return self.decodeResponse(response.value)
+                    return self.decodeResponse(value)
                 }
                 .compactMap { $0 }
                 .eraseToAnyPublisher()
@@ -263,7 +233,7 @@ final class APIManager {
     private func retrieveObjectFromNetwork<T: Codable>(id: Int) -> AnyPublisher<T, Error> {
         return retrieve(from: "v0/item/\(id)")
             .handleEvents(receiveOutput: { response in
-                self.cache.set(value: response, for: String(id))
+                self.cache.set(value: .json(response), for: String(id))
             })
             .flatMap { response in
                 self.decodeResponse(response)
@@ -297,7 +267,7 @@ final class APIManager {
         } else {
             if isDebugLoggingEnabled { print("cache miss (async): \(id)") }
             let response = try await retrieve(from: "v0/item/\(id)")
-            self.cache.set(value: response, for: String(id))
+            self.cache.set(value: .json(response), for: String(id))
             return try self.decodeResponse(response)
         }
     }
