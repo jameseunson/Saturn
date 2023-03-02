@@ -11,6 +11,8 @@ import SwiftUI
 struct StoryRowView: View {
     @State var image: Image?
     
+    let apiManager = APIManager()
+    
     let formatter = RelativeDateTimeFormatter()
     let story: StoryRowViewModel
     let onTapArticleLink: ((URL) -> Void)?
@@ -132,8 +134,8 @@ struct StoryRowView: View {
             }
         }
         .onAppear {
-            Task {
-                let storyImage = await StoryImageLoader.default.get(for: story)
+            Task { @MainActor in
+                let storyImage = try? await apiManager.get(for: story)
                 withAnimation {
                     image = storyImage
                 }

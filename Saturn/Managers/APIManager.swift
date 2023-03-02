@@ -210,7 +210,39 @@ final class APIManager {
             .eraseToAnyPublisher()
     }
     
+    func get(for story: StoryRowViewModel) async throws -> Image {
+        return try await loadImage(for: story, cacheBehavior: .offlineOnly)
+    }
+    
     // MARK: -
+    private func loadImage(for story: StoryRowViewModel, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Image {
+        guard let imageURL = story.imageURL else {
+            throw APIManagerError.generic
+        }
+  
+        let cacheKey = imageURL.absoluteString
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ".", with: "-")
+            .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted)
+            .joined()
+        
+        if let response = cache.get(for: cacheKey),
+           response.isValid(cacheBehavior: cacheBehavior),
+           case let .data(data) = response.value,
+           let image = UIImage(data: data) {
+            
+            return Image(uiImage: image)
+        }
+        
+        let (data, _) = try await URLSession.shared.data(for: URLRequest(url: imageURL))
+        guard let image = UIImage(data: data) else {
+            throw APIManagerError.generic
+        }
+        
+        self.cache.set(value: .data(data), for: cacheKey)
+        return Image(uiImage: image)
+    }
+    
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<T, Error> {
         if let response = cache.get(for: String(id)),
            response.isValid(cacheBehavior: cacheBehavior),

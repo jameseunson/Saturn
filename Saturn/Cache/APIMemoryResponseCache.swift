@@ -81,7 +81,12 @@ enum APIMemoryResponseCacheValue {
 }
 
 enum APIMemoryResponseCacheBehavior {
-    case `default` /// Ignores any cache more than 10 minutes old
-    case ignore /// Ignores cache, even if still valid, always hits network
-    case offlineOnly /// Uses any cache regardless of expiry
+    /// Ignores any cache more than 10 minutes old
+    case `default`
+    
+    /// Ignores cache, even if still valid, always hits network
+    case ignore
+    
+    /// Uses any cache regardless of expiry
+    case offlineOnly
 }
