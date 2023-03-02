@@ -109,7 +109,7 @@ final class APIDiskResponseCache {
     // MARK: -
     private func diskCacheExpiry() -> Date? {
         let calendar = Calendar.current
-        return calendar.date(byAdding: .day, value: -7, to: Date())
+        return calendar.date(byAdding: .day, value: -30, to: Date())
     }
     
     private func urlForPath(_ id: String, type: APIDiskResponseCacheType) throws -> URL {

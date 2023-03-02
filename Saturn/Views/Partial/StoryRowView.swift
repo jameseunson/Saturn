@@ -135,7 +135,7 @@ struct StoryRowView: View {
         }
         .onAppear {
             Task { @MainActor in
-                let storyImage = try? await apiManager.get(for: story)
+                let storyImage = try? await apiManager.getImage(for: story)
                 withAnimation {
                     image = storyImage
                 }

@@ -181,7 +181,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             topLevelComments.removeAll()
             loadedTopLevelComments.removeAll()
             
-            self.story = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore)
+            self.story = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore).response
             loadComments()
         }
     }
@@ -232,7 +232,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
         apiManager.loadComment(id: rootCommentId)
             .flatMap { comment in
-                comment.loadMarkdown()
+                comment.response.loadMarkdown()
             }
             .receive(on: DispatchQueue.global())
             .sink { completion in

@@ -17,7 +17,8 @@ struct StoriesView: View {
     @State var selectedUser: String?
     @State var displayingSafariURL: URL?
     
-    @State var isLoading: Bool = false
+    @State var cacheLoadState: CacheLoadState = .refreshNotAvailable
+    @State var showConnectionAlert: Bool = false
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -38,16 +39,34 @@ struct StoriesView: View {
             case .loaded, .loadingMore, .failed:
                 ZStack(alignment: .top) {
                     contentScrollView()
-                    if isLoading {
+                    
+                    if cacheLoadState == .refreshNotAvailable {
+                        EmptyView()
+                    } else {
                         HStack {
-                            ProgressView()
-                                .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
-                                .padding([.leading, .trailing], 30)
-                                .padding([.top, .bottom], 15)
+                            if cacheLoadState == .refreshing {
+                                ProgressView()
+                                    .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
+                                    .padding([.leading, .trailing], 30)
+                                    .padding([.top, .bottom], 15)
+                                    .tint(.white)
+                            } else {
+                                Button {
+                                    cacheLoadState = .refreshing
+                                } label: {
+                                    Image(systemName: "arrow.clockwise.circle.fill")
+                                        .padding([.leading], 30)
+                                        .foregroundColor(.white)
+                                    Text("Refresh")
+                                        .padding([.trailing], 30)
+                                        .padding([.top, .bottom], 15)
+                                        .foregroundColor(.white)
+                                }
+                            }
                         }
                         .background {
                             RoundedRectangle(cornerRadius: 10)
-                                .foregroundStyle(.ultraThinMaterial)
+                                .foregroundColor(.accentColor)
                         }
                         .offset(.init(width: 0, height: 20))
                     }
@@ -89,10 +108,6 @@ struct StoriesView: View {
                 }
             }
         }
-        .toast(isPresenting: isFailedBinding(), duration: 5.0, tapToDismiss: true, offsetY: 250, alert: {
-            AlertToast(type: .regular, title: "No internet connection")
-            
-        }, onTap: nil, completion: nil)
         .navigationDestination(isPresented: createBoolBinding(from: $selectedUser)) {
             if let selectedUser {
                 UserView(interactor: UserInteractor(username: selectedUser))
@@ -119,6 +134,19 @@ struct StoriesView: View {
         }
         .onAppear {
             interactor.activate()
+        }
+        .onReceive(NetworkConnectivityManager.instance.isConnectedPublisher) { output in
+            showConnectionAlert = !output
+        }
+        .onReceive(interactor.$cacheLoadState) { output in
+            cacheLoadState = output
+        }
+        .onChange(of: cacheLoadState) { newValue in
+            guard newValue == .refreshing else { return }
+            Task {
+                await interactor.refreshStories()
+                cacheLoadState = .refreshNotAvailable
+            }
         }
     }
     
@@ -161,13 +189,10 @@ struct StoriesView: View {
                 ListLoadingView()
             }
         }
-    }
-    
-    // MARK: - Bindings
-    func isFailedBinding() -> Binding<Bool> {
-        Binding {
-            interactor.loadingState == .failed
-        } set: { _ in }
+        .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
+            AlertToast(type: .regular, title: "No internet connection")
+            
+        }, onTap: nil, completion: nil)
     }
 }
 

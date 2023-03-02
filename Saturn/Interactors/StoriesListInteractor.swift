@@ -20,6 +20,7 @@ final class StoriesInteractor: Interactor {
     var storyIds = [Int]()
     @Published var stories = [Story]()
     @Published var loadingState: LoadingState = .initialLoad
+    @Published var cacheLoadState: CacheLoadState = .refreshNotAvailable
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -40,26 +41,25 @@ final class StoriesInteractor: Interactor {
         #if DEBUG
         if displayingSwiftUIPreview {
             self.loadingState = .loaded
+            self.cacheLoadState = .refreshAvailable
             return
         }
         #endif
         
         if case .initialLoad = loadingState {
             loadNextPage(cacheBehavior: .offlineOnly)
-                .flatMap { _ in
-                    if NetworkConnectivityManager.instance.isConnected {
-                        return self.loadNextPage()
-                    } else {
-                        return Empty<[Story], Error>().eraseToAnyPublisher()
+                .sink(receiveCompletion: { _ in }, receiveValue: { response in
+                    if response.source == .cache,
+                       NetworkConnectivityManager.instance.isConnected() {
+                        self.cacheLoadState = .refreshAvailable
                     }
-                }
-                .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+                })
                 .store(in: &disposeBag)
         }
     }
     
     @discardableResult
-    func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[Story], Error> {
+    func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
         Future { [weak self] promise in
             guard let self else { return }
             
@@ -77,9 +77,9 @@ final class StoriesInteractor: Interactor {
                 }
             }
             
-            self.getStoryIds()
-                .flatMap { ids -> AnyPublisher<[Story], Error> in
-                    return self.apiManager.loadStories(ids: self.idsForCurrentPage(with: ids))
+            self.getStoryIds(cacheBehavior: cacheBehavior)
+                .flatMap { ids -> AnyPublisher<[APIResponse<Story>], Error> in
+                    return self.apiManager.loadStories(ids: self.idsForCurrentPage(with: ids), cacheBehavior: cacheBehavior)
                 }
                 .receive(on: RunLoop.main)
                 .sink { completion in
@@ -90,8 +90,12 @@ final class StoriesInteractor: Interactor {
                     }
 
                 } receiveValue: { stories in
-                    self.completeLoad(with: stories)
-                    promise(.success(stories))
+                    var source: APIResponseLoadSource = .network
+                    stories.forEach { if $0.source == .cache { source = .cache } }
+                    
+                    self.completeLoad(with: stories.map { $0.response })
+                    promise(.success(APIResponse(response: stories.map { $0.response },
+                                                 source: source)))
                 }
                 .store(in: &self.disposeBag)
         }
@@ -105,14 +109,14 @@ final class StoriesInteractor: Interactor {
             if self.storyIds.isEmpty {
                 self.apiManager.loadStoryIds(type: self.type, cacheBehavior: cacheBehavior)
                     .handleEvents(receiveOutput: { ids in
-                        self.storyIds.append(contentsOf: ids)
+                        self.storyIds.append(contentsOf: ids.response)
                     })
                     .sink { completion in
                         if case let .failure(error) = completion {
                             promise(.failure(error))
                         }
                     } receiveValue: { ids in
-                        promise(.success(ids))
+                        promise(.success(ids.response))
                     }
                     .store(in: &self.disposeBag)
             } else {
@@ -127,11 +131,12 @@ final class StoriesInteractor: Interactor {
             self.currentPage = 0
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
-            let stories = try await apiManager.loadStories(ids: self.idsForCurrentPage(with: storyIds), cacheBehavior: .ignore)
+            let stories = try await apiManager.loadStories(ids: self.idsForCurrentPage(with: storyIds.response), cacheBehavior: .ignore)
             
             DispatchQueue.main.async { [weak self] in
-                self?.completeLoad(with: stories)
+                self?.completeLoad(with: stories.response)
             }
+            self.cacheLoadState = .refreshNotAvailable
             
         } catch {
             // TODO: Handle error
@@ -159,4 +164,10 @@ final class StoriesInteractor: Interactor {
         self.loadingState = .loaded
         self.currentPage += 1
     }
+}
+
+enum CacheLoadState {
+    case refreshNotAvailable
+    case refreshAvailable
+    case refreshing
 }
