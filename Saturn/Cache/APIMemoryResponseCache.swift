@@ -8,6 +8,7 @@
 import Foundation
 import os
 
+/// @mockable
 protocol APIMemoryResponseCaching: AnyObject {
     func set(value: APIMemoryResponseCacheValue, for key: String)
     func get(for key: String) -> APIMemoryResponseCacheItem?

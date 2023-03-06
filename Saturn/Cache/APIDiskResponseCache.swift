@@ -82,8 +82,10 @@ final class APIDiskResponseCache {
                 if let diskCacheExpiry,
                    let creationDate,
                    creationDate < diskCacheExpiry {
-                    if isDebugLoggingEnabled { print("delete expired disk cache for \(filename)") }
-                    try? fm.removeItem(atPath: url.path)
+                    if fm.fileExists(atPath: url.path) {
+                        if isDebugLoggingEnabled { print("delete expired disk cache for \(filename)") }
+                        try? fm.removeItem(atPath: url.path)
+                    }
                     continue
                 }
                 
@@ -139,6 +141,7 @@ enum APIDiskResponseCacheType: String {
     case data
 }
 
+/// @mockable
 protocol FileManaging: AnyObject {
     func fileExists(atPath path: String) -> Bool
     func removeItem(atPath path: String) throws

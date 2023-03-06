@@ -12,15 +12,34 @@ import Combine
 
 final class APIManagerTests: XCTestCase {
     var apiManager: APIManager!
-    let ref = DatabaseReferenceMock()
+    let ref = DatabaseReferencingMock()
     
     var disposeBag = Set<AnyCancellable>()
     deinit {
         disposeBag.forEach { $0.cancel() }
     }
     
+    override func setUp() {
+        super.setUp()
+        
+        ref.childPathHandler = { [weak self] _ in
+            guard let self else {
+                XCTFail()
+                return DatabaseReferencingMock()
+            }
+            return self.ref
+        }
+        ref.getChildDataHandler = { block in
+            return block(nil, DataShapshottingMock(value: Story.fakeStoryDict()))
+        }
+    }
+    
     func test_retrieveObject_valueNotExpired_used() {
-        let cache = APIMemoryResponseCacheMock(timestamp: Date())
+        let cache = APIMemoryResponseCachingMock()
+        cache.getHandler = { _ in
+            return APIMemoryResponseCacheItem(value: Story.fakeStoryDict(),
+                                              timestamp: Date())
+        }
         
         apiManager = APIManager(cache: cache, ref: ref)
         let expectation = XCTestExpectation(description: "Await apiManager response")
@@ -37,13 +56,17 @@ final class APIManagerTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
         XCTAssert(receivedStory)
         
-        XCTAssert(cache.getCalled)
-        XCTAssertFalse(cache.setCalled)
+        XCTAssertEqual(cache.getCallCount, 1)
+        XCTAssertEqual(cache.setCallCount, 0)
     }
     
     func test_retrieveObject_valueExpired_notUsed() {
-        let cache = APIMemoryResponseCacheMock(timestamp: Date().addingTimeInterval(-(60*11)))
-        
+        let cache = APIMemoryResponseCachingMock()
+        cache.getHandler = { _ in
+            return APIMemoryResponseCacheItem(value: Story.fakeStoryDict(),
+                                              timestamp: Date().addingTimeInterval(-(60*11)))
+        }
+    
         apiManager = APIManager(cache: cache, ref: ref)
         let expectation = XCTestExpectation(description: "Await apiManager response")
         
@@ -59,52 +82,7 @@ final class APIManagerTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
         XCTAssert(receivedStory)
         
-        XCTAssert(cache.getCalled)
-        XCTAssert(cache.setCalled) /// Set operation on the cache indicates a network request was successful
-    }
-}
-
-final class APIMemoryResponseCacheMock: APIMemoryResponseCaching {
-    var setCalled = false
-    var getCalled = false
-    
-    let timestamp: Date
-    
-    init(timestamp: Date) {
-        self.timestamp = timestamp
-    }
-    
-    func set(value: Any, for key: Int) {
-        setCalled = true
-    }
-    
-    func get(for key: Int) -> APIMemoryResponseCacheItem? {
-        getCalled = true
-        
-        return APIMemoryResponseCacheItem(value: Story.fakeStoryDict(),
-                                          timestamp: timestamp)
-    }
-}
-
-final class DataSnapshotMock: DataShapshotting {
-    let value: Any?
-    
-    init(value: Any) {
-        self.value = value
-    }
-}
-
-final class DatabaseReferenceMock: DatabaseReferencing {
-    var childPathCalled = false
-    var getChildDataCalled = false
-    
-    func childPath(_ pathString: String) -> Saturn.DatabaseReferencing {
-        childPathCalled = true
-        return DatabaseReferenceMock()
-    }
-    
-    func getChildData(completion block: @escaping (Error?, Saturn.DataShapshotting?) -> Void) {
-        getChildDataCalled = true
-        block(nil, DataSnapshotMock(value: Story.fakeStoryDict()))
+        XCTAssertEqual(cache.getCallCount, 1)
+        XCTAssertEqual(cache.setCallCount, 1) /// Set operation on the cache indicates a network request was successful
     }
 }

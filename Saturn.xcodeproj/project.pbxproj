@@ -19,6 +19,7 @@
 		1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13B841299DEA25009E3E70 /* APIManagerTests.swift */; };
 		1A13B844299E17C2009E3E70 /* APIDiskResponseCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
+		1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
@@ -152,6 +153,7 @@
 		1A13B841299DEA25009E3E70 /* APIManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManagerTests.swift; sourceTree = "<group>"; };
 		1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCacheTests.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
+		1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnMocks.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
 		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
@@ -359,6 +361,7 @@
 		1A5DBBC4296933BB00D4D86E /* SaturnTests */ = {
 			isa = PBXGroup;
 			children = (
+				1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */,
 				1A888FC02993707B00490A74 /* TextProcessorTests.swift */,
 				1A13B841299DEA25009E3E70 /* APIManagerTests.swift */,
 				1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */,
@@ -754,6 +757,7 @@
 				1A13B844299E17C2009E3E70 /* APIDiskResponseCacheTests.swift in Sources */,
 				1A888FC12993707B00490A74 /* TextProcessorTests.swift in Sources */,
 				1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */,
+				1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

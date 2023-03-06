@@ -407,11 +407,13 @@ private struct TimeoutError: LocalizedError {
   var errorDescription: String? = "Task timed out before completion"
 }
 
+/// @mockable
 protocol DatabaseReferencing: AnyObject {
     func childPath(_ pathString: String) -> DatabaseReferencing
     func getChildData(completion block: @escaping (Error?, DataShapshotting?) -> Void)
 }
 
+/// @mockable
 protocol DataShapshotting: AnyObject {
     var value: Any? { get }
 }
