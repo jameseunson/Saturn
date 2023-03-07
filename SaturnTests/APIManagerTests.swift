@@ -37,7 +37,7 @@ final class APIManagerTests: XCTestCase {
     func test_retrieveObject_valueNotExpired_used() {
         let cache = APIMemoryResponseCachingMock()
         cache.getHandler = { _ in
-            return APIMemoryResponseCacheItem(value: Story.fakeStoryDict(),
+            return APIMemoryResponseCacheItem(value: APIMemoryResponseCacheValue.json(Story.fakeStoryDict()),
                                               timestamp: Date())
         }
         
@@ -63,7 +63,7 @@ final class APIManagerTests: XCTestCase {
     func test_retrieveObject_valueExpired_notUsed() {
         let cache = APIMemoryResponseCachingMock()
         cache.getHandler = { _ in
-            return APIMemoryResponseCacheItem(value: Story.fakeStoryDict(),
+            return APIMemoryResponseCacheItem(value: APIMemoryResponseCacheValue.json(Story.fakeStoryDict()),
                                               timestamp: Date().addingTimeInterval(-(60*11)))
         }
     

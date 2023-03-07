@@ -50,7 +50,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 .store(in: &disposeBag)
         }
         
-        /// Retrieve context story for each comment
+        /// Retrieve context object `CommentLoaderContainer` for each comment
         $items
             .filter { $0.count > 0 }
             .setFailureType(to: Error.self)

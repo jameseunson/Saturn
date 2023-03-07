@@ -26,7 +26,7 @@ final class APIDiskResponseCacheTests: XCTestCase {
             return true
         }
         fm.contentsOfDirectoryHandler = { _, _, _ in
-            return [URL(filePath: "/HNCache/1234")]
+            return [URL(filePath: "/HNCache/1234.json")]
         }
         fm.contentsHandler = { _ in
             return Data()
@@ -39,7 +39,7 @@ final class APIDiskResponseCacheTests: XCTestCase {
     func test_loadAll_expiredResponse_isDeleted() {
         fm.attributesOfItemHandler = { _ in
             let calendar = Calendar.current
-            guard let date = calendar.date(byAdding: .day, value: -14, to: Date()) else {
+            guard let date = calendar.date(byAdding: .day, value: -31, to: Date()) else {
                 XCTFail()
                 return [:]
             }
@@ -47,7 +47,7 @@ final class APIDiskResponseCacheTests: XCTestCase {
             return [.creationDate: date]
         }
         fm.removeItemHandler = { path in
-            XCTAssertEqual(path, "/HNCache/1234")
+            XCTAssertEqual(path, "/HNCache/1234.json")
         }
         
         XCTAssertEqual(fm.removeItemCallCount, 0)
@@ -59,7 +59,7 @@ final class APIDiskResponseCacheTests: XCTestCase {
     func test_loadAll_unexpiredResponse_isNotDeleted() {
         fm.attributesOfItemHandler = { _ in
             let calendar = Calendar.current
-            guard let date = calendar.date(byAdding: .day, value: -6, to: Date()) else {
+            guard let date = calendar.date(byAdding: .day, value: -29, to: Date()) else {
                 XCTFail()
                 return [:]
             }

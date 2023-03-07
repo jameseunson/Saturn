@@ -297,15 +297,20 @@ final class APIManager {
     
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<T> {
         if let response = cache.get(for: String(id)),
-           response.isValid(cacheBehavior: cacheBehavior) {
+           response.isValid(cacheBehavior: cacheBehavior),
+           case let .json(value) = response.value {
             if isDebugLoggingEnabled { print("cache hit (async): \(id)") }
-            return try self.decodeResponse(response.value)
+            
+            let decodedResponse: T = try self.decodeResponse(value)
+            return APIResponse<T>(response: decodedResponse, source: .cache)
             
         } else {
             if isDebugLoggingEnabled { print("cache miss (async): \(id)") }
             let response = try await retrieve(from: "v0/item/\(id)")
             self.cache.set(value: .json(response), for: String(id))
-            return try self.decodeResponse(response)
+            
+            let decodedResponse: T = try self.decodeResponse(response)
+            return APIResponse<T>(response: decodedResponse, source: .network)
         }
     }
     
