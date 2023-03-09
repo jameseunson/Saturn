@@ -95,6 +95,7 @@
 		1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
+		1ACB6C0629B86DB4000A94E0 /* StoriesListInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -201,6 +202,7 @@
 		1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+IndentationColor.swift"; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
+		1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractorTests.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				1A888FC02993707B00490A74 /* TextProcessorTests.swift */,
 				1A13B841299DEA25009E3E70 /* APIManagerTests.swift */,
 				1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */,
+				1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */,
 			);
 			path = SaturnTests;
 			sourceTree = "<group>";
@@ -753,6 +756,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1ACB6C0629B86DB4000A94E0 /* StoriesListInteractorTests.swift in Sources */,
 				1A873ACE2970F64800870A50 /* TextProcessor.swift in Sources */,
 				1A13B844299E17C2009E3E70 /* APIDiskResponseCacheTests.swift in Sources */,
 				1A888FC12993707B00490A74 /* TextProcessorTests.swift in Sources */,
@@ -908,7 +912,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -928,7 +932,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -946,7 +950,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -966,7 +970,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

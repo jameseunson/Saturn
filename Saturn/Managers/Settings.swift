@@ -24,6 +24,11 @@ class Settings {
         .indentationColor: .enum
     ]
     
+    private let defaults: [SettingKey: SettingValue] = [
+        .entersReader: .bool(false),
+        .indentationColor: .indentationColor(.default)
+    ]
+    
     init() {
         encoder = PropertyListEncoder()
         encoder.outputFormat = .xml
@@ -32,6 +37,11 @@ class Settings {
         if let settingsMap = load() {
             self.settingsMap = settingsMap
             settings.send(settingsMap)
+            
+        } else { /// No persisted settings, initialize with defaults and write to disk
+            self.settingsMap = defaults
+            settings.send(settingsMap)
+            persist()
         }
     }
     
@@ -42,21 +52,24 @@ class Settings {
     }
     
     func bool(for key: SettingKey) -> Bool {
-        switch settingsMap[key] {
-        case let .bool(value):
-            return value
-        default:
+        guard case let .bool(value) = settingsMap[key] else {
             return false
         }
+        return value
     }
     
     func indentationColor() -> SettingIndentationColor? {
-        switch settingsMap[.indentationColor] {
-        case let .indentationColor(color):
-            return color
-        default:
+        guard case let .indentationColor(color) = settingsMap[.indentationColor] else {
             return nil
         }
+        return color
+    }
+    
+    func color(for key: SettingKey) -> Color? {
+        guard case let .color(color) = settingsMap[key] else {
+            return nil
+        }
+        return color
     }
     
     // MARK: - Private
@@ -93,6 +106,16 @@ class Settings {
 enum SettingKey: String, CaseIterable, Codable {
     case entersReader = "Open URLs in Reader Mode"
     case indentationColor = "Comment Indentation Color"
+    case lastUserSelectedColor = "Last User Selected Color"
+    
+    func isUserConfigurable() -> Bool {
+        switch self {
+        case .entersReader, .indentationColor:
+            return true
+        case .lastUserSelectedColor:
+            return false
+        }
+    }
 }
 
 enum SettingIndentationColor: CaseIterable, Codable, Hashable {
@@ -100,14 +123,14 @@ enum SettingIndentationColor: CaseIterable, Codable, Hashable {
         [.`default`,
          .hnOrange,
          .userSelected(color: nil),
-         .random,
+         .randomLevel,
          .randomPost]
     }
     
     case `default`
     case hnOrange
     case userSelected(color: Color?)
-    case random
+    case randomLevel
     case randomPost
     
     var keys: [String] {
@@ -126,7 +149,7 @@ enum SettingIndentationColor: CaseIterable, Codable, Hashable {
             return "HN Orange"
         case .userSelected(color: _):
             return "User Selected"
-        case .random:
+        case .randomLevel:
             return "Random (per level)"
         case .randomPost:
             return "Random (every post)"
@@ -153,11 +176,14 @@ enum SettingValue: Codable, Hashable {
             hasher.combine(value)
         case let .indentationColor(value):
             hasher.combine(value)
+        case let .color(value):
+            hasher.combine(value)
         }
     }
     
     case bool(Bool)
     case indentationColor(SettingIndentationColor)
+    case color(Color)
 }
 
 enum SettingType {

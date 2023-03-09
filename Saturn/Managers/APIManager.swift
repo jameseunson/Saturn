@@ -59,7 +59,8 @@ final class APIManager {
     func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
         if cacheBehavior == .offlineOnly,
            cache.get(for: type.cacheKey) == nil {
-            return Empty()
+            return Just(APIResponse(response: [], source: .cache))
+                .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
         }
         

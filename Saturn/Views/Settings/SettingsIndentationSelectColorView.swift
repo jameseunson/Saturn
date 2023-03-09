@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SettingsIndentationSelectColorView: View {
     @Binding var selectedColor: SettingIndentationColor
+    @Binding var lastUserSelectedColor: Color?
     
     var body: some View {
         List {
@@ -36,7 +37,7 @@ struct SettingsIndentationSelectColorView: View {
                                 SettingsIndentationUnknownColorView()
                             }
                             
-                        case .random, .randomPost:
+                        case .randomLevel, .randomPost:
                             SettingsIndentationUnknownColorView()
                         }
                         
@@ -44,7 +45,7 @@ struct SettingsIndentationSelectColorView: View {
                         Spacer()
                         
                         switch key {
-                        case .`default`, .hnOrange, .random, .randomPost:
+                        case .`default`, .hnOrange, .randomLevel, .randomPost:
                             if selectedColor == key { Image(systemName: "checkmark") }
                         case .userSelected(color: _):
                             if case .userSelected(_) = selectedColor {
@@ -54,7 +55,18 @@ struct SettingsIndentationSelectColorView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedColor = key
+                        if case let .userSelected(color) = key,
+                           color == nil {
+                            if let color = lastUserSelectedColor {
+                                selectedColor = .userSelected(color: color)
+                            } else {
+                                let color = Color.random
+                                selectedColor = .userSelected(color: color)
+                                lastUserSelectedColor = color
+                            }
+                        } else {
+                            selectedColor = key
+                        }
                     }
                 }
             }
@@ -69,11 +81,17 @@ struct SettingsIndentationSelectColorView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
     
+    /// Exists because `ColorPicker` requires a non-optional `Color` binding, but `Color` selection
+    ///  can be optional (user hasn't yet selected a color)
     func optionalBindingForUserSelectedColor() -> Binding<Color?> {
         Binding {
             if case let .userSelected(color) = selectedColor,
             let color {
                 return color
+                
+            } else if let color = lastUserSelectedColor {
+                return color
+                
             } else {
                 return nil
             }
@@ -86,10 +104,11 @@ struct SettingsIndentationSelectColorView: View {
             let color {
                 return color
             } else {
-                return Color.random
+                return Color.gray
             }
         } set: { value in
             selectedColor = .userSelected(color: value)
+            lastUserSelectedColor = value
         }
     }
 }

@@ -52,7 +52,8 @@ struct StoriesView: View {
                                     .tint(.white)
                             } else {
                                 Button {
-                                    cacheLoadState = .refreshing
+                                    interactor.didTapRefreshButton()
+                                    
                                 } label: {
                                     Image(systemName: "arrow.clockwise.circle.fill")
                                         .padding([.leading], 30)
@@ -140,13 +141,6 @@ struct StoriesView: View {
         }
         .onReceive(interactor.$cacheLoadState) { output in
             cacheLoadState = output
-        }
-        .onChange(of: cacheLoadState) { newValue in
-            guard newValue == .refreshing else { return }
-            Task {
-                await interactor.refreshStories()
-                cacheLoadState = .refreshNotAvailable
-            }
         }
     }
     

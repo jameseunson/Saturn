@@ -19,7 +19,7 @@ struct CommentIndentationView: View {
             RoundedRectangle(cornerSize: .init(width: 1, height: 1))
                 .frame(width: 2)
                 .padding(.trailing, 5)
-                .foregroundColor(Color.indentationColor())
+                .foregroundColor(Color.indentationColor(for: comment))
                 .brightness((0.2 * Double(comment.indendation - 1)))
             
         } else {

@@ -8,8 +8,9 @@
 import Foundation
 import Combine
 
-final class CommentLoader {
+actor CommentLoader {
     let apiManager = APIManager()
+    private var activeTasks = [Int: Task<UserItem, Error>]()
     
     func traverse(_ comment: Comment) async throws -> CommentLoaderContainer {
         var currentComment = comment
@@ -34,7 +35,16 @@ final class CommentLoader {
     
     // MARK: -
     private func traverseAux(_ comment: Comment) async throws -> UserItem {
-        return try await apiManager.loadUserItem(id: comment.parent)
+        if let existingTask = activeTasks[comment.parent] {
+            return try await existingTask.value
+        }
+        let task = Task<UserItem, Error> {
+            let userItem = try await apiManager.loadUserItem(id: comment.parent)
+            activeTasks[comment.parent] = nil
+            
+            return userItem
+        }
+        return try await task.value
     }
 
     private func processComments(commentChain: [Comment]) -> [CommentViewModel] {

@@ -9,10 +9,28 @@ import Foundation
 import SwiftUI
 
 extension Color {
+    static var randomLevelColors: [Int: Color] = [:]
+    
+    static func indentationColor(for comment: CommentViewModel) -> Color {
+        let color = Settings.default.indentationColor()
+        if color == .randomLevel {
+            if let levelColor = randomLevelColors[comment.indendation] {
+                return levelColor
+                
+            } else {
+                let color = Color.random
+                randomLevelColors[comment.indendation] = color
+                return color
+            }
+        } else {
+            return indentationColor()
+        }
+    }
+    
     static func indentationColor() -> Color {
         let color = Settings.default.indentationColor()
         switch color {
-        case .random:
+        case .randomLevel:
             return Color.random
         case .none:
             return Color(uiColor: UIColor.systemGray3)

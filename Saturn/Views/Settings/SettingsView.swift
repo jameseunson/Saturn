@@ -16,7 +16,7 @@ struct SettingsView: View {
     var body: some View {
         List {
             Section {
-                ForEach(SettingKey.allCases, id: \.self) { key in
+                ForEach(SettingKey.allCases.filter { $0.isUserConfigurable() }, id: \.self) { key in
                     switch Settings.types[key] {
                     case .bool:
                         HStack {
@@ -31,7 +31,8 @@ struct SettingsView: View {
                         }
                     case .enum:
                         NavigationLink {
-                            SettingsIndentationSelectColorView(selectedColor: indentationColor())
+                            SettingsIndentationSelectColorView(selectedColor: indentationColor(),
+                                                               lastUserSelectedColor: lastUserSelectedColor())
                         } label: {
                             HStack {
                                 Text(key.rawValue)
@@ -92,10 +93,6 @@ struct SettingsView: View {
         .onReceive(interactor.$settingsValues) { output in
             settingsMap = output
         }
-        .onChange(of: indentationColor().wrappedValue) { newValue in
-            settingsMap[.indentationColor] = .indentationColor(newValue)
-            interactor.set(.indentationColor, value: .indentationColor(newValue))
-        }
     }
     
     func boolForSetting(_ key: SettingKey) -> Binding<Bool> {
@@ -107,7 +104,7 @@ struct SettingsView: View {
                 return false
             }
         } set: { value in
-            settingsMap[key] = .bool(value)
+            interactor.set(key, value: .bool(value))
         }
     }
     
@@ -120,7 +117,20 @@ struct SettingsView: View {
                 return .`default`
             }
         } set: { value in
-            settingsMap[.indentationColor] = .indentationColor(value)
+            interactor.set(.indentationColor, value: .indentationColor(value))
+        }
+    }
+    
+    func lastUserSelectedColor() -> Binding<Color?> {
+        Binding {
+            if case let .color(color) = settingsMap[.lastUserSelectedColor] {
+                return color
+            } else {
+                return nil
+            }
+        } set: { value in
+            guard let value else { return }
+            interactor.set(.lastUserSelectedColor, value: .color(value))
         }
     }
 }

@@ -10,17 +10,16 @@ import Foundation
 import SwiftUI
 
 final class StoriesInteractor: Interactor {
-    @Published var canLoadMore: Bool = true
+    private let apiManager = APIManager()
+    private let pageLength = 10
+    private let type: StoryListType
     
-    let apiManager = APIManager()
-    let pageLength = 10
-    let type: StoryListType
+    private var currentPage: Int = 0
+    private var storyIds = [Int]()
     
-    var currentPage: Int = 0
-    var storyIds = [Int]()
-    @Published var stories = [Story]()
-    @Published var loadingState: LoadingState = .initialLoad
-    @Published var cacheLoadState: CacheLoadState = .refreshNotAvailable
+    @Published private(set) var stories = [Story]()
+    @Published private(set) var loadingState: LoadingState = .initialLoad
+    @Published private(set) var cacheLoadState: CacheLoadState = .refreshNotAvailable
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -47,10 +46,25 @@ final class StoriesInteractor: Interactor {
         #endif
         
         if case .initialLoad = loadingState {
+            /// Start by loading the offline cache version of the response
             loadNextPage(cacheBehavior: .offlineOnly)
-                .sink(receiveCompletion: { _ in }, receiveValue: { response in
+                .flatMap { stories in
+                    /// If there is no existing offline cache of the response, hit the network
+                    if stories.response.isEmpty {
+                        return self.loadNextPage()
+                    } else {
+                        return Just(stories).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    }
+                }
+                .sink(receiveCompletion: { completion in
+                    if case let .failure(error) = completion {
+                        print(error)
+                        // TODO:
+                    }
+                }, receiveValue: { response in
                     if response.source == .cache,
                        NetworkConnectivityManager.instance.isConnected() {
+                        /// Display the UI element prompting the user to refresh, if the response was from the offline disk cache
                         self.cacheLoadState = .refreshAvailable
                     }
                 })
@@ -134,12 +148,20 @@ final class StoriesInteractor: Interactor {
             let stories = try await apiManager.loadStories(ids: self.idsForCurrentPage(with: storyIds.response), cacheBehavior: .ignore)
             
             DispatchQueue.main.async { [weak self] in
-                self?.completeLoad(with: stories.response)
+                guard let self else { return }
+                self.completeLoad(with: stories.response)
+                self.cacheLoadState = .refreshNotAvailable
             }
-            self.cacheLoadState = .refreshNotAvailable
             
         } catch {
             // TODO: Handle error
+        }
+    }
+    
+    func didTapRefreshButton() {
+        cacheLoadState = .refreshing
+        Task {
+            await refreshStories()
         }
     }
     

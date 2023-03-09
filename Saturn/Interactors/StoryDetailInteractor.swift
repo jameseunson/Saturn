@@ -120,7 +120,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 } receiveValue: { item in
                     switch item {
                     case let .story(story):
-                        self.story = story
+                        DispatchQueue.main.async {
+                            self.story = story
+                        }
                         self.loadComments()
                         
                     case let .comment(comment):
