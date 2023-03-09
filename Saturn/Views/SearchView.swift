@@ -27,54 +27,12 @@ struct SearchView: View {
                                 .frame(width: reader.size.width, height: reader.size.height)
                             
                         } else if case let .loaded(results) = interactor.results {
-                            if results.count > 0 {
-                                if results.containsUser() {
-                                    Text("Users")
-                                        .font(.callout)
-                                        .fontWeight(.medium)
-                                        .padding([.leading])
-                                    Divider()
-                                        .padding([.leading])
-                                    ForEach(results) { result in
-                                        if case let .user(user) = result {
-                                            NavigationLink(value: result) {
-                                                HStack {
-                                                    Image(systemName: "person.circle")
-                                                        .foregroundColor(Color.primary)
-                                                    Text(user.id)
-                                                        .foregroundColor(Color.primary)
-                                                }
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                                .contentShape(Rectangle())
-                                                .padding([.leading, .trailing, .bottom])
-                                            }
-                                        }
-                                    }
-                                }
-                                Text("Stories")
-                                    .font(.callout)
-                                    .fontWeight(.medium)
-                                    .padding([.leading])
-                                Divider()
-                                    .padding([.leading])
-                                ForEach(results) { result in
-                                    if case let .searchResult(searchItem) = result {
-                                        NavigationLink(value: result) {
-                                            StoryRowView(story: StoryRowViewModel(searchItem: searchItem),
-                                                         onTapArticleLink: { url in
-                                                self.displayingSafariURL = url
-                                            })
-                                            .padding([.leading, .trailing])
-                                            .padding(.bottom, 15)
-                                        }
-                                        Divider()
-                                    }
-                                }
-                            } else {
-                                Text("No results for '\(searchQuery)'")
-                                    .foregroundColor(.gray)
-                                    .frame(width: reader.size.width, height: reader.size.height)
-                            }
+                            SearchResultsView(results: results,
+                                              searchQuery: $searchQuery,
+                                              displayingSafariURL: $displayingSafariURL)
+                            
+                        } else if case .notLoading = interactor.results {
+                            EmptyView()
                         }
                     }
                 }
@@ -92,7 +50,6 @@ struct SearchView: View {
                     .navigationTitle(selectedUser.id)
             }
         }
-        .listStyle(.plain)
         .searchable(text: $searchQuery)
         .autocorrectionDisabled(true)
         .textInputAutocapitalization(.never)
@@ -107,6 +64,63 @@ struct SearchView: View {
                 SafariView(url: displayingSafariURL)
                     .ignoresSafeArea()
             }
+        }
+    }
+}
+
+struct SearchResultsView: View {
+    let results: Array<SearchResultItem>
+    @Binding var searchQuery: String
+    @Binding var displayingSafariURL: URL?
+    
+    var body: some View {
+        if results.count > 0 {
+            if results.containsUser() {
+                Text("Users")
+                    .font(.callout)
+                    .fontWeight(.medium)
+                    .padding([.leading])
+                Divider()
+                    .padding([.leading])
+                ForEach(results) { result in
+                    if case let .user(user) = result {
+                        NavigationLink(value: result) {
+                            HStack {
+                                Image(systemName: "person.circle")
+                                    .foregroundColor(Color.primary)
+                                Text(user.id)
+                                    .foregroundColor(Color.primary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .padding([.leading, .trailing, .bottom])
+                        }
+                    }
+                }
+            }
+            Text("Stories")
+                .font(.callout)
+                .fontWeight(.medium)
+                .padding([.leading])
+            Divider()
+                .padding([.leading])
+            ForEach(results) { result in
+                if case let .searchResult(searchItem) = result {
+                    NavigationLink(value: result) {
+                        StoryRowView(story: StoryRowViewModel(searchItem: searchItem),
+                                     onTapArticleLink: { url in
+                            self.displayingSafariURL = url
+                        })
+                        .padding([.leading, .trailing])
+                        .padding(.bottom, 15)
+                    }
+                    Divider()
+                }
+            }
+        } else {
+            Text("No results for '\(searchQuery)'")
+                .foregroundColor(.gray)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

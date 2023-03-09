@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     @ObservedObject var interactor = SettingsInteractor()
@@ -65,6 +66,35 @@ struct SettingsView: View {
                         .foregroundColor(.gray)
                 }
                 HStack {
+                    Text("Website")
+                    Spacer()
+                    Text("https://saturn.hn")
+                        .foregroundColor(.gray)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if let url = URL(string: "https://saturn.hn") {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                HStack {
+                    Text("Rate this app")
+                    Spacer()
+                    Text("Rate")
+                        .foregroundColor(.gray)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if let windowScene = UIApplication.shared.connectedScenes.first,
+                       let scene = windowScene as? UIWindowScene {
+                        SKStoreReviewController.requestReview(in: scene)
+                    }
+                }
+                HStack {
                     Text("Feedback")
                     Spacer()
                     Text("Send")
@@ -72,6 +102,7 @@ struct SettingsView: View {
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
                 }
+                .contentShape(Rectangle())
                 .onTapGesture {
                     if let url = URL(string: "mailto:saturnhnapp@gmail.com") {
                         UIApplication.shared.open(url)

@@ -51,6 +51,7 @@ class Settings {
         persist()
     }
     
+    // MARK: -
     func bool(for key: SettingKey) -> Bool {
         guard case let .bool(value) = settingsMap[key] else {
             return false
@@ -70,6 +71,13 @@ class Settings {
             return nil
         }
         return color
+    }
+    
+    func searchHistory() -> SettingSearchHistory {
+        guard case let .searchHistory(value) = settingsMap[.searchHistory] else {
+            return SettingSearchHistory()
+        }
+        return value
     }
     
     // MARK: - Private
@@ -103,90 +111,24 @@ class Settings {
     }
 }
 
-enum SettingKey: String, CaseIterable, Codable {
-    case entersReader = "Open URLs in Reader Mode"
-    case indentationColor = "Comment Indentation Color"
-    case lastUserSelectedColor = "Last User Selected Color"
-    
-    func isUserConfigurable() -> Bool {
-        switch self {
-        case .entersReader, .indentationColor:
-            return true
-        case .lastUserSelectedColor:
-            return false
-        }
-    }
-}
-
-enum SettingIndentationColor: CaseIterable, Codable, Hashable {
-    static var allCases: [SettingIndentationColor] {
-        [.`default`,
-         .hnOrange,
-         .userSelected(color: nil),
-         .randomLevel,
-         .randomPost]
-    }
-    
-    case `default`
-    case hnOrange
-    case userSelected(color: Color?)
-    case randomLevel
-    case randomPost
-    
-    var keys: [String] {
-        SettingIndentationColor.allCases.map { description(for: $0) }
-    }
-    
-    func toString() -> String {
-        description(for: self)
-    }
-    
-    func description(for key: SettingIndentationColor) -> String {
-        switch self {
-        case .`default`:
-            return "Default (Gray)"
-        case .hnOrange:
-            return "HN Orange"
-        case .userSelected(color: _):
-            return "User Selected"
-        case .randomLevel:
-            return "Random (per level)"
-        case .randomPost:
-            return "Random (every post)"
-        }
-    }
-}
-
-enum SettingValue: Codable, Hashable {
-    static func == (lhs: SettingValue, rhs: SettingValue) -> Bool {
-        switch (lhs, rhs) {
-            
-        case (.bool(let lhsValue), .bool(let rhsValue)):
-            return lhsValue == rhsValue
-        case (.indentationColor(let lhsValue), .indentationColor(let rhsValue)):
-            return lhsValue == rhsValue
-        default:
-            return false
-        }
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        switch self {
-        case let .bool(value):
-            hasher.combine(value)
-        case let .indentationColor(value):
-            hasher.combine(value)
-        case let .color(value):
-            hasher.combine(value)
-        }
-    }
-    
-    case bool(Bool)
-    case indentationColor(SettingIndentationColor)
-    case color(Color)
-}
-
 enum SettingType {
     case bool
     case `enum`
+}
+
+struct SettingSearchHistory: Codable, Hashable {
+    let history: Array<SettingSearchHistoryItem>
+    
+    init(history: Array<SettingSearchHistoryItem> = []) {
+        self.history = history
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        history.forEach { hasher.combine($0) }
+    }
+}
+
+struct SettingSearchHistoryItem: Codable, Hashable {
+    let query: String
+    let timestamp: Date
 }

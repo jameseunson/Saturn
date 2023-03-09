@@ -96,6 +96,10 @@
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
 		1ACB6C0629B86DB4000A94E0 /* StoriesListInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */; };
+		1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */; };
+		1ACB6C0B29B9C46B000A94E0 /* SettingsIndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */; };
+		1ACB6C0D29B9C48E000A94E0 /* SettingValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0C29B9C48E000A94E0 /* SettingValue.swift */; };
+		1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -203,6 +207,10 @@
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
 		1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractorTests.swift; sourceTree = "<group>"; };
+		1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
+		1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsIndentationColor.swift; sourceTree = "<group>"; };
+		1ACB6C0C29B9C48E000A94E0 /* SettingValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingValue.swift; sourceTree = "<group>"; };
+		1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingKey.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -391,6 +399,7 @@
 				1A873ABC296E767B00870A50 /* UserView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
+				1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -427,7 +436,7 @@
 		1A873AB8296D444400870A50 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
-				1AE4A993297526AB00D0B0D3 /* Settings.swift */,
+				1ACB6C0929B9C45C000A94E0 /* Settings */,
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
 				1A873ACA296FCD4800870A50 /* TextProcessor.swift */,
 				1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */,
@@ -484,6 +493,17 @@
 				1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */,
 			);
 			path = Cache;
+			sourceTree = "<group>";
+		};
+		1ACB6C0929B9C45C000A94E0 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				1AE4A993297526AB00D0B0D3 /* Settings.swift */,
+				1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */,
+				1ACB6C0C29B9C48E000A94E0 /* SettingValue.swift */,
+				1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		1AE4A99929778F1900D0B0D3 /* Partial */ = {
@@ -702,11 +722,14 @@
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
+				1ACB6C0D29B9C48E000A94E0 /* SettingValue.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
+				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,
+				1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */,
 				1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */,
 				1AE4A9D52979147200D0B0D3 /* UserItem.swift in Sources */,
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
@@ -730,6 +753,7 @@
 				1A873AC7296F921C00870A50 /* User.swift in Sources */,
 				1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */,
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
+				1ACB6C0B29B9C46B000A94E0 /* SettingsIndentationColor.swift in Sources */,
 				1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */,
 				1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */,
 				1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */,

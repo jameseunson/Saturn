@@ -23,12 +23,16 @@ final class AppRemoteConfig {
     }
     
     func isSearchEnabled() -> Bool {
-        let value = remoteConfig.configValue(forKey: RemoteConfigKeys.searchEnabled.rawValue)
-        return value.boolValue
+        return remoteConfig.configValue(forKey: RemoteConfigKeys.searchEnabled.rawValue).boolValue
+    }
+    
+    func isLoggedInEnabled() -> Bool {
+        return remoteConfig.configValue(forKey: RemoteConfigKeys.loggedInEnabled.rawValue).boolValue
     }
 }
 
 enum RemoteConfigKeys: String {
     case searchEnabled
+    case loggedInEnabled
 }
 

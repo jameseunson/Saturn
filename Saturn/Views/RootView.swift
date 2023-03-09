@@ -45,6 +45,16 @@ struct RootView: View {
             .tabItem {
                 Label("Ask", systemImage: "text.bubble")
             }
+            if AppRemoteConfig.instance.isLoggedInEnabled() {
+                NavigationStack {
+                    LoggedInView()
+                        .navigationTitle("User")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("User", systemImage: "person")
+                }
+            }
         }
         .onAppear {
             interactor.activate()
