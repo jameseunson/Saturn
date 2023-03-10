@@ -1,5 +1,5 @@
 //
-//  StoriesView.swift
+//  StoriesListView.swift
 //  Saturn
 //
 //  Created by James Eunson on 7/1/2023.
@@ -8,7 +8,7 @@
 import SwiftUI
 import AlertToast
 
-struct StoriesView: View {
+struct StoriesListView: View {
     @StateObject var interactor: StoriesInteractor
     
     @State var isSettingsVisible: Bool = false
@@ -43,33 +43,9 @@ struct StoriesView: View {
                     if cacheLoadState == .refreshNotAvailable {
                         EmptyView()
                     } else {
-                        HStack {
-                            if cacheLoadState == .refreshing {
-                                ProgressView()
-                                    .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
-                                    .padding([.leading, .trailing], 30)
-                                    .padding([.top, .bottom], 15)
-                                    .tint(.white)
-                            } else {
-                                Button {
-                                    interactor.didTapRefreshButton()
-                                    
-                                } label: {
-                                    Image(systemName: "arrow.clockwise.circle.fill")
-                                        .padding([.leading], 30)
-                                        .foregroundColor(.white)
-                                    Text("Refresh")
-                                        .padding([.trailing], 30)
-                                        .padding([.top, .bottom], 15)
-                                        .foregroundColor(.white)
-                                }
-                            }
+                        StoriesListRefreshView(cacheLoadState: $cacheLoadState) {
+                            interactor.didTapRefreshButton()
                         }
-                        .background {
-                            RoundedRectangle(cornerRadius: 10)
-                                .foregroundColor(.accentColor)
-                        }
-                        .offset(.init(width: 0, height: 20))
                     }
                 }
                 .navigationDestination(for: Story.self) { story in
@@ -192,6 +168,6 @@ struct StoriesView: View {
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesView(interactor: StoriesInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
+        StoriesListView(interactor: StoriesInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
     }
 }

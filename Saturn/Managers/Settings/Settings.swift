@@ -80,6 +80,13 @@ class Settings {
         return value
     }
     
+    func date(for key: SettingKey) -> Date? {
+        guard case let .date(value) = settingsMap[key] else {
+            return nil
+        }
+        return value
+    }
+    
     // MARK: - Private
     private func load() -> [SettingKey: SettingValue]? {
         let url = getUrl()
@@ -114,21 +121,4 @@ class Settings {
 enum SettingType {
     case bool
     case `enum`
-}
-
-struct SettingSearchHistory: Codable, Hashable {
-    let history: Array<SettingSearchHistoryItem>
-    
-    init(history: Array<SettingSearchHistoryItem> = []) {
-        self.history = history
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        history.forEach { hasher.combine($0) }
-    }
-}
-
-struct SettingSearchHistoryItem: Codable, Hashable {
-    let query: String
-    let timestamp: Date
 }

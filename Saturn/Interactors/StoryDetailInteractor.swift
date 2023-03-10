@@ -306,11 +306,15 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         return flat
     }
     
-    func incrementTotalChildCount(_ root: CommentViewModel) {
+    private func incrementTotalChildCount(_ root: CommentViewModel) {
         root.totalChildCount += 1
         if let parent = root.parent {
             incrementTotalChildCount(parent)
         }
+    }
+    
+    @objc private func handleNotification(notification: Notification) {
+        print(notification)
     }
 }
 

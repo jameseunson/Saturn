@@ -16,6 +16,7 @@ final class StoriesInteractor: Interactor {
     
     private var currentPage: Int = 0
     private var storyIds = [Int]()
+    private var lastRefreshTimestamp: Date?
     
     @Published private(set) var stories = [Story]()
     @Published private(set) var loadingState: LoadingState = .initialLoad
@@ -28,6 +29,7 @@ final class StoriesInteractor: Interactor {
     init(type: StoryListType, stories: [Story] = []) {
         self.type = type
         self.stories = stories
+        self.lastRefreshTimestamp = Settings.default.date(for: .lastRefreshTimestamp)
         
         #if DEBUG
         if stories.count > 0 {
@@ -64,8 +66,16 @@ final class StoriesInteractor: Interactor {
                 }, receiveValue: { response in
                     if response.source == .cache,
                        NetworkConnectivityManager.instance.isConnected() {
-                        /// Display the UI element prompting the user to refresh, if the response was from the offline disk cache
-                        self.cacheLoadState = .refreshAvailable
+                        
+                        /// If last refresh was within 30 minutes, do not suggest to refresh
+                        if let lastRefreshTimestamp = self.lastRefreshTimestamp,
+                           lastRefreshTimestamp <= Date().addingTimeInterval(60 * 30) {
+                            self.cacheLoadState = .refreshNotAvailable
+                            
+                        } else {
+                            /// Display the UI element prompting the user to refresh, if the response was from the offline disk cache
+                            self.cacheLoadState = .refreshAvailable
+                        }
                     }
                 })
                 .store(in: &disposeBag)
@@ -107,7 +117,7 @@ final class StoriesInteractor: Interactor {
                     var source: APIResponseLoadSource = .network
                     stories.forEach { if $0.source == .cache { source = .cache } }
                     
-                    self.completeLoad(with: stories.map { $0.response })
+                    self.completeLoad(with: stories.map { $0.response }, source: source)
                     promise(.success(APIResponse(response: stories.map { $0.response },
                                                  source: source)))
                 }
@@ -149,7 +159,7 @@ final class StoriesInteractor: Interactor {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
-                self.completeLoad(with: stories.response)
+                self.completeLoad(with: stories.response, source: .network)
                 self.cacheLoadState = .refreshNotAvailable
             }
             
@@ -176,7 +186,7 @@ final class StoriesInteractor: Interactor {
         return idsPage
     }
     
-    private func completeLoad(with stories: [Story]) {
+    private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
         if self.currentPage == 0 {
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
@@ -185,6 +195,10 @@ final class StoriesInteractor: Interactor {
         self.stories.append(contentsOf: stories)
         self.loadingState = .loaded
         self.currentPage += 1
+        
+        if source == .network {
+            Settings.default.set(value: .date(Date()), for: .lastRefreshTimestamp)
+        }
     }
 }
 

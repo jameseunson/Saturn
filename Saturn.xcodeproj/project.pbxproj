@@ -102,6 +102,9 @@
 		1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */; };
 		1ACB6C1229BB042B000A94E0 /* SearchResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1129BB042B000A94E0 /* SearchResultsView.swift */; };
 		1ACB6C1429BB0437000A94E0 /* SearchHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */; };
+		1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */; };
+		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
+		1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 1ACB6C2829BB1B28000A94E0 /* Introspect */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -215,6 +218,8 @@
 		1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingKey.swift; sourceTree = "<group>"; };
 		1ACB6C1129BB042B000A94E0 /* SearchResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsView.swift; sourceTree = "<group>"; };
 		1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryView.swift; sourceTree = "<group>"; };
+		1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSearchHistory.swift; sourceTree = "<group>"; };
+		1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListRefreshView.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -239,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1AE4A9C32977D92900D0B0D3 /* FirebaseRemoteConfig in Frameworks */,
+				1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */,
 				1AE4A9BB2977D92900D0B0D3 /* FirebaseDatabaseSwift in Frameworks */,
 				1AE4A9B72977D92900D0B0D3 /* FirebaseCrashlytics in Frameworks */,
 				1AE4A9B32977D92900D0B0D3 /* FirebaseAnalyticsSwift in Frameworks */,
@@ -420,6 +426,7 @@
 				1AE4A9D22979146700D0B0D3 /* StoryListType.swift */,
 				1AE4A9D42979147200D0B0D3 /* UserItem.swift */,
 				1A050D8229820E2000C26F12 /* SearchResultItem.swift */,
+				1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -519,22 +526,31 @@
 			path = Search;
 			sourceTree = "<group>";
 		};
+		1ACB6C1529BB05CA000A94E0 /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				1A873ABE296E76B200870A50 /* CommentView.swift */,
+				1A050D802982088500C26F12 /* CommentHeaderView.swift */,
+				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
+			);
+			path = Comments;
+			sourceTree = "<group>";
+		};
 		1AE4A99929778F1900D0B0D3 /* Partial */ = {
 			isa = PBXGroup;
 			children = (
+				1ACB6C1529BB05CA000A94E0 /* Comments */,
 				1ACB6C1029BAF918000A94E0 /* Search */,
 				1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */,
-				1A873ABE296E76B200870A50 /* CommentView.swift */,
 				1A5DBC07296AA67300D4D86E /* LoadingView.swift */,
 				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
 				1A873AD62971461A00870A50 /* UserHeaderView.swift */,
 				1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */,
-				1A050D802982088500C26F12 /* CommentHeaderView.swift */,
 				1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */,
 				1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */,
 				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
-				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
 				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
+				1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */,
 			);
 			path = Partial;
 			sourceTree = "<group>";
@@ -568,6 +584,7 @@
 				1AE4A9C42977D92900D0B0D3 /* FirebaseRemoteConfigSwift */,
 				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
 				1A9C75AF29A4981900DE94C6 /* AlertToast */,
+				1ACB6C2829BB1B28000A94E0 /* Introspect */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* Saturn.app */;
@@ -675,6 +692,7 @@
 				1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 				1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */,
+				1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -724,6 +742,7 @@
 				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
 				1AE4A99B2977938F00D0B0D3 /* SearchAPIManager.swift in Sources */,
 				1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */,
+				1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */,
 				1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */,
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
@@ -739,6 +758,7 @@
 				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
 				1ACB6C0D29B9C48E000A94E0 /* SettingValue.swift in Sources */,
+				1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
@@ -1156,6 +1176,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -1316,6 +1344,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
+		};
+		1ACB6C2829BB1B28000A94E0 /* Introspect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
+			productName = Introspect;
 		};
 		1AE4A9B22977D92900D0B0D3 /* FirebaseAnalyticsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
