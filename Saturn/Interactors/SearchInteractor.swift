@@ -29,6 +29,7 @@ final class SearchInteractor: Interactor {
                     .catch { error in
                         return Just([])
                     }
+                    .map { (query, $0) }
             }
             .receive(on: RunLoop.main)
             .sink { completion in
@@ -37,9 +38,11 @@ final class SearchInteractor: Interactor {
                     self.results = .failed
                 }
                 
-            } receiveValue: { response in
+            } receiveValue: { query, response in
                 self.resultsAccumulator.append(contentsOf: response)
                 self.results = .loaded(response: self.resultsAccumulator)
+                
+                self.updateSearchHistory(with: query)
             }
             .store(in: &disposeBag)
     }
@@ -56,6 +59,45 @@ final class SearchInteractor: Interactor {
         }
         
         querySubject.send(query)
+    }
+    
+    func deleteSearchHistoryItem(item: SettingSearchHistoryItem) {
+        let searchHistory = Settings.default.searchHistory()
+        var searchHistoryList = searchHistory.history
+        
+        guard let index = searchHistoryList.firstIndex(of: item) else {
+            return
+        }
+        searchHistoryList.remove(at: index)
+        
+        Settings.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+                             for: .searchHistory)
+    }
+    
+    func clearSearchHistory() {
+        Settings.default.set(value: .searchHistory(SettingSearchHistory()),
+                             for: .searchHistory)
+    }
+    
+    // MARK: -
+    private func updateSearchHistory(with query: String) {
+        let searchHistory = Settings.default.searchHistory()
+        var searchHistoryList = searchHistory.history
+        
+        /// Do not add duplicate search queries
+        if searchHistoryList.filter ({ $0.query.lowercased() == query.lowercased() }).count > 0 {
+            return
+        }
+
+        searchHistoryList.insert(SettingSearchHistoryItem(query: query, timestamp: Date()), at: 0)
+        
+        /// Ensure list remains at 5 or fewer items
+        if searchHistoryList.count > 5 {
+            searchHistoryList.removeLast()
+        }
+        
+        Settings.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+                             for: .searchHistory)
     }
 }
 
