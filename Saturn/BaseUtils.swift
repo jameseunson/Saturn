@@ -18,7 +18,7 @@ enum LoadableResource<T: Codable> {
 enum LoadingState {
     case initialLoad
     case loadingMore
-    case loaded
+    case loaded(APIResponseLoadSource)
     case failed
 }
 

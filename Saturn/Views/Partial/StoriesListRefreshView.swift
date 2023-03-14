@@ -35,10 +35,16 @@ struct StoriesListRefreshView: View {
                 }
             }
         }
-        .background {
+        .background(.ultraThinMaterial)
+        .mask {
             RoundedRectangle(cornerRadius: 10)
-                .foregroundColor(.accentColor)
         }
         .offset(.init(width: 0, height: 20))
+    }
+}
+
+struct StoriesListRefreshView_Previews: PreviewProvider {
+    static var previews: some View {
+        StoriesListRefreshView(cacheLoadState: .constant(.refreshAvailable)) {}
     }
 }

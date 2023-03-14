@@ -85,4 +85,44 @@ final class APIManagerTests: XCTestCase {
         XCTAssertEqual(cache.getCallCount, 1)
         XCTAssertEqual(cache.setCallCount, 1) /// Set operation on the cache indicates a network request was successful
     }
+    
+    func test_retrieve_timeout() {
+        ref.getChildDataHandler = { _ in } /// Simulate API fails to return
+        
+        apiManager = APIManager(cache: APIMemoryResponseCachingMock(), ref: ref, timeoutSeconds: 0) /// Timeout window set to 0 (immediate failure)
+        let expectation = XCTestExpectation(description: "Await apiManager response")
+        
+        apiManager.loadStory(id: 1234)
+            .sink(receiveCompletion: { completion in
+                /// Check that timeout occurs as expected
+                if case .failure(let error) = completion,
+                error is TimeoutError {
+                    expectation.fulfill()
+                }
+            }, receiveValue: { story in
+                XCTFail()
+            })
+            .store(in: &disposeBag)
+        
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func test_retrieve_response_doesNotTimeout() {
+        apiManager = APIManager(cache: APIMemoryResponseCachingMock(), ref: ref, timeoutSeconds: 0) /// Timeout window set to 0 (immediate failure)
+        let expectation = XCTestExpectation(description: "Await apiManager response")
+        
+        apiManager.loadStory(id: 1234)
+            .sink(receiveCompletion: { completion in
+                /// Check that timeout occurs as expected
+                if case .failure(let error) = completion,
+                error is TimeoutError {
+                    XCTFail()
+                }
+            }, receiveValue: { story in
+                expectation.fulfill()
+            })
+            .store(in: &disposeBag)
+        
+        wait(for: [expectation], timeout: 1.0)
+    }
 }

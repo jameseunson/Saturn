@@ -105,6 +105,7 @@
 		1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */; };
 		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
 		1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 1ACB6C2829BB1B28000A94E0 /* Introspect */; };
+		1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADE889C29C010CF00492114 /* UnfairLock.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -220,6 +221,7 @@
 		1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryView.swift; sourceTree = "<group>"; };
 		1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSearchHistory.swift; sourceTree = "<group>"; };
 		1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListRefreshView.swift; sourceTree = "<group>"; };
+		1ADE889C29C010CF00492114 /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 				1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */,
 				1A888FFD2994E76900490A74 /* LayoutManager.swift */,
 				1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */,
+				1ADE889C29C010CF00492114 /* UnfairLock.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -747,6 +750,7 @@
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
+				1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
 				1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */,
 				1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */,

@@ -12,9 +12,29 @@ import Firebase
 import FirebaseDatabase
 import SwiftUI
 
-final class APIManager {
-    let ref: DatabaseReferencing
-    let cache: APIMemoryResponseCaching
+/// @mockable
+protocol APIManaging: AnyObject {
+    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error>
+    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<[Story]>
+    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error>
+    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Array<Int>>
+    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Story>, Error>
+    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Story>
+    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Comment>, Error>
+    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Comment>
+    func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error>
+    func loadUserItem(id: Int) async throws -> UserItem
+    func loadUserItems(ids: [Int]) -> AnyPublisher<[UserItem], Error>
+    func loadUserItems(ids: [Int]) async throws -> [UserItem]
+    func loadUser(id: String) -> AnyPublisher<User, Error>
+    func getImage(for story: StoryRowViewModel) async throws -> Image
+    func hasCachedResponse(for id: Int) -> Bool
+}
+
+final class APIManager: APIManaging {
+    private let ref: DatabaseReferencing
+    private let cache: APIMemoryResponseCaching
+    private let timeoutSeconds: Int
     
     #if DEBUG
     let isDebugLoggingEnabled = true
@@ -23,9 +43,11 @@ final class APIManager {
     #endif
     
     init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
-         ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference()) {
+         ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
+         timeoutSeconds: Int = 15) {
         self.cache = cache
         self.ref = ref
+        self.timeoutSeconds = timeoutSeconds
     }
 
     func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
@@ -220,6 +242,14 @@ final class APIManager {
         return try await loadImage(for: story, cacheBehavior: .offlineOnly)
     }
     
+    func hasCachedResponse(for id: Int) -> Bool {
+        if let response = cache.get(for: String(id)),
+           response.isValid(cacheBehavior: .offlineOnly) {
+            return true
+        }
+        return false
+    }
+    
     // MARK: -
     private func loadImage(for story: StoryRowViewModel, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Image {
         guard let imageURL = story.imageURL else {
@@ -287,6 +317,7 @@ final class APIManager {
             Task {
                 do {
                     let output = try await self.retrieve(from: url)
+                    NetworkConnectivityManager.instance.updateConnected(with: true)
                     promise(.success(output))
                 } catch {
                     promise(.failure(error))
@@ -316,43 +347,46 @@ final class APIManager {
     }
     
     private func retrieve(from url: String) async throws -> Any {
-        let didTimeout = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
         let didComplete = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
+        let lock = UnfairLock()
         
-        return try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(15)) {
-                if didComplete.pointee { return }
-                didTimeout.pointee = true
-
-                continuation.resume(throwing: TimeoutError())
+        return try await withCheckedThrowingContinuation { [weak self] continuation in
+            guard let self else { return }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(self.timeoutSeconds)) {
+                lock.lock {
+                    if didComplete.pointee { return }; didComplete.pointee = true
+                    continuation.resume(throwing: TimeoutError())
+                }
             }
+            
             self.ref.childPath(url).getChildData { error, snapshot in
                 guard error == nil,
                       let value = snapshot?.value else {
                     
                     if let error {
-                        if didTimeout.pointee { return }
-                        didComplete.pointee = true
-                        
                         if error.localizedDescription.contains("offline"),
                            NetworkConnectivityManager.instance.isConnected() {
                             NetworkConnectivityManager.instance.updateConnected(with: false)
                         }
-                        continuation.resume(throwing: error)
+                        lock.lock {
+                            if didComplete.pointee { return }; didComplete.pointee = true
+                            continuation.resume(throwing: error)
+                        }
                         
                     } else {
-                        if didTimeout.pointee { return }
-                        didComplete.pointee = true
-                        
-                        continuation.resume(throwing: APIManagerError.generic)
+                        lock.lock {
+                            if didComplete.pointee { return }; didComplete.pointee = true
+                            continuation.resume(throwing: APIManagerError.generic)
+                        }
                     }
                     return
                 }
                 
-                if didTimeout.pointee { return }
-                didComplete.pointee = true
-                
-                continuation.resume(with: .success(value))
+                lock.lock {
+                    if didComplete.pointee { return }; didComplete.pointee = true
+                    continuation.resume(with: .success(value))
+                }
             }
         }
     }
@@ -409,8 +443,8 @@ enum APIResponseLoadSource: Codable {
     case cache
 }
 
-private struct TimeoutError: LocalizedError {
-  var errorDescription: String? = "Task timed out before completion"
+public struct TimeoutError: LocalizedError {
+    public var errorDescription: String? = "Task timed out before completion"
 }
 
 /// @mockable

@@ -14,7 +14,7 @@ struct RootView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                StoriesListView(interactor: StoriesInteractor(type: .top))
+                StoriesListView(interactor: StoriesListInteractor(type: .top))
                     .navigationTitle("Top")
                     .navigationBarTitleDisplayMode(.inline)
             }
@@ -22,7 +22,7 @@ struct RootView: View {
                 Label("Top", systemImage: "list.dash")
             }
             NavigationStack {
-                StoriesListView(interactor: StoriesInteractor(type: .new))
+                StoriesListView(interactor: StoriesListInteractor(type: .new))
                     .navigationTitle("New")
                     .navigationBarTitleDisplayMode(.inline)
             }
@@ -30,7 +30,7 @@ struct RootView: View {
                 Label("New", systemImage: "chart.line.uptrend.xyaxis")
             }
             NavigationStack {
-                StoriesListView(interactor: StoriesInteractor(type: .show))
+                StoriesListView(interactor: StoriesListInteractor(type: .show))
                     .navigationTitle("Show")
                     .navigationBarTitleDisplayMode(.inline)
             }
@@ -38,7 +38,7 @@ struct RootView: View {
                 Label("Show", systemImage: "binoculars")
             }
             NavigationStack {
-                StoriesListView(interactor: StoriesInteractor(type: .ask))
+                StoriesListView(interactor: StoriesListInteractor(type: .ask))
                     .navigationTitle("Ask")
                     .navigationBarTitleDisplayMode(.inline)
             }

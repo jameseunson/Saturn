@@ -9,7 +9,7 @@ import SwiftUI
 import AlertToast
 
 struct StoriesListView: View {
-    @StateObject var interactor: StoriesInteractor
+    @StateObject var interactor: StoriesListInteractor
     
     @State var isSettingsVisible: Bool = false
     @State var isSearchVisible: Bool = false
@@ -24,7 +24,7 @@ struct StoriesListView: View {
     private var displayingSwiftUIPreview = false
     #endif
     
-    init(interactor: StoriesInteractor) {
+    init(interactor: StoriesListInteractor) {
         _interactor = .init(wrappedValue: interactor)
         #if DEBUG
         if interactor.stories.count > 0 {
@@ -138,7 +138,7 @@ struct StoriesListView: View {
                                     return
                                 }
                                 #endif
-                                if story == interactor.stories.last {
+                                if interactor.canLoadNextPage(story: story) {
                                     interactor.loadNextPage()
                                 }
                             }
@@ -156,7 +156,10 @@ struct StoriesListView: View {
                             .padding(.bottom, 25)
                     }
                 }
-                ListLoadingView()
+                if let lastStory =  interactor.stories.last,
+                   interactor.canLoadNextPage(story: lastStory) {
+                    ListLoadingView()
+                }
             }
         }
         .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
@@ -168,6 +171,6 @@ struct StoriesListView: View {
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListView(interactor: StoriesInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
+        StoriesListView(interactor: StoriesListInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
     }
 }
