@@ -14,13 +14,15 @@ final class StoriesListInteractor: Interactor {
     private let pageLength = 10
     private let type: StoryListType
     
-    private var currentPage: Int = 0
-    private var storyIds = [Int]()
+    @Published private var currentPage: Int = 0
+    @Published private var storyIds = [Int]()
     private var lastRefreshTimestamp: Date?
     
+    // MARK: -
     @Published private(set) var stories = [Story]()
     @Published private(set) var loadingState: LoadingState = .initialLoad
     @Published private(set) var cacheLoadState: CacheLoadState = .refreshNotAvailable
+    @Published private(set) var canLoadNextPage: Bool = true
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -86,10 +88,80 @@ final class StoriesListInteractor: Interactor {
                 })
                 .store(in: &disposeBag)
         }
+        
+        /// Determine whether we can load the next page
+        /// If online (`loaded(source) == .network`), assumed we always can
+        /// If offline (`loaded(source) == .cache`), check whether the next 10 stories
+        /// live in the disk cache - if so, we can load
+        Publishers.CombineLatest($currentPage, $storyIds)
+            .map { currentPage, storyIds -> Bool in
+                guard case let .loaded(source) = self.loadingState else {
+                    return false
+                }
+                switch source {
+                case .network:
+                    return true
+                    
+                case .cache:
+                    if storyIds.count == 0 { return false }
+                    
+                    let ids = self.idsForPage(.page(self.currentPage + 1), with: storyIds)
+                    var availableInCache = true
+                    for id in ids {
+                        if !self.apiManager.hasCachedResponse(for: id) { availableInCache = false; break }
+                    }
+                    
+                    return availableInCache
+                }
+            }
+            .receive(on: RunLoop.main)
+            .sink { _ in }
+            receiveValue: { canLoadNextPage in
+                self.canLoadNextPage = canLoadNextPage
+            }
+            .store(in: &disposeBag)
     }
     
+    func loadNextPageFromSource() {
+        guard case let .loaded(source) = self.loadingState else {
+            return
+        }
+        switch source {
+        case .network:
+            loadNextPage(cacheBehavior: .default)
+        case .cache:
+            loadNextPage(cacheBehavior: .offlineOnly)
+        }
+    }
+    
+    @MainActor
+    func refreshStories() async {
+        do {
+            self.currentPage = 0
+            self.storyIds.removeAll(keepingCapacity: true)
+            self.stories.removeAll(keepingCapacity: true)
+            
+            let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
+            let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
+            
+            self.completeLoad(with: stories.response, source: .network)
+            self.cacheLoadState = .refreshNotAvailable
+            
+        } catch {
+            // TODO: Handle error
+        }
+    }
+    
+    func didTapRefreshButton() {
+        cacheLoadState = .refreshing
+        Task {
+            await refreshStories()
+        }
+    }
+    
+    // MARK: -
     @discardableResult
-    func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
+    private func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
         Future { [weak self] promise in
             guard let self else { return }
             
@@ -132,7 +204,7 @@ final class StoriesListInteractor: Interactor {
         .eraseToAnyPublisher()
     }
     
-    func getStoryIds(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[Int], Error> {
+    private func getStoryIds(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[Int], Error> {
         Future { [weak self] promise in
             guard let self else { return }
             
@@ -156,45 +228,6 @@ final class StoriesListInteractor: Interactor {
         }.eraseToAnyPublisher()
     }
     
-    func refreshStories() async {
-        do {
-            self.currentPage = 0
-            
-            let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
-            let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                self.completeLoad(with: stories.response, source: .network)
-                self.cacheLoadState = .refreshNotAvailable
-            }
-            
-        } catch {
-            // TODO: Handle error
-        }
-    }
-    
-    func didTapRefreshButton() {
-        cacheLoadState = .refreshing
-        Task {
-            await refreshStories()
-        }
-    }
-    
-    func canLoadNextPage(story: Story) -> Bool {
-        guard story == stories.last,
-              case let .loaded(source) = loadingState else {
-            return false
-        }
-        switch source {
-        case .network:
-            return true
-        case .cache:
-            return nextPageAvailableFromCache()
-        }
-    }
-    
-    // MARK: -
     private func nextPageAvailableFromCache() -> Bool {
         if storyIds.count == 0 {
            return false
@@ -217,17 +250,14 @@ final class StoriesListInteractor: Interactor {
         }
         let pageStart = pageNumber * self.pageLength
         let pageEnd = min(((pageNumber + 1) * self.pageLength), ids.count)
+        if pageStart > pageEnd { return [] }
+        
         let idsPage = Array(ids[pageStart..<pageEnd])
         
         return idsPage
     }
     
     private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
-        if self.currentPage == 0 {
-            self.storyIds.removeAll(keepingCapacity: true)
-            self.stories.removeAll(keepingCapacity: true)
-        }
-        
         self.stories.append(contentsOf: stories)
         self.loadingState = .loaded(source)
         self.currentPage += 1

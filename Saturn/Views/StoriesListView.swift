@@ -18,6 +18,7 @@ struct StoriesListView: View {
     @State var displayingSafariURL: URL?
     
     @State var cacheLoadState: CacheLoadState = .refreshNotAvailable
+    @State var canLoadNextPage: Bool = true
     @State var showConnectionAlert: Bool = false
     
     #if DEBUG
@@ -118,6 +119,9 @@ struct StoriesListView: View {
         .onReceive(interactor.$cacheLoadState) { output in
             cacheLoadState = output
         }
+        .onReceive(interactor.$canLoadNextPage) { output in
+            canLoadNextPage = output
+        }
     }
     
     func contentScrollView() -> some View {
@@ -138,8 +142,9 @@ struct StoriesListView: View {
                                     return
                                 }
                                 #endif
-                                if interactor.canLoadNextPage(story: story) {
-                                    interactor.loadNextPage()
+                                if story == interactor.stories.last,
+                                   canLoadNextPage {
+                                    interactor.loadNextPageFromSource()
                                 }
                             }
                             .contextMenu {
@@ -156,8 +161,7 @@ struct StoriesListView: View {
                             .padding(.bottom, 25)
                     }
                 }
-                if let lastStory =  interactor.stories.last,
-                   interactor.canLoadNextPage(story: lastStory) {
+                if canLoadNextPage {
                     ListLoadingView()
                 }
             }

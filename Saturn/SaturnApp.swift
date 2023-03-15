@@ -19,6 +19,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 @main
+struct AppLauncher {
+    static func main() throws {
+        if NSClassFromString("XCTestCase") == nil {
+            SaturnApp.main()
+        } else {
+            TestApp.main()
+        }
+    }
+}
+
 struct SaturnApp: App {
     // register app delegate for Firebase setup
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
@@ -27,5 +37,11 @@ struct SaturnApp: App {
         WindowGroup {
             RootView()
         }
+    }
+}
+
+struct TestApp: App {
+    var body: some Scene {
+        WindowGroup { Text("Running Unit Tests") }
     }
 }

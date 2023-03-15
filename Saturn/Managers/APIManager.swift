@@ -122,7 +122,11 @@ final class APIManager: APIManaging {
             return APIResponse(response: responseArray, source: .cache)
             
         } else if let response = try await retrieve(from: type.path) as? Array<Int> {
-            return APIResponse(response: response, source: .network)
+            let apiResponse = APIResponse(response: response, source: .network)
+            APIMemoryResponseCache.default.set(value: .json(apiResponse.response),
+                                               for: type.cacheKey)
+            return apiResponse
+            
         } else {
             throw APIManagerError.generic
         }

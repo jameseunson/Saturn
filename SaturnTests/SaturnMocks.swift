@@ -182,6 +182,16 @@ class APIManagingMock: APIManaging {
         }
         fatalError("getImageHandler returns can't have a default value thus its handler must be set")
     }
+
+    private(set) var hasCachedResponseCallCount = 0
+    var hasCachedResponseHandler: ((Int) -> (Bool))?
+    func hasCachedResponse(for id: Int) -> Bool {
+        hasCachedResponseCallCount += 1
+        if let hasCachedResponseHandler = hasCachedResponseHandler {
+            return hasCachedResponseHandler(id)
+        }
+        return false
+    }
 }
 
 class FileManagingMock: FileManaging {
