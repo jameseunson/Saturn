@@ -14,12 +14,13 @@ enum SettingKey: String, CaseIterable, Codable {
     case lastUserSelectedColor = "Last User Selected Color"
     case searchHistory = "Search History"
     case lastRefreshTimestamp = "Last Refresh Timestamp"
+    case numberOfLaunches = "Number of Launches"
     
     func isUserConfigurable() -> Bool {
         switch self {
         case .entersReader, .indentationColor:
             return true
-        case .lastUserSelectedColor, .searchHistory, .lastRefreshTimestamp:
+        case .lastUserSelectedColor, .searchHistory, .lastRefreshTimestamp, .numberOfLaunches:
             return false
         }
     }

@@ -268,6 +268,8 @@ final class StoryDetailScrollViewDelegate: NSObject, UIScrollViewDelegate {
     
     func scrollViewShouldScrollToTop(_ scrollView: UIScrollView) -> Bool {
         print("scrollViewShouldScrollToTop")
+        print(scrollView.contentOffset.y)
+        
         return true
     }
 }

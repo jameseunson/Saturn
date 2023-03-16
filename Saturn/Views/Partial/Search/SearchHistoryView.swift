@@ -37,7 +37,7 @@ struct SearchHistoryView: View {
                 .padding([.leading])
             
             List {
-                ForEach(Settings.default.searchHistory().history, id: \.self) { item in
+                ForEach(SettingsManager.default.searchHistory().history, id: \.self) { item in
                     HStack {
                         Image(systemName: "clock")
                             .foregroundColor(.gray)

@@ -14,6 +14,8 @@ enum SettingValue: Codable, Hashable {
             
         case (.bool(let lhsValue), .bool(let rhsValue)):
             return lhsValue == rhsValue
+        case (.int(let lhsValue), .int(let rhsValue)):
+            return lhsValue == rhsValue
         case (.indentationColor(let lhsValue), .indentationColor(let rhsValue)):
             return lhsValue == rhsValue
         case (.color(let lhsValue), .color(let rhsValue)):
@@ -31,6 +33,8 @@ enum SettingValue: Codable, Hashable {
         switch self {
         case let .bool(value):
             hasher.combine(value)
+        case let .int(value):
+            hasher.combine(value)
         case let .indentationColor(value):
             hasher.combine(value)
         case let .color(value):
@@ -43,6 +47,7 @@ enum SettingValue: Codable, Hashable {
     }
     
     case bool(Bool)
+    case int(Int)
     case indentationColor(SettingIndentationColor)
     case color(Color)
     case searchHistory(SettingSearchHistory)

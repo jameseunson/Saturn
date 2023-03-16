@@ -15,7 +15,7 @@ struct SafariView: UIViewControllerRepresentable {
     func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
         
         let configuration = SFSafariViewController.Configuration()
-        configuration.entersReaderIfAvailable = Settings.default.bool(for: .entersReader)
+        configuration.entersReaderIfAvailable = SettingsManager.default.bool(for: .entersReader)
         
         let vc = SFSafariViewController(url: url, configuration: configuration)
         vc.preferredControlTintColor = UIColor(Color.accentColor)

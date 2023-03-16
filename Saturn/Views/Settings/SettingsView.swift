@@ -18,7 +18,7 @@ struct SettingsView: View {
         List {
             Section {
                 ForEach(SettingKey.allCases.filter { $0.isUserConfigurable() }, id: \.self) { key in
-                    switch Settings.types[key] {
+                    switch SettingsManager.types[key] {
                     case .bool:
                         HStack {
                             Toggle(key.rawValue, isOn: boolForSetting(key))

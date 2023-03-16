@@ -62,7 +62,7 @@ final class SearchInteractor: Interactor {
     }
     
     func deleteSearchHistoryItem(item: SettingSearchHistoryItem) {
-        let searchHistory = Settings.default.searchHistory()
+        let searchHistory = SettingsManager.default.searchHistory()
         var searchHistoryList = searchHistory.history
         
         guard let index = searchHistoryList.firstIndex(of: item) else {
@@ -70,18 +70,18 @@ final class SearchInteractor: Interactor {
         }
         searchHistoryList.remove(at: index)
         
-        Settings.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
                              for: .searchHistory)
     }
     
     func clearSearchHistory() {
-        Settings.default.set(value: .searchHistory(SettingSearchHistory()),
+        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory()),
                              for: .searchHistory)
     }
     
     // MARK: -
     private func updateSearchHistory(with query: String) {
-        let searchHistory = Settings.default.searchHistory()
+        let searchHistory = SettingsManager.default.searchHistory()
         var searchHistoryList = searchHistory.history
         
         /// Do not add duplicate search queries
@@ -96,7 +96,7 @@ final class SearchInteractor: Interactor {
             searchHistoryList.removeLast()
         }
         
-        Settings.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
                              for: .searchHistory)
     }
 }

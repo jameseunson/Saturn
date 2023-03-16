@@ -35,6 +35,7 @@ final class APIManager: APIManaging {
     private let ref: DatabaseReferencing
     private let cache: APIMemoryResponseCaching
     private let timeoutSeconds: Int
+    private let networkConnectivityManager: NetworkConnectivityManaging
     
     #if DEBUG
     let isDebugLoggingEnabled = true
@@ -44,10 +45,12 @@ final class APIManager: APIManaging {
     
     init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
          ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
-         timeoutSeconds: Int = 15) {
+         timeoutSeconds: Int = 15,
+         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
         self.cache = cache
         self.ref = ref
         self.timeoutSeconds = timeoutSeconds
+        self.networkConnectivityManager = networkConnectivityManager
     }
 
     func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
@@ -284,7 +287,7 @@ final class APIManager: APIManaging {
     }
     
     private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<T>, Error> {
-        let cacheBehaviorForConnectivity = NetworkConnectivityManager.instance.isConnected() ? cacheBehavior : .offlineOnly
+        let cacheBehaviorForConnectivity = networkConnectivityManager.isConnected() ? cacheBehavior : .offlineOnly
         
         if let response = cache.get(for: String(id)),
            response.isValid(cacheBehavior: cacheBehaviorForConnectivity),
@@ -321,7 +324,7 @@ final class APIManager: APIManaging {
             Task {
                 do {
                     let output = try await self.retrieve(from: url)
-                    NetworkConnectivityManager.instance.updateConnected(with: true)
+                    self.networkConnectivityManager.updateConnected(with: true)
                     promise(.success(output))
                 } catch {
                     promise(.failure(error))
@@ -370,8 +373,8 @@ final class APIManager: APIManaging {
                     
                     if let error {
                         if error.localizedDescription.contains("offline"),
-                           NetworkConnectivityManager.instance.isConnected() {
-                            NetworkConnectivityManager.instance.updateConnected(with: false)
+                           self.networkConnectivityManager.isConnected() {
+                            self.networkConnectivityManager.updateConnected(with: false)
                         }
                         lock.lock {
                             if didComplete.pointee { return }; didComplete.pointee = true

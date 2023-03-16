@@ -13,6 +13,7 @@ final class StoriesListInteractor: Interactor {
     private let apiManager: APIManaging
     private let pageLength = 10
     private let type: StoryListType
+    private let networkConnectivityManager: NetworkConnectivityManaging
     
     @Published private var currentPage: Int = 0
     @Published private var storyIds = [Int]()
@@ -31,12 +32,14 @@ final class StoriesListInteractor: Interactor {
     init(type: StoryListType,
          stories: [Story] = [],
          apiManager: APIManaging = APIManager(),
-         lastRefreshTimestamp: Date? = Settings.default.date(for: .lastRefreshTimestamp)) {
+         lastRefreshTimestamp: Date? = SettingsManager.default.date(for: .lastRefreshTimestamp),
+         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
         
         self.apiManager = apiManager
         self.type = type
         self.stories = stories
         self.lastRefreshTimestamp = lastRefreshTimestamp
+        self.networkConnectivityManager = networkConnectivityManager
         
         #if DEBUG
         if stories.count > 0 {
@@ -72,7 +75,7 @@ final class StoriesListInteractor: Interactor {
                     }
                 }, receiveValue: { response in
                     if response.source == .cache,
-                       NetworkConnectivityManager.instance.isConnected() {
+                       self.networkConnectivityManager.isConnected() {
                         
                         /// If last refresh was within 30 minutes, do not suggest to refresh
                         if let lastRefreshTimestamp = self.lastRefreshTimestamp,
@@ -263,7 +266,7 @@ final class StoriesListInteractor: Interactor {
         self.currentPage += 1
         
         if source == .network {
-            Settings.default.set(value: .date(Date()), for: .lastRefreshTimestamp)
+            SettingsManager.default.set(value: .date(Date()), for: .lastRefreshTimestamp)
         }
     }
 }

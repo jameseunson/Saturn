@@ -105,9 +105,10 @@
 		1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */; };
 		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
 		1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 1ACB6C2829BB1B28000A94E0 /* Introspect */; };
+		1AD1286929C2E70F00096DE7 /* RootInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */; };
 		1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADE889C29C010CF00492114 /* UnfairLock.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
-		1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* Settings.swift */; };
+		1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
 		1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */; };
 		1AE4A99B2977938F00D0B0D3 /* SearchAPIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */; };
@@ -221,9 +222,10 @@
 		1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryView.swift; sourceTree = "<group>"; };
 		1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSearchHistory.swift; sourceTree = "<group>"; };
 		1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListRefreshView.swift; sourceTree = "<group>"; };
+		1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootInteractorTests.swift; sourceTree = "<group>"; };
 		1ADE889C29C010CF00492114 /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		1AE4A993297526AB00D0B0D3 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
 		1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteScrollView.swift; sourceTree = "<group>"; };
 		1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchAPIManager.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 				1A13B841299DEA25009E3E70 /* APIManagerTests.swift */,
 				1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */,
 				1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */,
+				1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */,
 			);
 			path = SaturnTests;
 			sourceTree = "<group>";
@@ -512,7 +515,7 @@
 		1ACB6C0929B9C45C000A94E0 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				1AE4A993297526AB00D0B0D3 /* Settings.swift */,
+				1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */,
 				1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */,
 				1ACB6C0C29B9C48E000A94E0 /* SettingValue.swift */,
 				1ACB6C0E29B9C4A2000A94E0 /* SettingKey.swift */,
@@ -749,7 +752,7 @@
 				1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */,
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
-				1AE4A994297526AB00D0B0D3 /* Settings.swift in Sources */,
+				1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */,
 				1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
 				1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */,
@@ -825,6 +828,7 @@
 				1A13B844299E17C2009E3E70 /* APIDiskResponseCacheTests.swift in Sources */,
 				1A888FC12993707B00490A74 /* TextProcessorTests.swift in Sources */,
 				1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */,
+				1AD1286929C2E70F00096DE7 /* RootInteractorTests.swift in Sources */,
 				1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -39,7 +39,7 @@ struct SearchView: View {
             }
             
             if case .notLoading = interactor.results,
-               Settings.default.searchHistory().history.count > 0 {
+               SettingsManager.default.searchHistory().history.count > 0 {
                 SearchHistoryView(searchQuery: $searchQuery) { item in
                     interactor.deleteSearchHistoryItem(item: item)
                     

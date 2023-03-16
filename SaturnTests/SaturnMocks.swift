@@ -3,15 +3,17 @@
 ///
 
 
-@testable import Saturn
+
 import Combine
 import Firebase
 import FirebaseCore
 import FirebaseDatabase
 import Foundation
+import Network
 import SwiftUI
 import UIKit
 import os
+@testable import Saturn
 
 
 class APIMemoryResponseCachingMock: APIMemoryResponseCaching {
@@ -36,6 +38,129 @@ class APIMemoryResponseCachingMock: APIMemoryResponseCaching {
             return getHandler(key)
         }
         return nil
+    }
+}
+
+class SettingsManagingMock: SettingsManaging {
+    init() { }
+
+
+    private(set) var setCallCount = 0
+    var setHandler: ((SettingValue, SettingKey) -> ())?
+    func set(value: SettingValue, for key: SettingKey)  {
+        setCallCount += 1
+        if let setHandler = setHandler {
+            setHandler(value, key)
+        }
+        
+    }
+
+    private(set) var boolCallCount = 0
+    var boolHandler: ((SettingKey) -> (Bool))?
+    func bool(for key: SettingKey) -> Bool {
+        boolCallCount += 1
+        if let boolHandler = boolHandler {
+            return boolHandler(key)
+        }
+        return false
+    }
+
+    private(set) var indentationColorCallCount = 0
+    var indentationColorHandler: (() -> (SettingIndentationColor?))?
+    func indentationColor() -> SettingIndentationColor? {
+        indentationColorCallCount += 1
+        if let indentationColorHandler = indentationColorHandler {
+            return indentationColorHandler()
+        }
+        return nil
+    }
+
+    private(set) var colorCallCount = 0
+    var colorHandler: ((SettingKey) -> (Color?))?
+    func color(for key: SettingKey) -> Color? {
+        colorCallCount += 1
+        if let colorHandler = colorHandler {
+            return colorHandler(key)
+        }
+        return nil
+    }
+
+    private(set) var searchHistoryCallCount = 0
+    var searchHistoryHandler: (() -> (SettingSearchHistory))?
+    func searchHistory() -> SettingSearchHistory {
+        searchHistoryCallCount += 1
+        if let searchHistoryHandler = searchHistoryHandler {
+            return searchHistoryHandler()
+        }
+        fatalError("searchHistoryHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var dateCallCount = 0
+    var dateHandler: ((SettingKey) -> (Date?))?
+    func date(for key: SettingKey) -> Date? {
+        dateCallCount += 1
+        if let dateHandler = dateHandler {
+            return dateHandler(key)
+        }
+        return nil
+    }
+
+    private(set) var intCallCount = 0
+    var intHandler: ((SettingKey) -> (Int))?
+    func int(for key: SettingKey) -> Int {
+        intCallCount += 1
+        if let intHandler = intHandler {
+            return intHandler(key)
+        }
+        return 0
+    }
+}
+
+class NetworkConnectivityManagingMock: NetworkConnectivityManaging {
+    init() { }
+
+
+    var isConnectedPublisher: AnyPublisher<Bool, Never> { return self.isConnectedPublisherSubject.eraseToAnyPublisher() }
+    private(set) var isConnectedPublisherSubject = PassthroughSubject<Bool, Never>()
+
+    private(set) var startCallCount = 0
+    var startHandler: (() -> ())?
+    func start()  {
+        startCallCount += 1
+        if let startHandler = startHandler {
+            startHandler()
+        }
+        
+    }
+
+    private(set) var stopCallCount = 0
+    var stopHandler: (() -> ())?
+    func stop()  {
+        stopCallCount += 1
+        if let stopHandler = stopHandler {
+            stopHandler()
+        }
+        
+    }
+
+    private(set) var updateConnectedCallCount = 0
+    var updateConnectedHandler: ((Bool) -> ())?
+    func updateConnected(with isConnected: Bool)  {
+        updateConnectedCallCount += 1
+        if let updateConnectedHandler = updateConnectedHandler {
+            updateConnectedHandler(isConnected)
+        }
+        
+    }
+
+    private(set) var isConnectedCallCount = 0
+    var isConnectedHandler: (() -> (Bool))?
+    func isConnected() -> Bool {
+        isConnectedCallCount += 1
+        if let isConnectedHandler = isConnectedHandler {
+            return isConnectedHandler()
+        }
+        return false
     }
 }
 

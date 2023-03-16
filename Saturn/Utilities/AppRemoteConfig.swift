@@ -29,10 +29,15 @@ final class AppRemoteConfig {
     func isLoggedInEnabled() -> Bool {
         return remoteConfig.configValue(forKey: RemoteConfigKeys.loggedInEnabled.rawValue).boolValue
     }
+    
+    func numberOfLaunchesToRequestReview() -> Int {
+        return remoteConfig.configValue(forKey: RemoteConfigKeys.numberOfLaunchesToRequestReview.rawValue).numberValue.intValue
+    }
 }
 
 enum RemoteConfigKeys: String {
     case searchEnabled
     case loggedInEnabled
+    case numberOfLaunchesToRequestReview
 }
 

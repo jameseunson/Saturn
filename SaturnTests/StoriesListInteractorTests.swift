@@ -81,7 +81,7 @@ final class StoriesListInteractorTests: XCTestCase {
         interactor = StoriesListInteractor(type: .top, apiManager: apiManager)
         interactor.activate()
         
-        interactor.$canLoadNextPage.dropFirst()
+        interactor.$canLoadNextPage
             .sink { canLoadNextPage in
                 XCTAssertTrue(canLoadNextPage)
                 /// Never called because we're pulling from the network
@@ -109,7 +109,7 @@ final class StoriesListInteractorTests: XCTestCase {
         interactor = StoriesListInteractor(type: .top, apiManager: apiManager)
         interactor.activate()
         
-        interactor.$canLoadNextPage.dropFirst()
+        interactor.$canLoadNextPage
             .sink { canLoadNextPage in
                 XCTAssertTrue(canLoadNextPage)
                 /// Called for every story on page 2, (11-20, hence 10 calls)

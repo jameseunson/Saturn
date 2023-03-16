@@ -9,7 +9,16 @@ import Network
 import SwiftUI
 import Combine
 
-public final class NetworkConnectivityManager {
+/// @mockable
+protocol NetworkConnectivityManaging: AnyObject {
+    var isConnectedPublisher: AnyPublisher<Bool, Never> { get }
+    func start()
+    func stop()
+    func updateConnected(with isConnected: Bool)
+    func isConnected() -> Bool
+}
+
+public final class NetworkConnectivityManager: NetworkConnectivityManaging {
     public var isConnectedPublisher: AnyPublisher<Bool, Never>
     public static let instance = NetworkConnectivityManager()
     

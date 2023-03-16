@@ -12,7 +12,7 @@ extension Color {
     static var randomLevelColors: [Int: Color] = [:]
     
     static func indentationColor(for comment: CommentViewModel) -> Color {
-        let color = Settings.default.indentationColor()
+        let color = SettingsManager.default.indentationColor()
         if color == .randomLevel {
             if let levelColor = randomLevelColors[comment.indendation] {
                 return levelColor
@@ -28,7 +28,7 @@ extension Color {
     }
     
     static func indentationColor() -> Color {
-        let color = Settings.default.indentationColor()
+        let color = SettingsManager.default.indentationColor()
         switch color {
         case .randomLevel:
             return Color.random

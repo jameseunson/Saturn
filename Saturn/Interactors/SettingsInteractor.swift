@@ -12,13 +12,13 @@ final class SettingsInteractor: Interactor {
     @Published var settingsValues: [SettingKey: SettingValue] = [:]
     
     override func didBecomeActive() {
-        Settings.default.settings.sink { map in
+        SettingsManager.default.settings.sink { map in
             self.settingsValues = map
         }
         .store(in: &disposeBag)
     }
     
     func set(_ key: SettingKey, value: SettingValue) {
-        Settings.default.set(value: value, for: key)
+        SettingsManager.default.set(value: value, for: key)
     }
 }

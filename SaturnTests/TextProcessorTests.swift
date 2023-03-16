@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import Saturn
 
-final class TestProcessorTests: XCTestCase {
+final class TextProcessorTests: XCTestCase {
     
     // SwiftyMarkdown has a habit of interpreting underscores in URLs as italicization.
     // This test ensures underscore escaping in urls is working, which prevents underscores being mistakenly interpreted as italics, instead of simply underscores.

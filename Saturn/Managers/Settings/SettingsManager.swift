@@ -9,7 +9,18 @@ import Foundation
 import Combine
 import SwiftUI
 
-class Settings {
+/// @mockable
+protocol SettingsManaging: AnyObject {
+    func set(value: SettingValue, for key: SettingKey)
+    func bool(for key: SettingKey) -> Bool
+    func indentationColor() -> SettingIndentationColor?
+    func color(for key: SettingKey) -> Color?
+    func searchHistory() -> SettingSearchHistory
+    func date(for key: SettingKey) -> Date?
+    func int(for key: SettingKey) -> Int
+}
+
+class SettingsManager: SettingsManaging {
     private var settingsMap = [SettingKey: SettingValue]()
     private let encoder: PropertyListEncoder
     private let decoder: PropertyListDecoder
@@ -17,7 +28,7 @@ class Settings {
     
     public let settings = CurrentValueSubject<[SettingKey: SettingValue], Never>([:])
     
-    public static let `default` = Settings()
+    public static let `default` = SettingsManager()
     
     public static let types: [SettingKey: SettingType] = [
         .entersReader: .bool,
@@ -26,7 +37,8 @@ class Settings {
     
     private let defaults: [SettingKey: SettingValue] = [
         .entersReader: .bool(false),
-        .indentationColor: .indentationColor(.default)
+        .indentationColor: .indentationColor(.default),
+        .numberOfLaunches: .int(0)
     ]
     
     init() {
@@ -83,6 +95,13 @@ class Settings {
     func date(for key: SettingKey) -> Date? {
         guard case let .date(value) = settingsMap[key] else {
             return nil
+        }
+        return value
+    }
+    
+    func int(for key: SettingKey) -> Int {
+        guard case let .int(value) = settingsMap[key] else {
+            return 0
         }
         return value
     }
