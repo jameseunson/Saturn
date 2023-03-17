@@ -38,7 +38,8 @@ class SettingsManager: SettingsManaging {
     private let defaults: [SettingKey: SettingValue] = [
         .entersReader: .bool(false),
         .indentationColor: .indentationColor(.default),
-        .numberOfLaunches: .int(0)
+        .numberOfLaunches: .int(0),
+        .hasSeenReviewPrompt: .bool(false)
     ]
     
     init() {

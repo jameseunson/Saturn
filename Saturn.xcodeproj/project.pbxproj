@@ -106,6 +106,10 @@
 		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
 		1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 1ACB6C2829BB1B28000A94E0 /* Introspect */; };
 		1AD1286929C2E70F00096DE7 /* RootInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */; };
+		1AD1286C29C4298A00096DE7 /* LoginAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */; };
+		1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */; };
+		1AD1287229C45C3F00096DE7 /* SaturnKeychainWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1287129C45C3F00096DE7 /* SaturnKeychainWrapper.swift */; };
+		1AD1287429C45C7A00096DE7 /* KeychainItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1287329C45C7A00096DE7 /* KeychainItem.swift */; };
 		1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADE889C29C010CF00492114 /* UnfairLock.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */; };
@@ -223,6 +227,10 @@
 		1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSearchHistory.swift; sourceTree = "<group>"; };
 		1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListRefreshView.swift; sourceTree = "<group>"; };
 		1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootInteractorTests.swift; sourceTree = "<group>"; };
+		1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationView.swift; sourceTree = "<group>"; };
+		1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationInteractor.swift; sourceTree = "<group>"; };
+		1AD1287129C45C3F00096DE7 /* SaturnKeychainWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnKeychainWrapper.swift; sourceTree = "<group>"; };
+		1AD1287329C45C7A00096DE7 /* KeychainItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeychainItem.swift; sourceTree = "<group>"; };
 		1ADE889C29C010CF00492114 /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
@@ -407,6 +415,7 @@
 		1A5DBC0B296AAF6700D4D86E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1AD1286A29C4297A00096DE7 /* Login */,
 				1A888FBD2992350E00490A74 /* Settings */,
 				1AE4A99929778F1900D0B0D3 /* Partial */,
 				1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */,
@@ -414,7 +423,6 @@
 				1A873ABC296E767B00870A50 /* UserView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
-				1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -445,6 +453,7 @@
 				1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */,
 				1AE4A99C2977B83E00D0B0D3 /* SearchInteractor.swift */,
 				1AE4A9DC29792ECA00D0B0D3 /* RootInteractor.swift */,
+				1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */,
 			);
 			path = Interactors;
 			sourceTree = "<group>";
@@ -465,6 +474,7 @@
 		1A873AB9296D666A00870A50 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				1AD1287529C45CF100096DE7 /* Keychain */,
 				1A873ABA296D667500870A50 /* ActivityViewController.swift */,
 				1A5DBC18296BF8A200D4D86E /* SafariView.swift */,
 				1AE4A99E2977D7BF00D0B0D3 /* AppRemoteConfig.swift */,
@@ -540,6 +550,24 @@
 				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
 			);
 			path = Comments;
+			sourceTree = "<group>";
+		};
+		1AD1286A29C4297A00096DE7 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */,
+				1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		1AD1287529C45CF100096DE7 /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				1AD1287329C45C7A00096DE7 /* KeychainItem.swift */,
+				1AD1287129C45C3F00096DE7 /* SaturnKeychainWrapper.swift */,
+			);
+			path = Keychain;
 			sourceTree = "<group>";
 		};
 		1AE4A99929778F1900D0B0D3 /* Partial */ = {
@@ -774,11 +802,13 @@
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,
 				1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */,
 				1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */,
+				1AD1287229C45C3F00096DE7 /* SaturnKeychainWrapper.swift in Sources */,
 				1AE4A9D52979147200D0B0D3 /* UserItem.swift in Sources */,
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
 				1AE4A9D32979146700D0B0D3 /* StoryListType.swift in Sources */,
 				1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */,
+				1AD1287429C45C7A00096DE7 /* KeychainItem.swift in Sources */,
 				1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */,
 				1AE4A99F2977D7BF00D0B0D3 /* AppRemoteConfig.swift in Sources */,
 				1AE4A9D929792B5A00D0B0D3 /* APIMemoryResponseCache.swift in Sources */,
@@ -788,6 +818,7 @@
 				1A873AD52971435B00870A50 /* UserViewModel.swift in Sources */,
 				1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
+				1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */,
 				1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */,
 				1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */,
 				1AE4A9CF2979143E00D0B0D3 /* SearchResponse.swift in Sources */,
@@ -797,6 +828,7 @@
 				1AE4A99829765CF800D0B0D3 /* InfiniteScrollView.swift in Sources */,
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1ACB6C0B29B9C46B000A94E0 /* SettingsIndentationColor.swift in Sources */,
+				1AD1286C29C4298A00096DE7 /* LoginAuthenticationView.swift in Sources */,
 				1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */,
 				1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */,
 				1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */,

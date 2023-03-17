@@ -7,6 +7,6 @@
 	<key>searchEnabled</key>
 	<string>true</string>
 	<key>loggedInEnabled</key>
-	<string>false</string>
+	<string>true</string>
 </dict>
 </plist>
