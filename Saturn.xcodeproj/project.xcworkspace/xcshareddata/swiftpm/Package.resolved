@@ -118,12 +118,12 @@
       }
     },
     {
-      "identity" : "swiftui-introspect",
+      "identity" : "swiftsoup",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/siteline/SwiftUI-Introspect.git",
+      "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "branch" : "master",
-        "revision" : "c18951c747ab62af7c15e17a81bd37d4fd5a9979"
+        "revision" : "f707b8680cddb96dc1855632340a572ef37bbb98",
+        "version" : "2.5.3"
       }
     },
     {

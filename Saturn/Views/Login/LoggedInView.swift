@@ -11,42 +11,71 @@ import SwiftUI
 struct LoggedInView: View {
     @State var isDisplayingLoginPrompt: Bool = false
     @State var isLoggedIn: Bool = false
+    @State var isDisplayingLogoutConfirm: Bool = false
     
     var body: some View {
-        VStack {
-            Image(systemName: "person.fill")
-                .resizable()
-                .frame(width: 100, height: 100)
-                .foregroundColor(.gray)
-                .padding(.bottom, 16)
-            Text("Login to HN")
-                .font(.title)
-                .padding(.bottom, 2)
-            Text("Your account is stored privately and securely on your device.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.gray)
-                .font(.callout)
-                .padding(.bottom, 16)
-            
-            Button {
-                isDisplayingLoginPrompt = true
-            } label: {
-                Text("Login to HN")
-                    .foregroundColor(.white)
-                    .padding([.top, .bottom], 12)
-                    .padding([.leading, .trailing], 30)
-                    .background {
-                        RoundedRectangle(cornerRadius: 10)
-                            .foregroundColor( Color.accentColor )
+        ZStack {
+            if isLoggedIn,
+            let username = SaturnKeychainWrapper.shared.retrieve(for: .username) {
+                UserView(interactor: UserInteractor(username: username))
+                
+            } else {
+                VStack {
+                    Image(systemName: "person.fill")
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(.gray)
+                        .padding(.bottom, 16)
+                    Text("Login to HN")
+                        .font(.title)
+                        .padding(.bottom, 2)
+                    Text("Your account is stored privately and securely on your device keychain.")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.gray)
+                        .font(.callout)
+                        .padding(.bottom, 16)
+                    
+                    Button {
+                        isDisplayingLoginPrompt = true
+                    } label: {
+                        Text("Login to HN")
+                            .foregroundColor(.white)
+                            .padding([.top, .bottom], 12)
+                            .padding([.leading, .trailing], 30)
+                            .background {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor( Color.accentColor )
+                            }
                     }
+                }
             }
         }
         .sheet(isPresented: $isDisplayingLoginPrompt, content: {
             LoginAuthenticationView(isDisplayingLoginPrompt: $isDisplayingLoginPrompt)
         })
-        .onAppear {
-            isLoggedIn = SaturnKeychainWrapper.shared.hasCredential()
+        .onReceive(SaturnKeychainWrapper.shared.$isLoggedIn, perform: { output in
+            isLoggedIn = output
+        })
+        .toolbar {
+            if isLoggedIn {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        isDisplayingLogoutConfirm = true
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundColor(.accentColor)
+                    }
+                }
+            }
         }
+        .confirmationDialog("Logout?", isPresented: $isDisplayingLogoutConfirm, actions: {
+            Button(role: .destructive) {
+                SaturnKeychainWrapper.shared.clearCredential()
+                isLoggedIn = false
+            } label: {
+                Text("Logout")
+            }
+        })
     }
 }
 

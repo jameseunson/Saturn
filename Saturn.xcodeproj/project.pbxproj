@@ -38,6 +38,9 @@
 		1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC18296BF8A200D4D86E /* SafariView.swift */; };
 		1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */; };
 		1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */; };
+		1A7E150D29C83671008DAB22 /* LoginAuthenticationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E150C29C83671008DAB22 /* LoginAuthenticationButton.swift */; };
+		1A7E151029C83CFD008DAB22 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7E150F29C83CFD008DAB22 /* SwiftSoup */; };
+		1A7E151229C83D8D008DAB22 /* HTMLAPIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */; };
 		1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */; };
 		1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */; };
 		1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */; };
@@ -104,7 +107,6 @@
 		1ACB6C1429BB0437000A94E0 /* SearchHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */; };
 		1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */; };
 		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
-		1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 1ACB6C2829BB1B28000A94E0 /* Introspect */; };
 		1AD1286929C2E70F00096DE7 /* RootInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */; };
 		1AD1286C29C4298A00096DE7 /* LoginAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */; };
 		1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */; };
@@ -190,6 +192,8 @@
 		1A5DBC18296BF8A200D4D86E /* SafariView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowView.swift; sourceTree = "<group>"; };
 		1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
+		1A7E150C29C83671008DAB22 /* LoginAuthenticationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationButton.swift; sourceTree = "<group>"; };
+		1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIManager.swift; sourceTree = "<group>"; };
 		1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerView.swift; sourceTree = "<group>"; };
 		1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListLoadingView.swift; sourceTree = "<group>"; };
 		1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchNavigationView.swift; sourceTree = "<group>"; };
@@ -256,7 +260,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				1AE4A9C32977D92900D0B0D3 /* FirebaseRemoteConfig in Frameworks */,
-				1ACB6C2929BB1B28000A94E0 /* Introspect in Frameworks */,
 				1AE4A9BB2977D92900D0B0D3 /* FirebaseDatabaseSwift in Frameworks */,
 				1AE4A9B72977D92900D0B0D3 /* FirebaseCrashlytics in Frameworks */,
 				1AE4A9B32977D92900D0B0D3 /* FirebaseAnalyticsSwift in Frameworks */,
@@ -268,6 +271,7 @@
 				1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */,
 				1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */,
 				1AE4A9C12977D92900D0B0D3 /* FirebaseFirestoreSwift in Frameworks */,
+				1A7E151029C83CFD008DAB22 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,6 +471,7 @@
 				1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */,
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
 				1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */,
+				1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -557,6 +562,7 @@
 			children = (
 				1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */,
 				1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */,
+				1A7E150C29C83671008DAB22 /* LoginAuthenticationButton.swift */,
 			);
 			path = Login;
 			sourceTree = "<group>";
@@ -618,7 +624,7 @@
 				1AE4A9C42977D92900D0B0D3 /* FirebaseRemoteConfigSwift */,
 				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
 				1A9C75AF29A4981900DE94C6 /* AlertToast */,
-				1ACB6C2829BB1B28000A94E0 /* Introspect */,
+				1A7E150F29C83CFD008DAB22 /* SwiftSoup */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* Saturn.app */;
@@ -726,7 +732,7 @@
 				1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 				1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */,
-				1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
+				1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -775,11 +781,13 @@
 				1A111DFB29889C44005B29B6 /* UserItemViewModel.swift in Sources */,
 				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
 				1AE4A99B2977938F00D0B0D3 /* SearchAPIManager.swift in Sources */,
+				1A7E150D29C83671008DAB22 /* LoginAuthenticationButton.swift in Sources */,
 				1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */,
 				1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */,
 				1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */,
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
+				1A7E151229C83D8D008DAB22 /* HTMLAPIManager.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */,
 				1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
@@ -1208,20 +1216,20 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/elai950/AlertToast";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;
-			};
-		};
-		1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect.git";
-			requirement = {
-				branch = master;
-				kind = branch;
 			};
 		};
 		1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -1239,6 +1247,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
 			productName = SwiftyMarkdown;
+		};
+		1A7E150F29C83CFD008DAB22 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 		1A888FC32993719A00490A74 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1384,11 +1397,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
-		};
-		1ACB6C2829BB1B28000A94E0 /* Introspect */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1ACB6C2729BB1B28000A94E0 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
-			productName = Introspect;
 		};
 		1AE4A9B22977D92900D0B0D3 /* FirebaseAnalyticsSwift */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import Introspect
 
 struct StoryDetailView: View {
     @StateObject var interactor: StoryDetailInteractor
@@ -28,8 +27,6 @@ struct StoryDetailView: View {
     /// Comment focused view
     @State var displayFullComments = false
     @State var didScrollToFocusedComment = false
-    
-    private let delegate = StoryDetailScrollViewDelegate()
     
     var body: some View {
         ZStack {
@@ -227,9 +224,6 @@ struct StoryDetailView: View {
            .refreshable {
                await interactor.refreshStory()
            }
-           .introspectScrollView { view in
-               view.delegate = delegate
-           }
         }
     }
     
@@ -258,18 +252,5 @@ struct StoryDetailView_Previews: PreviewProvider {
                 EmptyView()
             }
         }
-    }
-}
-
-final class StoryDetailScrollViewDelegate: NSObject, UIScrollViewDelegate {
-    func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
-        print("didScrollToTop")
-    }
-    
-    func scrollViewShouldScrollToTop(_ scrollView: UIScrollView) -> Bool {
-        print("scrollViewShouldScrollToTop")
-        print(scrollView.contentOffset.y)
-        
-        return true
     }
 }

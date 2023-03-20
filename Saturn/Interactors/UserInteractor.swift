@@ -25,6 +25,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     private let apiManager = APIManager()
     private let commentLoader = CommentLoader()
+    private let htmlApiManager = HTMLAPIManager()
     
     init(username: String) {
         self.username = username
@@ -93,6 +94,17 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .store(in: &disposeBag)
         
         loadMoreItems()
+        
+        if SaturnKeychainWrapper.shared.isLoggedIn {
+            Task {
+                do {
+                    let result = try await htmlApiManager.loadPointsForSubmissions()
+                    print(result)
+                } catch {
+                    print(error)
+                }
+            }
+        }
     }
     
     func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
