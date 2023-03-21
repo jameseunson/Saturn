@@ -47,6 +47,17 @@ struct CommentHeaderView: View {
                                 onTapUser(comment.by)
                             }
                         }
+                    if let score = comment.score {
+                        HStack(spacing: 4) {
+                            Spacer().frame(width: 10)
+                            Text(String(score))
+                                .foregroundColor(.accentColor)
+                                .font(.callout)
+                            Image(systemName: "arrow.up.square.fill")
+                                .renderingMode(.template)
+                                .foregroundColor(.accentColor)
+                        }
+                    }
                     Spacer()
                     Text(comment.relativeTimeString)
                         .font(.body)

@@ -11,6 +11,8 @@ import SwiftUI
 struct RootView: View {
     @StateObject var interactor = RootInteractor()
     
+    @State var titleForUser = "User"
+    
     var body: some View {
         TabView {
             NavigationStack {
@@ -48,7 +50,7 @@ struct RootView: View {
             if AppRemoteConfig.instance.isLoggedInEnabled() {
                 NavigationStack {
                     LoggedInView()
-                        .navigationTitle("User")
+                        .navigationTitle(titleForUser)
                         .navigationBarTitleDisplayMode(.inline)
                 }
                 .tabItem {
@@ -58,6 +60,14 @@ struct RootView: View {
         }
         .onAppear {
             interactor.activate()
+        }
+        .onReceive(SaturnKeychainWrapper.shared.$isLoggedIn) { output in
+            if output,
+               let username = SaturnKeychainWrapper.shared.retrieve(for: .username) {
+                titleForUser = username
+            } else {
+                titleForUser = "User"
+            }
         }
     }
 }

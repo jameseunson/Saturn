@@ -19,6 +19,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     private var currentPage: Int = 0
     private var submittedIds = [Int]()
+    private var scoreMap = [Int: Int]()
     
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
     @Published private var itemsLoaded = 0
@@ -94,17 +95,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .store(in: &disposeBag)
         
         loadMoreItems()
-        
-        if SaturnKeychainWrapper.shared.isLoggedIn {
-            Task {
-                do {
-                    let result = try await htmlApiManager.loadPointsForSubmissions()
-                    print(result)
-                } catch {
-                    print(error)
-                }
-            }
-        }
     }
     
     func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
@@ -191,17 +181,39 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func completeLoad(with items: [UserItem], idsForPage: [Int]) {
-        var viewModels = [UserItemViewModel]()
-        for item in items {
-            switch item {
-            case let .comment(comment):
-                viewModels.append(UserItemViewModel.comment(CommentViewModel(comment: comment, indendation: 0, parent: nil)))
-            case let .story(story):
-                viewModels.append(UserItemViewModel.story(StoryRowViewModel(story: story)))
+        Task { @MainActor in
+            var viewModels = [UserItemViewModel]()
+            for item in items {
+                switch item {
+                case let .comment(comment):
+                    viewModels.append(UserItemViewModel.comment(CommentViewModel(comment: comment, indendation: 0, parent: nil)))
+                case let .story(story):
+                    viewModels.append(UserItemViewModel.story(StoryRowViewModel(story: story)))
+                }
             }
+            
+            /// Load scores for each comment, if logged in
+            if SaturnKeychainWrapper.shared.isLoggedIn {
+                let scoreMap = try await self.htmlApiManager.loadPointsForSubmissions(page: self.currentPage)
+                scoreMap.forEach { (key, value) in self.scoreMap[key] = value }
+
+                for (i, item) in viewModels.enumerated() {
+                    guard case let .comment(model) = item,
+                          let score = self.scoreMap[model.id],
+                          model.score == nil else {
+                        continue
+                    }
+                    model.score = score
+                    viewModels[i] = UserItemViewModel.comment(model)
+                }
+            }
+            
+            self.items.append(contentsOf: viewModels)
+            self.completeLoadIncrementPage(idsForPage: idsForPage)
         }
-        
-        self.items.append(contentsOf: viewModels)
+    }
+    
+    private func completeLoadIncrementPage(idsForPage: [Int]) {
         self.currentPage += 1
         self.itemsLoaded += idsForPage.count
         self.readyToLoadMore = true

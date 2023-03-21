@@ -7,9 +7,10 @@
 
 import Foundation
 import SwiftSoup
+import Combine
 
 protocol HTMLAPIManaging: AnyObject {
-    
+    func loadPointsForSubmissions(page: Int) async throws -> [Int: Int]
 }
 
 final class HTMLAPIManager: HTMLAPIManaging {
@@ -58,6 +59,22 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         
         return map
+    }
+    
+    func loadPointsForSubmissions(page: Int = 0) -> AnyPublisher<[Int: Int], Error> {
+        return Future { [weak self] promise in
+            guard let self else { return }
+            
+            Task {
+                do {
+                    let output = try await self.loadPointsForSubmissions(page: page)
+                    promise(.success(output))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
     }
 }
 

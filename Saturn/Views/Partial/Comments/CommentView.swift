@@ -133,3 +133,10 @@ struct CommentView: View {
         }
     }
 }
+
+struct CommentView_Previews: PreviewProvider {
+    static var previews: some View {
+        CommentView(expanded: .constant(.expanded), comment: CommentViewModel.fakeComment()) { _ in }
+        CommentView(expanded: .constant(.expanded), comment: CommentViewModel.fakeCommentWithScore()) { _ in }
+    }
+}
