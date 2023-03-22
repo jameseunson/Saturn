@@ -48,15 +48,9 @@ struct CommentHeaderView: View {
                             }
                         }
                     if let score = comment.score {
-                        HStack(spacing: 4) {
-                            Spacer().frame(width: 10)
-                            Text(String(score))
-                                .foregroundColor(.accentColor)
-                                .font(.callout)
-                            Image(systemName: "arrow.up.square.fill")
-                                .renderingMode(.template)
-                                .foregroundColor(.accentColor)
-                        }
+                        Text(String(score)).foregroundColor(.gray)
+                        + Text(" ")
+                        + Text(Image(systemName: "arrow.up.square.fill")).foregroundColor(.gray)
                     }
                     Spacer()
                     Text(comment.relativeTimeString)
@@ -123,4 +117,3 @@ struct CommentHeaderView: View {
         }
     }
 }
-

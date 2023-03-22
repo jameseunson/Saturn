@@ -16,11 +16,11 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
     let parent: CommentViewModel?
     let by: String
     let relativeTimeString: String
+    let score: Int?
     
     var expanded: Bool = true
     var children: [CommentViewModel] = []
     var totalChildCount = 0
-    var score: Int?
     
     var isAnimating: CommentAnimatingState = .none
     
@@ -30,6 +30,7 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
         self.indendation = indendation
         self.parent = parent
         self.by = comment.by
+        self.score = comment.score
         self.relativeTimeString = CommentViewModel.formatter.localizedString(for: comment.time, relativeTo: Date())
     }
     
@@ -47,19 +48,22 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
 }
 
 extension CommentViewModel {
+    static let dummyText: AttributedString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet nibh et purus consequat consectetur. Vivamus et mi quis risus dictum dictum. In sed orci quis augue efficitur varius sollicitudin nec ipsum. Donec non magna quis dui elementum facilisis quis lacinia diam. Sed tortor nibh, luctus convallis dictum vel, ullamcorper a tellus."
+    
     static func fakeComment() -> CommentViewModel {
-        let comment = Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date())
+        let comment = Comment.fakeComment()
 
-        comment.processedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet nibh et purus consequat consectetur. Vivamus et mi quis risus dictum dictum. In sed orci quis augue efficitur varius sollicitudin nec ipsum. Donec non magna quis dui elementum facilisis quis lacinia diam. Sed tortor nibh, luctus convallis dictum vel, ullamcorper a tellus."
+        comment.processedText = dummyText
         comment.processedTextHeight = 200
-        
         return CommentViewModel(comment: comment, indendation: 0, parent: nil)
     }
     
     static func fakeCommentWithScore() -> CommentViewModel {
-        let comment = fakeComment()
-        comment.score = 3
-        return comment
+        let comment = Comment.fakeCommentWithScore()
+
+        comment.processedText = dummyText
+        comment.processedTextHeight = 200
+        return CommentViewModel(comment: comment, indendation: 0, parent: nil)
     }
 }
 

@@ -10,14 +10,25 @@ import SwiftSoup
 import Combine
 
 protocol HTMLAPIManaging: AnyObject {
-    func loadPointsForSubmissions(page: Int) async throws -> [Int: Int]
+    func loadPointsForSubmissions(startFrom: Int?) async throws -> [Int: Int]
 }
 
 final class HTMLAPIManager: HTMLAPIManaging {
-    func loadPointsForSubmissions(page: Int = 0) async throws -> [Int: Int] {
+    func loadPointsForSubmissions(startFrom: Int? = nil) async throws -> [Int: Int] {
+        print("loadPointsForSubmissions, \(String(describing: startFrom))")
+        
         guard let cookie = SaturnKeychainWrapper.shared.retrieve(for: .cookie),
-              let username = SaturnKeychainWrapper.shared.retrieve(for: .username),
-              let url = URL(string: "https://news.ycombinator.com/threads?id=\(username)") else {
+              let username = SaturnKeychainWrapper.shared.retrieve(for: .username) else {
+            throw HTMLAPIManagerError.cannotLoadSubmissions
+        }
+        
+        let commentURL: URL?
+        if let startFrom {
+            commentURL = URL(string: "https://news.ycombinator.com/threads?id=\(username)&next=\(startFrom)")
+        } else {
+            commentURL = URL(string: "https://news.ycombinator.com/threads?id=\(username)")
+        }
+        guard let url = commentURL else {
             throw HTMLAPIManagerError.cannotLoadSubmissions
         }
         
@@ -30,6 +41,28 @@ final class HTMLAPIManager: HTMLAPIManaging {
             throw HTMLAPIManagerError.invalidHTML
         }
         
+        return try CommentScoreHTMLParser().parseHTML(htmlString, for: username)
+    }
+    
+    func loadPointsForSubmissions(startFrom: Int? = nil) -> AnyPublisher<[Int: Int], Error> {
+        return Future { [weak self] promise in
+            guard let self else { return }
+            
+            Task {
+                do {
+                    let output = try await self.loadPointsForSubmissions(startFrom: startFrom)
+                    promise(.success(output))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
+final class CommentScoreHTMLParser {
+    func parseHTML(_ htmlString: String, for username: String) throws -> [Int: Int] {
         let doc: Document = try SwiftSoup.parse(htmlString)
         let elements = try doc.select("tr.athing.comtr")
         
@@ -59,22 +92,6 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         
         return map
-    }
-    
-    func loadPointsForSubmissions(page: Int = 0) -> AnyPublisher<[Int: Int], Error> {
-        return Future { [weak self] promise in
-            guard let self else { return }
-            
-            Task {
-                do {
-                    let output = try await self.loadPointsForSubmissions(page: page)
-                    promise(.success(output))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }
-        .eraseToAnyPublisher()
     }
 }
 

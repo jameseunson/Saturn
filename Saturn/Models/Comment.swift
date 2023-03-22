@@ -25,6 +25,7 @@ final class Comment: Identifiable, Hashable, Codable {
     let text: String
     let time: Date
     
+    var score: Int?
     var processedText: AttributedString?
     var processedTextHeight: CGFloat = 0
     
@@ -32,13 +33,14 @@ final class Comment: Identifiable, Hashable, Codable {
         return URL(string: "https://news.ycombinator.com/item?id=\(id)")
     }
     
-    init(id: Int, by: String, kids: [Int]?, parent: Int, text: String, time: Date) {
+    init(id: Int, by: String, kids: [Int]?, parent: Int, text: String, time: Date, score: Int? = nil) {
         self.id = id
         self.by = by
         self.kids = kids
         self.parent = parent
         self.text = text
         self.time = time
+        self.score = score
     }
     
     init(from decoder: Decoder) throws {
@@ -91,5 +93,15 @@ final class Comment: Identifiable, Hashable, Codable {
         case parent
         case text
         case time
+    }
+}
+
+extension Comment {
+    static func fakeComment() -> Comment {
+        return Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date())
+    }
+    
+    static func fakeCommentWithScore() -> Comment {
+        return Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date(), score: 10)
     }
 }
