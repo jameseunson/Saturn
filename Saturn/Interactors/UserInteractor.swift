@@ -218,11 +218,14 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         return idsPage
     }
     
+    /// Comment scores should only be loaded if the user is logged in and the user in context is the logged in user
+    /// as this is the only user we have the ability to retrieve comment scores for
     private func shouldLoadCommentScores() -> Bool {
         return SaturnKeychainWrapper.shared.isLoggedIn &&
            self.user?.id == SaturnKeychainWrapper.shared.retrieve(for: .username)
     }
     
+    /// Sets the score for every comment we have a score for
     private func applyScoreMap(scoreMap: [Int: Int], items: [UserItem]) {
         scoreMap.forEach { (key, value) in self.scoreMap[key] = value }
         
@@ -235,6 +238,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
+    /// The HN URL for comments requires setting an offset passed via the `next` url parameter
+    /// We can calculate the correct `next` value by looking at the last comment and subtracting 1 from the id
     private func scoreMapStartFrom() -> Int? {
         var startFrom: Int? = nil
         if !self.items.isEmpty,

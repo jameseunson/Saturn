@@ -29,6 +29,7 @@ struct CommentView: View {
     
     @State private var navBarHeight: CGFloat = 0
     @State private var commentOnScreen: Bool = true
+    @State private var dragOffset: CGFloat = 0
     
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
@@ -49,30 +50,33 @@ struct CommentView: View {
     }
     
     var body: some View {
-        HStack {
-            if expanded == .hidden && comment.isAnimating == .none {
-                EmptyView()
-            } else {
-                CommentIndentationView(comment: comment)
-                    .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
-                VStack(alignment: .leading) {
-                    CommentHeaderView(comment: comment,
-                                      onTapOptions: onTapOptions,
-                                      onTapUser: onTapUser,
-                                      onToggleExpanded: onToggleExpanded,
-                                      expanded: $expanded,
-                                      commentOnScreen: $commentOnScreen)
-                    Divider()
-                    if expanded == .expanded {
-                        Text(comment.comment.processedText ?? AttributedString())
-                            .font(.body)
-                            .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
-                                                              onTapStoryId: onTapStoryId,
-                                                              onTapURL: onTapURL))
-                            .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
+        ZStack {
+            HStack {
+                if expanded == .hidden && comment.isAnimating == .none {
+                    EmptyView()
+                } else {
+                    CommentIndentationView(comment: comment)
+                        .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
+                    VStack(alignment: .leading) {
+                        CommentHeaderView(comment: comment,
+                                          onTapOptions: onTapOptions,
+                                          onTapUser: onTapUser,
+                                          onToggleExpanded: onToggleExpanded,
+                                          expanded: $expanded,
+                                          commentOnScreen: $commentOnScreen)
+                        Divider()
+                        if expanded == .expanded {
+                            Text(comment.comment.processedText ?? AttributedString())
+                                .font(.body)
+                                .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                                  onTapStoryId: onTapStoryId,
+                                                                  onTapURL: onTapURL))
+                                .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
+                        }
                     }
                 }
             }
+            .offset(.init(width: dragOffset, height: 0))
         }
         .contextMenu(menuItems: {
             Button(action: {
