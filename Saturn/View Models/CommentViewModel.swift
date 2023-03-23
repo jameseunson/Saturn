@@ -21,6 +21,7 @@ final class CommentViewModel: Codable, Hashable, Identifiable {
     var expanded: Bool = true
     var children: [CommentViewModel] = []
     var totalChildCount = 0
+    var vote: HTMLAPICommentVote?
     
     var isAnimating: CommentAnimatingState = .none
     

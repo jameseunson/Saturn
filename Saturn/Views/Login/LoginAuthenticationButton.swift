@@ -48,6 +48,7 @@ struct LoginAuthenticationButton: View {
         }
         .simultaneousGesture(DragGesture(minimumDistance: 0)
             .updating($isTapped) { (_, isTapped, _) in
+                if isDisabled { return }
                 isTapped = true
             })
         .buttonStyle(PlainButtonStyle())

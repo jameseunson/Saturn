@@ -23,6 +23,7 @@ final class LoginAuthenticationInteractor: Interactor {
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
     }
     
+    // TODO: Move to HTMLAPIManager
     func login(with username: String, password: String) async throws -> Bool {
         guard let url = URL(string: "https://news.ycombinator.com/login"),
               !username.isEmpty,

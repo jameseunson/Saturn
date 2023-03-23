@@ -34,14 +34,15 @@ struct LoggedInView: View {
                         .foregroundColor(.gray)
                         .font(.callout)
                         .padding(.bottom, 16)
+                        .padding([.leading, .trailing], 60)
                     
                     Button {
                         isDisplayingLoginPrompt = true
                     } label: {
-                        Text("Login to HN")
+                        Text("Login")
                             .foregroundColor(.white)
                             .padding([.top, .bottom], 12)
-                            .padding([.leading, .trailing], 30)
+                            .padding([.leading, .trailing], 110)
                             .background {
                                 RoundedRectangle(cornerRadius: 10)
                                     .foregroundColor( Color.accentColor )

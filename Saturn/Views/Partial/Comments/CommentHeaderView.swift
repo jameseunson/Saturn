@@ -14,6 +14,7 @@ struct CommentHeaderView: View {
     let onTapOptions: ((CommentViewModel) -> Void)?
     let onTapUser: ((String) -> Void)?
     let onToggleExpanded: OnToggleExpandedCompletion?
+    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
     
     @Binding var expanded: CommentExpandedState
     @Binding var commentOnScreen: Bool
@@ -22,12 +23,14 @@ struct CommentHeaderView: View {
          onTapOptions: ((CommentViewModel) -> Void)? = nil,
          onTapUser: ( (String) -> Void)? = nil,
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
+         onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil,
          expanded: Binding<CommentExpandedState>,
          commentOnScreen: Binding<Bool>) {
         self.comment = comment
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
+        self.onTapVote = onTapVote
         _expanded = expanded
         _commentOnScreen = commentOnScreen
     }
@@ -47,6 +50,24 @@ struct CommentHeaderView: View {
                                 onTapUser(comment.by)
                             }
                         }
+                    if let vote = comment.vote {
+                        if vote.directions.contains(.upvote) {
+                            Button {
+                                print("upvote \(comment.id)")
+                                onTapVote?(.upvote)
+                            } label: {
+                                Text(Image(systemName: "arrow.up")).font(.callout).foregroundColor(.accentColor)
+                            }
+                        }
+                        if vote.directions.contains(.downvote) {
+                            Button {
+                                onTapVote?(.downvote)
+                                print("downvote \(comment.id)")
+                            } label: {
+                                Text(Image(systemName: "arrow.down")).font(.callout).foregroundColor(.blue)
+                            }
+                        }
+                    }
                     if let score = comment.score {
                         Text(String(score)).foregroundColor(.gray)
                         + Text(" ")

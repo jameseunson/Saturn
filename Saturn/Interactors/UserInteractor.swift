@@ -123,7 +123,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             }
             .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [Int: Int]), Error> in
                 if self.shouldLoadCommentScores() {
-                    return self.htmlApiManager.loadPointsForSubmissions(startFrom: self.scoreMapStartFrom())
+                    return self.htmlApiManager.loadScoresForLoggedInUserComments(startFrom: self.scoreMapStartFrom())
                         .map { (items, ids, $0) }
                         .eraseToAnyPublisher()
                 } else {
@@ -176,7 +176,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             let items = try await self.apiManager.loadUserItems(ids: ids)
             
             if self.shouldLoadCommentScores() {
-                let scoreMap = try await self.htmlApiManager.loadPointsForSubmissions()
+                let scoreMap = try await self.htmlApiManager.loadScoresForLoggedInUserComments()
                 applyScoreMap(scoreMap: scoreMap, items: items)
             }
             

@@ -8,8 +8,10 @@
 import Foundation
 import SwiftSoup
 
+/// Extracts which directions each can be voted on (up and/or down),
+/// the auth key required to vote on each comment and the id of each comment
 final class CommentVoteHTMLParser {
-    func parseHTML(_ htmlString: String) throws -> [Int: HTMLAPICommentVote]  {
+    func parseHTML(_ htmlString: String, storyId: Int) throws -> [Int: HTMLAPICommentVote]  {
         let doc: Document = try SwiftSoup.parse(htmlString)
         var map = [Int: HTMLAPICommentVote]()
         
@@ -37,7 +39,10 @@ final class CommentVoteHTMLParser {
             }
             if let auth,
                let id {
-                map[id] = HTMLAPICommentVote(id: id, directions: directions, auth: auth)
+                map[id] = HTMLAPICommentVote(id: id,
+                                             directions: directions,
+                                             auth: auth,
+                                             storyId: storyId)
             }
         }
         
@@ -49,19 +54,25 @@ final class CommentVoteHTMLParser {
         var auth: String?
         
         let hrefString = try element.attr("href")
-        for component in hrefString.components(separatedBy: "&") {
-            let keyValue = component.components(separatedBy: "=")
-            guard let key = keyValue.first,
-                  let value = keyValue.last else {
+        guard let url = URL(string: "https://news.ycombinator.com/" + hrefString),
+              let components = URLComponents(string: url.absoluteString),
+              let queryItems = components.queryItems else {
+            return nil
+        }
+        
+        for item in queryItems {
+            switch item.name {
+            case "id":
+                if let itemValue = item.value {
+                    id = Int(itemValue)
+                }
+            case "auth":
+                auth = item.value
+            default:
                 continue
             }
-            if key == "id",
-               let valueInt = Int(value) {
-                id = valueInt
-            } else if key == "auth" {
-                auth = value
-            }
         }
+        
         guard let id,
               let auth else {
             return nil

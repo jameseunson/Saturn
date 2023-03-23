@@ -21,6 +21,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var commentsRemainingToLoad: Bool = true
     @Published private(set) var story: Story?
+    @Published private(set) var availableVotes: [Int: HTMLAPICommentVote] = [:]
     
     var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
@@ -35,6 +36,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     private var itemId: Int?
     private let apiManager = APIManager()
+    private let htmlApiManager = HTMLAPIManager()
     
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
@@ -135,6 +137,31 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         } else {
             loadComments()
         }
+        
+        /// Load voting information about each comment, if the user is logged in (as the user can only vote
+        /// if they are logged in)
+        if SaturnKeychainWrapper.shared.isLoggedIn {
+            $story.compactMap { $0 }
+                .flatMap { story in
+                    return self.htmlApiManager.loadAvailableVotesForComments(storyId: story.id)
+                }
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        print(error)
+                    }
+                } receiveValue: { result in
+                    self.availableVotes = result
+                    
+                    for comment in self.comments.value {
+                        if let vote = result[comment.id] {
+                            comment.vote = vote
+                        }
+                    }
+                    self.comments.send(self.comments.value)
+                }
+                .store(in: &disposeBag)
+        }
     }
     
     func loadComments() {
@@ -229,6 +256,20 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .forEach { $0.isAnimating = .none }
     }
     
+    func didTapVote(comment: CommentViewModel, direction: HTMLAPICommentVoteDirection) {
+        guard let info = comment.vote else {
+            // TODO: Error
+            return
+        }
+        Task {
+            do {
+                try await self.htmlApiManager.vote(direction: direction, info: info)
+            } catch {
+                // TODO: Error
+            }
+        }
+    }
+    
     // MARK: -
     /// Visit each leaf and create a view model, appending to the parent's `children` property
     private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
@@ -249,6 +290,12 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             let viewModel = CommentViewModel(comment: comment,
                                              indendation: indentation,
                                              parent: parent)
+            
+            if SaturnKeychainWrapper.shared.isLoggedIn,
+               let vote = self.availableVotes[viewModel.id] {
+                viewModel.vote = vote
+            }
+               
             if let parent {
                 parent.children.append(viewModel)
                 self.incrementTotalChildCount(parent)

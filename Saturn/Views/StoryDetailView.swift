@@ -181,6 +181,9 @@ struct StoryDetailView: View {
                                     
                                 } onTapURL: { url in
                                     displayingSafariURL = url
+                                    
+                                } onTapVote: { direction in
+                                    self.interactor.didTapVote(comment: comment, direction: direction)
                                 }
                                 .id(comment.id)
                                 .onAppear {

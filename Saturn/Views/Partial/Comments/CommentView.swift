@@ -22,6 +22,7 @@ struct CommentView: View {
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState, Bool) -> Void)?
     let onTapStoryId: ((Int) -> Void)?
     let onTapURL: ((URL) -> Void)?
+    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
     
     let displaysStory: Bool
     
@@ -38,7 +39,8 @@ struct CommentView: View {
          onTapUser: ((String) -> Void)? = nil,
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
          onTapStoryId: ((Int) -> Void)? = nil,
-         onTapURL: ((URL) -> Void)? = nil) {
+         onTapURL: ((URL) -> Void)? = nil,
+         onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil) {
         _expanded = expanded
         self.comment = comment
         self.displaysStory = displaysStory
@@ -47,6 +49,7 @@ struct CommentView: View {
         self.onToggleExpanded = onToggleExpanded
         self.onTapStoryId = onTapStoryId
         self.onTapURL = onTapURL
+        self.onTapVote = onTapVote
     }
     
     var body: some View {
@@ -62,6 +65,7 @@ struct CommentView: View {
                                           onTapOptions: onTapOptions,
                                           onTapUser: onTapUser,
                                           onToggleExpanded: onToggleExpanded,
+                                          onTapVote: onTapVote,
                                           expanded: $expanded,
                                           commentOnScreen: $commentOnScreen)
                         Divider()

@@ -16,29 +16,82 @@ struct LoginAuthenticationView: View {
     @State var username: String = ""
     @State var password: String = ""
     @State var isDisplayingError = false
+    @State var isDisplayingForgotPasswordView = false
     
     @State var isLoading: Bool = false
+    
+    @FocusState private var isUsernameFocused: Bool
+    @FocusState private var isPasswordFocused: Bool
     
     var body: some View {
         NavigationStack {
             List {
-                TextField("Username", text: $username)
-                    .autocorrectionDisabled(true)
-                    .textInputAutocapitalization(.never)
-                SecureField("Password", text: $password)
-                LoginAuthenticationButton(isLoading: $isLoading,
-                                          isDisabled: submitDisabled()) {
-                    Task {
-                        do {
-                            if try await interactor.login(with: username,
-                                                          password: password) {
-                                isDisplayingLoginPrompt = false
-                            } else {
-                                isDisplayingError = true
+                Section {
+                    HStack {
+                        Image(systemName: "person.fill")
+                            .foregroundColor(.gray.opacity(0.5))
+                        TextField("Username", text: $username)
+                            .autocorrectionDisabled(true)
+                            .textInputAutocapitalization(.never)
+                            .textContentType(.username)
+                            .focused($isUsernameFocused)
+                            .disabled(isLoading)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    
+                                    HStack {
+                                        Button {
+                                            isUsernameFocused = true
+                                        } label: {
+                                            Image(systemName: "chevron.left")
+                                        }
+                                        .disabled(isUsernameFocused)
+                                        
+                                        Button {
+                                            isPasswordFocused = true
+                                        } label: {
+                                            Image(systemName: "chevron.right")
+                                        }
+                                        .disabled(isPasswordFocused)
+
+                                        Spacer()
+                                        Button {
+                                            isUsernameFocused = false
+                                            isPasswordFocused = false
+                                        } label: {
+                                            Text("Done")
+                                                .fontWeight(.semibold)
+                                        }
+                                    }
+                                }
                             }
-                        } catch {
-                            isDisplayingError = true
+                            .submitLabel(.next)
+                    }
+                    HStack {
+                        Image(systemName: "lock.fill")
+                            .foregroundColor(.gray.opacity(0.5))
+                        SecureField("Password", text: $password)
+                            .focused($isPasswordFocused)
+                            .textContentType(.password)
+                            .submitLabel(.done)
+                            .disabled(isLoading)
+                    }
+                    LoginAuthenticationButton(isLoading: $isLoading,
+                                              isDisabled: submitDisabled()) {
+                        doLogin()
+                    }
+                } footer: {
+                    HStack {
+                        Spacer()
+                        Button {
+                            isDisplayingForgotPasswordView = true
+                        } label: {
+                            Text("Forgot password")
+                                .foregroundColor(.accentColor)
+                                .font(.callout)
+                                .padding(.top, 10)
                         }
+                        Spacer()
                     }
                 }
             }
@@ -55,6 +108,14 @@ struct LoginAuthenticationView: View {
                 }
             }
         }
+        .onSubmit {
+            if isUsernameFocused {
+                isPasswordFocused = true
+                
+            } else if isPasswordFocused {
+                doLogin()
+            }
+        }
         .onAppear {
             interactor.activate()
         }
@@ -64,12 +125,34 @@ struct LoginAuthenticationView: View {
         .alert(isPresented: $isDisplayingError, content: {
             Alert(title: Text("Error"), message: Text("Could not login, please try again later."), dismissButton: .default(Text("OK")))
         })
+        .sheet(isPresented: $isDisplayingForgotPasswordView) {
+            if let url = URL(string: "https://news.ycombinator.com/forgot") {
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
+        }
     }
     
     func submitDisabled() -> Binding<Bool> {
         Binding {
             username.isEmpty || password.isEmpty
         } set: { _ in }
+    }
+    
+    func doLogin() {
+        if submitDisabled().wrappedValue { return }
+        Task {
+            do {
+                if try await interactor.login(with: username,
+                                              password: password) {
+                    isDisplayingLoginPrompt = false
+                } else {
+                    isDisplayingError = true
+                }
+            } catch {
+                isDisplayingError = true
+            }
+        }
     }
 }
 

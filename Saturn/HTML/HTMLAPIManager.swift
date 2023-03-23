@@ -10,12 +10,19 @@ import Combine
 import SwiftSoup
 
 protocol HTMLAPIManaging: AnyObject {
-    func loadPointsForSubmissions(startFrom: Int?) async throws -> [Int: Int]
-    func loadPointsForSubmissions(startFrom: Int?) -> AnyPublisher<[Int: Int], Error>
+    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [Int: Int]
+    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[Int: Int], Error>
+    func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPICommentVote]
+    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPICommentVote], Error>
 }
 
+/// The HN API is read-only and does not support authenticated accounts, so when we want to login as a specific user
+/// and perform write operations (upvote, etc), the only way to implement this is through HTML scraping using an authenticated cookie
+/// Therefore, this class implements various user-authenticated functions using scraping
 final class HTMLAPIManager: HTMLAPIManaging {
-    func loadPointsForSubmissions(startFrom: Int? = nil) async throws -> [Int: Int] {
+    
+    /// Load score for each user comment, used on the User page
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [Int: Int] {
         guard let username = SaturnKeychainWrapper.shared.retrieve(for: .username) else { throw HTMLAPIManagerError.cannotLoad }
         
         let commentURL: URL?
@@ -31,53 +38,44 @@ final class HTMLAPIManager: HTMLAPIManaging {
         return try CommentScoreHTMLParser().parseHTML(htmlString, for: username)
     }
     
-    func loadPointsForSubmissions(startFrom: Int? = nil) -> AnyPublisher<[Int: Int], Error> {
-        return Future { [weak self] promise in
-            guard let self else { return }
-            
-            Task {
-                do {
-                    let output = try await self.loadPointsForSubmissions(startFrom: startFrom)
-                    promise(.success(output))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<[Int: Int], Error> {
+        return publisherForAsync {
+            try await self.loadScoresForLoggedInUserComments(startFrom: startFrom)
         }
-        .eraseToAnyPublisher()
     }
     
+    /// Loads whether we can upvote or downvote certain comments in a story thread
     func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPICommentVote] {
         guard let url = URL(string: "https://news.ycombinator.com/item?id=\(storyId)") else {
             throw HTMLAPIManagerError.cannotLoad
         }
         let htmlString = try await loadHTML(for: url)
-        return try CommentVoteHTMLParser().parseHTML(htmlString)
+        return try CommentVoteHTMLParser().parseHTML(htmlString, storyId: storyId)
     }
     
-    private func parseVotingLink(element: Element) throws -> (Int, String)? {
-        var id: Int?
-        var auth: String?
+    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPICommentVote], Error> {
+        return publisherForAsync {
+            try await self.loadAvailableVotesForComments(storyId: storyId)
+        }
+    }
+    
+    /// Perform the actual vote
+    func vote(direction: HTMLAPICommentVoteDirection, info: HTMLAPICommentVote) async throws {
+//    https://news.ycombinator.com/vote?id=34864921&how=up&auth=3bbde44e83c06ae4cae14b4f7b980cacc915ebd4&goto=item%3Fid%3D34858691#34864921
         
-        let hrefString = try element.attr("href")
-        for component in hrefString.components(separatedBy: "&") {
-            let keyValue = component.components(separatedBy: "=")
-            guard let key = keyValue.first,
-                  let value = keyValue.last else {
-                continue
-            }
-            if key == "id",
-               let valueInt = Int(value) {
-                id = valueInt
-            } else if key == "auth" {
-                auth = value
-            }
+        guard var components = URLComponents(string: "https://news.ycombinator.com/vote") else {
+            throw HTMLAPIManagerError.cannotVote
         }
-        guard let id,
-              let auth else {
-            return nil
+        components.queryItems = [URLQueryItem(name: "id", value: String(info.id)),
+                                 URLQueryItem(name: "how", value: direction == .upvote ? "up" : "down"),
+                                 URLQueryItem(name: "auth", value: info.auth),
+                                 URLQueryItem(name: "goto", value: "item%3Fid%3D\(info.storyId)#\(info.id)")]
+        guard let url = components.url else {
+            throw HTMLAPIManagerError.cannotVote
         }
-        return (id, auth)
+        
+        let htmlString = try await loadHTML(for: url)
+        print(htmlString)
     }
     
     // MARK: -
@@ -96,6 +94,20 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         return htmlString
     }
+    
+    private func publisherForAsync<T>(action: @escaping () async throws -> T) -> AnyPublisher<T, Error> {
+        return Future { promise in
+            Task {
+                do {
+                    let output = try await action()
+                    promise(.success(output))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 }
 
 enum HTMLAPIManagerError: Error {
@@ -103,15 +115,17 @@ enum HTMLAPIManagerError: Error {
     case invalidHTML
     case invalidScore
     case cannotFindElements
+    case cannotVote
 }
 
-enum HTMLAPICommentVoteDirection {
+enum HTMLAPICommentVoteDirection: Codable {
     case upvote
     case downvote
 }
 
-struct HTMLAPICommentVote {
+struct HTMLAPICommentVote: Codable {
     let id: Int
     let directions: [HTMLAPICommentVoteDirection]
     let auth: String
+    let storyId: Int
 }

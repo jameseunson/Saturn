@@ -8,6 +8,9 @@
 import Foundation
 import SwiftSoup
 
+/// Extracts the number of upvotes (score) of each comment
+/// This information is only available to the current user about their own comments,
+/// so we do not attempt to extract scores for comments by other users
 final class CommentScoreHTMLParser {
     func parseHTML(_ htmlString: String, for username: String) throws -> [Int: Int] {
         let doc: Document = try SwiftSoup.parse(htmlString)
