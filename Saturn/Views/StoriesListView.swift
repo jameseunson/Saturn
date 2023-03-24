@@ -135,7 +135,7 @@ struct StoriesListView: View {
                         StoryRowView(story: StoryRowViewModel(story: story),
                                      onTapArticleLink: { url in self.displayingSafariURL = url },
                                      onTapUser: { user in self.selectedUser = user },
-                                     showsTextPreview: true)
+                                     context: .storiesList)
                             .onAppear {
                                 #if DEBUG
                                 if displayingSwiftUIPreview {
@@ -148,6 +148,18 @@ struct StoriesListView: View {
                                 }
                             }
                             .contextMenu {
+                                if SaturnKeychainWrapper.shared.isLoggedIn {
+                                    Button(action: {
+                                        // TODO:
+                                    }, label: {
+                                        Label("Upvote", systemImage: "arrow.up")
+                                    })
+                                    Button(action: {
+                                        // TODO:
+                                    }, label: {
+                                        Label("Downvote", systemImage: "arrow.down")
+                                    })
+                                }
                                 Button(action: { selectedShareItem = story.url }, label:
                                 {
                                     Label("Share", systemImage: "square.and.arrow.up")

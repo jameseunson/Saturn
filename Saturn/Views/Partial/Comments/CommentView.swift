@@ -96,8 +96,20 @@ struct CommentView: View {
             }
         }
         .contextMenu(menuItems: {
+            if SaturnKeychainWrapper.shared.isLoggedIn {
+                Button(action: {
+                    onTapVote?(.upvote)
+                }, label: {
+                    Label("Upvote", systemImage: "arrow.up")
+                })
+                Button(action: {
+                    onTapVote?(.downvote)
+                }, label: {
+                    Label("Downvote", systemImage: "arrow.down")
+                })
+            }
             Button(action: {
-                
+                // TODO:
             }, label: {
                 Label("Share", systemImage: "square.and.arrow.up")
             })

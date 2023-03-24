@@ -72,8 +72,9 @@ struct UserView: View {
                                 if let context = contexts[comment.id],
                                    let story = context.story {
                                     StoryRowView(story: StoryRowViewModel(story: story),
-                                                 onTapArticleLink: { url in self.displayingSafariURL = url })
-                                        .padding(10)
+                                                 onTapArticleLink: { url in self.displayingSafariURL = url },
+                                                 context: .user)
+                                        .padding([.top, .bottom], 10)
                                         .onTapGesture {
                                             selectedStoryToView = StoryRowViewModel(story: story)
                                         }
@@ -96,7 +97,7 @@ struct UserView: View {
                                 .onTapGesture {
                                     selectedStoryToView = story
                                 }
-                                .padding()
+                                .padding([.top, .bottom], 10)
                         }
                         Divider()
                     }

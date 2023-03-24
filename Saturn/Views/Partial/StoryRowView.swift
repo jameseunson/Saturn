@@ -19,17 +19,17 @@ struct StoryRowView: View {
     let onTapArticleLink: ((URL) -> Void)?
     let onTapUser: ((String) -> Void)?
     let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
-    let showsTextPreview: Bool
+    let context: StoryRowViewContext
     
     init(story: StoryRowViewModel,
          onTapArticleLink: ((URL) -> Void)? = nil,
          onTapUser: ((String) -> Void)? = nil,
          onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil,
-         showsTextPreview: Bool = false) {
+         context: StoryRowViewContext = .storiesList) {
         self.story = story
         self.onTapArticleLink = onTapArticleLink
         self.onTapUser = onTapUser
-        self.showsTextPreview = showsTextPreview
+        self.context = context
         self.onTapVote = onTapVote
     }
     
@@ -95,7 +95,7 @@ struct StoryRowView: View {
                                     onTapArticleLink: onTapArticleLink)
                     
                 } else if let text = story.text,
-                          showsTextPreview {
+                          context == .storiesList {
                     Spacer().frame(height: 12)
                     Text(NSMutableAttributedString(text).string)
                         .lineLimit(2)
@@ -106,9 +106,15 @@ struct StoryRowView: View {
             }
             .offset(.init(width: dragOffset, height: 0))
             .background {
-                Color(UIColor.systemBackground)
-                    .edgesIgnoringSafeArea(.all)
-                    .offset(.init(width: dragOffset, height: 0))
+                if context == .user {
+                    Color(UIColor.systemGray6)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                } else {
+                    Color(UIColor.systemBackground)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                }
             }
             .padding([.leading, .trailing], 15)
         }
@@ -183,4 +189,10 @@ struct StoryRowView_Previews: PreviewProvider {
     static var previews: some View {
         StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!))
     }
+}
+
+enum StoryRowViewContext {
+    case storiesList
+    case storyDetail
+    case user
 }
