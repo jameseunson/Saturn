@@ -54,6 +54,12 @@ struct CommentView: View {
     
     var body: some View {
         ZStack {
+            if SaturnKeychainWrapper.shared.isLoggedIn,
+               frameHeight > 0,
+               abs(dragOffset) > 0 {
+                VoteBackdropView(dragOffset: $dragOffset)
+                    .transition(.identity)
+            }
             HStack {
                 if expanded == .hidden && comment.isAnimating == .none {
                     EmptyView()
@@ -80,7 +86,14 @@ struct CommentView: View {
                     }
                 }
             }
+            .transition(.identity)
+            .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
             .offset(.init(width: dragOffset, height: 0))
+            .background {
+                Color(UIColor.systemBackground)
+                    .edgesIgnoringSafeArea(.all)
+                    .offset(.init(width: dragOffset, height: 0))
+            }
         }
         .contextMenu(menuItems: {
             Button(action: {
@@ -95,6 +108,9 @@ struct CommentView: View {
             }, label: {
                 Label(comment.by, systemImage: "person.circle")
             })
+        })
+        .if(SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
+            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset, onTapVote: onTapVote))
         })
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in
@@ -123,7 +139,7 @@ struct CommentView: View {
             view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
         })
         .clipped()
-        .padding(expanded == .hidden ? 0 : 10)
+        .padding([.top, .bottom], expanded == .hidden ? 0 : 10)
         .modifier(CommentExpandModifier(comment: comment,
                                         onToggleExpanded: onToggleExpanded,
                                         expanded: $expanded,

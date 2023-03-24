@@ -93,6 +93,8 @@
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
+		1A9870FF29CD865A0022BA2B /* DragVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */; };
+		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
 		1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */; };
 		1AAED96129CAE97A0093CED7 /* CommentVoteHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAED96029CAE97A0093CED7 /* CommentVoteHTMLParser.swift */; };
@@ -219,6 +221,8 @@
 		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
+		1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragVoteGestureModifier.swift; sourceTree = "<group>"; };
+		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
 		1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentScoreHTMLParser.swift; sourceTree = "<group>"; };
 		1AAED96029CAE97A0093CED7 /* CommentVoteHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentVoteHTMLParser.swift; sourceTree = "<group>"; };
 		1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -343,6 +347,7 @@
 				1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */,
 				1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */,
 				1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */,
+				1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */,
 			);
 			path = Modifiers;
 			sourceTree = "<group>";
@@ -567,6 +572,7 @@
 				1A873ABE296E76B200870A50 /* CommentView.swift */,
 				1A050D802982088500C26F12 /* CommentHeaderView.swift */,
 				1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */,
+				1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */,
 			);
 			path = Comments;
 			sourceTree = "<group>";
@@ -798,6 +804,7 @@
 				1A7E150D29C83671008DAB22 /* LoginAuthenticationButton.swift in Sources */,
 				1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */,
 				1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */,
+				1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */,
 				1A888FBC299227F600490A74 /* Color+Codable.swift in Sources */,
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
@@ -857,6 +864,7 @@
 				1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */,
 				1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
+				1A9870FF29CD865A0022BA2B /* DragVoteGestureModifier.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
@@ -1036,7 +1044,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1074,7 +1082,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;

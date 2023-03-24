@@ -264,6 +264,10 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         Task {
             do {
                 try await self.htmlApiManager.vote(direction: direction, info: info)
+                
+                comment.vote?.state = direction
+                self.comments.send(self.comments.value)
+                
             } catch {
                 // TODO: Error
             }

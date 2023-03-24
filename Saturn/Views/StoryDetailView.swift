@@ -129,7 +129,7 @@ struct StoryDetailView: View {
                 StoryRowView(story: StoryRowViewModel(story: story),
                              onTapArticleLink: { url in self.displayingSafariURL = url },
                              onTapUser: { user in self.selectedUser = user })
-                    .padding()
+                    .padding([.top, .bottom])
                     .onTapGesture {
                         if story.url != nil {
                             displayingSafariURL = story.url

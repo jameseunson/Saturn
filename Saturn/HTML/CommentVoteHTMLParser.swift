@@ -20,6 +20,7 @@ final class CommentVoteHTMLParser {
             var directions = [HTMLAPICommentVoteDirection]()
             var auth: String?
             var id: Int?
+            var state: HTMLAPICommentVoteDirection?
             
             if let upvote = try element.select("a.clicky").filter ({ $0.id().contains("up") }).first {
                 if let (idResult, authResult) = try parseVotingLink(element: upvote) {
@@ -37,12 +38,24 @@ final class CommentVoteHTMLParser {
                 }
                 directions.append(.downvote)
             }
+            
+            if let unvote = try element.select("span[id^=unv_] > a").first {
+                let unvoteText = try unvote.text()
+                if unvoteText == "unvote" {
+                    state = .upvote
+                    
+                } else if unvoteText == "undown" {
+                    state = .downvote
+                }
+            }
+            
             if let auth,
                let id {
                 map[id] = HTMLAPICommentVote(id: id,
                                              directions: directions,
                                              auth: auth,
-                                             storyId: storyId)
+                                             storyId: storyId,
+                                             state: state)
             }
         }
         

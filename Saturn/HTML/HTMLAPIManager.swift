@@ -123,9 +123,10 @@ enum HTMLAPICommentVoteDirection: Codable {
     case downvote
 }
 
-struct HTMLAPICommentVote: Codable {
+struct HTMLAPICommentVote: Codable, Hashable {
     let id: Int
     let directions: [HTMLAPICommentVoteDirection]
     let auth: String
     let storyId: Int
+    var state: HTMLAPICommentVoteDirection?
 }

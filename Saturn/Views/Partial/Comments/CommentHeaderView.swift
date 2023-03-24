@@ -54,17 +54,25 @@ struct CommentHeaderView: View {
                         if vote.directions.contains(.upvote) {
                             Button {
                                 print("upvote \(comment.id)")
+                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                impactMed.impactOccurred()
                                 onTapVote?(.upvote)
                             } label: {
-                                Text(Image(systemName: "arrow.up")).font(.callout).foregroundColor(.accentColor)
+                                Text(Image(systemName: "arrow.up"))
+                                    .font(.callout)
+                                    .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
                             }
                         }
                         if vote.directions.contains(.downvote) {
                             Button {
-                                onTapVote?(.downvote)
                                 print("downvote \(comment.id)")
+                                onTapVote?(.downvote)
+                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                impactMed.impactOccurred()
                             } label: {
-                                Text(Image(systemName: "arrow.down")).font(.callout).foregroundColor(.blue)
+                                Text(Image(systemName: "arrow.down"))
+                                    .font(.callout)
+                                    .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
                             }
                         }
                     }

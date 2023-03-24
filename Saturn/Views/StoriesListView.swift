@@ -157,7 +157,6 @@ struct StoriesListView: View {
                                     Label(story.by, systemImage: "person.circle")
                                 })
                             }
-                            .padding([.leading, .trailing], 15)
                             .padding(.bottom, 25)
                     }
                 }
