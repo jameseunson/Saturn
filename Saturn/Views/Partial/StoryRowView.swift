@@ -18,13 +18,13 @@ struct StoryRowView: View {
     let story: StoryRowViewModel
     let onTapArticleLink: ((URL) -> Void)?
     let onTapUser: ((String) -> Void)?
-    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
+    let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
     let context: StoryRowViewContext
     
     init(story: StoryRowViewModel,
          onTapArticleLink: ((URL) -> Void)? = nil,
          onTapUser: ((String) -> Void)? = nil,
-         onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil,
+         onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
          context: StoryRowViewContext = .storiesList) {
         self.story = story
         self.onTapArticleLink = onTapArticleLink
@@ -103,6 +103,43 @@ struct StoryRowView: View {
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.leading)
                 }
+                HStack {
+                    Image(systemName: "ellipsis")
+                        .font(.body)
+                        .foregroundColor(.gray)
+                        .onTapGesture {
+                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                            impactMed.impactOccurred()
+                            // TODO:
+                            
+                            print("tap")
+                        }
+                    Spacer()
+                    if let vote = story.vote {
+                        if vote.directions.contains(.upvote) {
+                            Button {
+                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                impactMed.impactOccurred()
+                                onTapVote?(.upvote)
+                            } label: {
+                                Text(Image(systemName: "arrow.up"))
+                                    .font(.body)
+                                    .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
+                            }
+                        }
+                        if vote.directions.contains(.downvote) {
+                            Button {
+                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                impactMed.impactOccurred()
+                                onTapVote?(.downvote)
+                            } label: {
+                                Text(Image(systemName: "arrow.down"))
+                                    .font(.body)
+                                    .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
+                            }
+                        }
+                    }
+                }
             }
             .offset(.init(width: dragOffset, height: 0))
             .background {
@@ -127,59 +164,6 @@ struct StoryRowView: View {
                 withAnimation {
                     image = storyImage
                 }
-            }
-        }
-    }
-}
-
-struct StoryRowURLView: View {
-    @Binding var image: Image?
-    let url: URL
-    let onTapArticleLink: ((URL) -> Void)?
-    
-    var body: some View {
-        HStack {
-            HStack {
-                if let image {
-                    ZStack {
-                        Rectangle().foregroundColor(.white)
-                        image
-                            .resizable()
-                            .frame(width: 33, height: 33)
-                            .aspectRatio(contentMode: .fit)
-                    }
-                } else {
-                    Image(systemName: "link")
-                        .foregroundColor(.gray)
-                        .font(.title3)
-                }
-            }
-            .frame(width: 44, height: 44)
-            .background {
-                Rectangle()
-                    .foregroundColor(Color(UIColor.systemGray4))
-            }
-            .cornerRadius(10, corners: [.topLeft, .bottomLeft])
-            
-            Text(url.absoluteString)
-                .padding(.leading, 10)
-                .lineLimit(1)
-                .foregroundColor(.gray)
-                .font(.callout)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
-                .padding(.trailing, 10)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .background {
-            RoundedRectangle(cornerRadius: 8)
-                .foregroundColor( Color(UIColor.systemGray6) )
-        }
-        .onTapGesture {
-            if let onTapArticleLink {
-                onTapArticleLink(url)
             }
         }
     }

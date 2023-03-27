@@ -22,7 +22,7 @@ struct CommentView: View {
     let onToggleExpanded: ((CommentViewModel, CommentExpandedState, Bool) -> Void)?
     let onTapStoryId: ((Int) -> Void)?
     let onTapURL: ((URL) -> Void)?
-    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
+    let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
     
     let displaysStory: Bool
     
@@ -40,7 +40,7 @@ struct CommentView: View {
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
          onTapStoryId: ((Int) -> Void)? = nil,
          onTapURL: ((URL) -> Void)? = nil,
-         onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil) {
+         onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil) {
         _expanded = expanded
         self.comment = comment
         self.displaysStory = displaysStory

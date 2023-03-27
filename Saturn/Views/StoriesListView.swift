@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AlertToast
 
 struct StoriesListView: View {
     @StateObject var interactor: StoriesListInteractor
@@ -19,7 +18,6 @@ struct StoriesListView: View {
     
     @State var cacheLoadState: CacheLoadState = .refreshNotAvailable
     @State var canLoadNextPage: Bool = true
-    @State var showConnectionAlert: Bool = false
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -113,9 +111,6 @@ struct StoriesListView: View {
         .onAppear {
             interactor.activate()
         }
-        .onReceive(NetworkConnectivityManager.instance.isConnectedPublisher) { output in
-            showConnectionAlert = !output
-        }
         .onReceive(interactor.$cacheLoadState) { output in
             cacheLoadState = output
         }
@@ -132,44 +127,45 @@ struct StoriesListView: View {
                         .padding(.bottom, 10)
                         .padding(.leading, 15)
                     NavigationLink(value: story) {
-                        StoryRowView(story: StoryRowViewModel(story: story),
+                        StoryRowView(story: story,
                                      onTapArticleLink: { url in self.displayingSafariURL = url },
                                      onTapUser: { user in self.selectedUser = user },
+                                     onTapVote: { direction in self.interactor.didTapVote(story: story, direction: direction) },
                                      context: .storiesList)
-                            .onAppear {
-                                #if DEBUG
-                                if displayingSwiftUIPreview {
-                                    return
-                                }
-                                #endif
-                                if story == interactor.stories.last,
-                                   canLoadNextPage {
-                                    interactor.loadNextPageFromSource()
-                                }
+                        .onAppear {
+                            #if DEBUG
+                            if displayingSwiftUIPreview {
+                                return
                             }
-                            .contextMenu {
-                                if SaturnKeychainWrapper.shared.isLoggedIn {
-                                    Button(action: {
-                                        // TODO:
-                                    }, label: {
-                                        Label("Upvote", systemImage: "arrow.up")
-                                    })
-                                    Button(action: {
-                                        // TODO:
-                                    }, label: {
-                                        Label("Downvote", systemImage: "arrow.down")
-                                    })
-                                }
-                                Button(action: { selectedShareItem = story.url }, label:
-                                {
-                                    Label("Share", systemImage: "square.and.arrow.up")
+                            #endif
+                            if story == interactor.stories.last,
+                               canLoadNextPage {
+                                interactor.loadNextPageFromSource()
+                            }
+                        }
+                        .contextMenu {
+                            if SaturnKeychainWrapper.shared.isLoggedIn {
+                                Button(action: {
+                                    // TODO:
+                                }, label: {
+                                    Label("Upvote", systemImage: "arrow.up")
                                 })
-                                Button(action: { selectedUser = story.by }, label:
-                                {
-                                    Label(story.by, systemImage: "person.circle")
+                                Button(action: {
+                                    // TODO:
+                                }, label: {
+                                    Label("Downvote", systemImage: "arrow.down")
                                 })
                             }
-                            .padding(.bottom, 25)
+                            Button(action: { selectedShareItem = story.url }, label:
+                            {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            })
+                            Button(action: { selectedUser = story.author }, label:
+                            {
+                                Label(story.author, systemImage: "person.circle")
+                            })
+                        }
+                        .padding(.bottom, 25)
                     }
                 }
                 if canLoadNextPage {
@@ -177,15 +173,11 @@ struct StoriesListView: View {
                 }
             }
         }
-        .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
-            AlertToast(type: .regular, title: "No internet connection")
-            
-        }, onTap: nil, completion: nil)
     }
 }
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListView(interactor: StoriesListInteractor(type: .top, stories: [Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!, Story.fakeStory()!]))
+        StoriesListView(interactor: StoriesListInteractor(type: .top, stories: [StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!)]))
     }
 }

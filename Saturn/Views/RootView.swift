@@ -7,11 +7,13 @@
 
 import Foundation
 import SwiftUI
+import AlertToast
 
 struct RootView: View {
     @StateObject var interactor = RootInteractor()
     
     @State var titleForUser = "User"
+    @State var showConnectionAlert: Bool = false
     
     var body: some View {
         TabView {
@@ -69,5 +71,12 @@ struct RootView: View {
                 titleForUser = "User"
             }
         }
+        .onReceive(NetworkConnectivityManager.instance.isConnectedPublisher) { output in
+            showConnectionAlert = !output
+        }
+        .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
+            AlertToast(type: .regular, title: "No internet connection")
+            
+        }, onTap: nil, completion: nil)
     }
 }

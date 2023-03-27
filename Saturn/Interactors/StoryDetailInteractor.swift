@@ -21,7 +21,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var commentsRemainingToLoad: Bool = true
     @Published private(set) var story: Story?
-    @Published private(set) var availableVotes: [Int: HTMLAPICommentVote] = [:]
+    @Published private(set) var availableVotes: [Int: HTMLAPIVote] = [:]
     
     var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
@@ -256,7 +256,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .forEach { $0.isAnimating = .none }
     }
     
-    func didTapVote(comment: CommentViewModel, direction: HTMLAPICommentVoteDirection) {
+    func didTapVote(comment: CommentViewModel, direction: HTMLAPIVoteDirection) {
         guard let info = comment.vote else {
             // TODO: Error
             return
@@ -362,10 +362,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         if let parent = root.parent {
             incrementTotalChildCount(parent)
         }
-    }
-    
-    @objc private func handleNotification(notification: Notification) {
-        print(notification)
     }
 }
 

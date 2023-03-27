@@ -10,7 +10,7 @@ import SwiftUI
 
 struct DragVoteGestureModifier: ViewModifier {
     @Binding var dragOffset: CGFloat
-    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
+    let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
     
     func body(content: Content) -> some View {
         content.gesture(DragGesture(minimumDistance: 30, coordinateSpace: .local)

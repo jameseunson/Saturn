@@ -20,6 +20,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let text: AttributedString?
     
     var image: Image?
+    var vote: HTMLAPIVote?
     
     init(story: Story, image: Image? = nil) {
         self.id = story.id

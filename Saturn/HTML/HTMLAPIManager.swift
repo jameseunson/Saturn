@@ -12,8 +12,10 @@ import SwiftSoup
 protocol HTMLAPIManaging: AnyObject {
     func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [Int: Int]
     func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[Int: Int], Error>
-    func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPICommentVote]
-    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPICommentVote], Error>
+    func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPIVote]
+    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPIVote], Error>
+    func loadAvailableVotesForStoriesList(page: Int) async throws -> [Int: HTMLAPIVote]
+    func loadAvailableVotesForStoriesList(page: Int) -> AnyPublisher<[Int: HTMLAPIVote], Error>
 }
 
 /// The HN API is read-only and does not support authenticated accounts, so when we want to login as a specific user
@@ -45,23 +47,43 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
     
     /// Loads whether we can upvote or downvote certain comments in a story thread
-    func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPICommentVote] {
+    func loadAvailableVotesForComments(storyId: Int) async throws -> [Int: HTMLAPIVote] {
         guard let url = URL(string: "https://news.ycombinator.com/item?id=\(storyId)") else {
             throw HTMLAPIManagerError.cannotLoad
         }
         let htmlString = try await loadHTML(for: url)
-        return try CommentVoteHTMLParser().parseHTML(htmlString, storyId: storyId)
+        return try VoteHTMLParser().parseCommentHTML(htmlString, storyId: storyId)
     }
     
-    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPICommentVote], Error> {
+    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[Int: HTMLAPIVote], Error> {
         return publisherForAsync {
             try await self.loadAvailableVotesForComments(storyId: storyId)
         }
     }
     
+    func loadAvailableVotesForStoriesList(page: Int = 0) async throws -> [Int: HTMLAPIVote] {
+        guard var urlComponents = URLComponents(string: "https://news.ycombinator.com") else {
+            throw HTMLAPIManagerError.cannotLoad
+        }
+        if page > 0 {
+            urlComponents.queryItems = [URLQueryItem(name: "p", value: String(page))]
+        }
+        guard let url = urlComponents.url else {
+            throw HTMLAPIManagerError.cannotLoad
+        }
+        let htmlString = try await loadHTML(for: url)
+        return try VoteHTMLParser().parseStoryListHTML(htmlString)
+    }
+    
+    func loadAvailableVotesForStoriesList(page: Int = 0) -> AnyPublisher<[Int: HTMLAPIVote], Error> {
+        return publisherForAsync {
+            try await self.loadAvailableVotesForStoriesList(page: page)
+        }
+    }
+    
     /// Perform the actual vote
-    func vote(direction: HTMLAPICommentVoteDirection, info: HTMLAPICommentVote) async throws {
-//    https://news.ycombinator.com/vote?id=34864921&how=up&auth=3bbde44e83c06ae4cae14b4f7b980cacc915ebd4&goto=item%3Fid%3D34858691#34864921
+    /// Example URL: https://news.ycombinator.com/vote?id=34864921&how=up&auth=3bbde44e83c06ae4cae14b4f7b980cacc915ebd4&goto=item%3Fid%3D34858691#34864921
+    func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws {
         
         guard var components = URLComponents(string: "https://news.ycombinator.com/vote") else {
             throw HTMLAPIManagerError.cannotVote
@@ -118,15 +140,15 @@ enum HTMLAPIManagerError: Error {
     case cannotVote
 }
 
-enum HTMLAPICommentVoteDirection: Codable {
+enum HTMLAPIVoteDirection: Codable {
     case upvote
     case downvote
 }
 
-struct HTMLAPICommentVote: Codable, Hashable {
+struct HTMLAPIVote: Codable, Hashable {
     let id: Int
-    let directions: [HTMLAPICommentVoteDirection]
+    let directions: [HTMLAPIVoteDirection]
     let auth: String
     let storyId: Int
-    var state: HTMLAPICommentVoteDirection?
+    var state: HTMLAPIVoteDirection?
 }

@@ -21,6 +21,8 @@
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
 		1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
+		1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586429D164B50014FD88 /* StoryRowURLView.swift */; };
+		1A57586829D165380014FD88 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 1A57586729D165380014FD88 /* Factory */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
@@ -97,7 +99,7 @@
 		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
 		1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */; };
-		1AAED96129CAE97A0093CED7 /* CommentVoteHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAED96029CAE97A0093CED7 /* CommentVoteHTMLParser.swift */; };
+		1AAED96129CAE97A0093CED7 /* VoteHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAED96029CAE97A0093CED7 /* VoteHTMLParser.swift */; };
 		1AAFFF5D299A6A4100D06EF4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */; };
 		1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
@@ -176,6 +178,7 @@
 		1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCacheTests.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
 		1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnMocks.swift; sourceTree = "<group>"; };
+		1A57586429D164B50014FD88 /* StoryRowURLView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowURLView.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
 		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
@@ -224,7 +227,7 @@
 		1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragVoteGestureModifier.swift; sourceTree = "<group>"; };
 		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
 		1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentScoreHTMLParser.swift; sourceTree = "<group>"; };
-		1AAED96029CAE97A0093CED7 /* CommentVoteHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentVoteHTMLParser.swift; sourceTree = "<group>"; };
+		1AAED96029CAE97A0093CED7 /* VoteHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteHTMLParser.swift; sourceTree = "<group>"; };
 		1AAFFF5C299A6A4000D06EF4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+IndentationColor.swift"; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
@@ -276,6 +279,7 @@
 				1AE4A9BD2977D92900D0B0D3 /* FirebaseFirestore in Frameworks */,
 				1AE4A9C52977D92900D0B0D3 /* FirebaseRemoteConfigSwift in Frameworks */,
 				1AE4A9BF2977D92900D0B0D3 /* FirebaseFirestoreCombine-Community in Frameworks */,
+				1A57586829D165380014FD88 /* Factory in Frameworks */,
 				1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */,
 				1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */,
 				1AE4A9C12977D92900D0B0D3 /* FirebaseFirestoreSwift in Frameworks */,
@@ -541,7 +545,7 @@
 			children = (
 				1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */,
 				1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */,
-				1AAED96029CAE97A0093CED7 /* CommentVoteHTMLParser.swift */,
+				1AAED96029CAE97A0093CED7 /* VoteHTMLParser.swift */,
 			);
 			path = HTML;
 			sourceTree = "<group>";
@@ -611,6 +615,7 @@
 				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
 				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
 				1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */,
+				1A57586429D164B50014FD88 /* StoryRowURLView.swift */,
 			);
 			path = Partial;
 			sourceTree = "<group>";
@@ -645,6 +650,7 @@
 				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
 				1A9C75AF29A4981900DE94C6 /* AlertToast */,
 				1A7E150F29C83CFD008DAB22 /* SwiftSoup */,
+				1A57586729D165380014FD88 /* Factory */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* Saturn.app */;
@@ -753,6 +759,7 @@
 				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 				1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */,
 				1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -840,7 +847,7 @@
 				1AD1287429C45C7A00096DE7 /* KeychainItem.swift in Sources */,
 				1A111E02298B7307005B29B6 /* View+ConditionalModifier.swift in Sources */,
 				1AE4A99F2977D7BF00D0B0D3 /* AppRemoteConfig.swift in Sources */,
-				1AAED96129CAE97A0093CED7 /* CommentVoteHTMLParser.swift in Sources */,
+				1AAED96129CAE97A0093CED7 /* VoteHTMLParser.swift in Sources */,
 				1AE4A9D929792B5A00D0B0D3 /* APIMemoryResponseCache.swift in Sources */,
 				1AE4A9DD29792ECA00D0B0D3 /* RootInteractor.swift in Sources */,
 				1AE4A9D12979144D00D0B0D3 /* SearchItem.swift in Sources */,
@@ -863,6 +870,7 @@
 				1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */,
 				1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */,
 				1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */,
+				1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
 				1A9870FF29CD865A0022BA2B /* DragVoteGestureModifier.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
@@ -1044,7 +1052,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1082,7 +1090,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1240,6 +1248,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/scinfu/SwiftSoup";
@@ -1271,6 +1287,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
 			productName = SwiftyMarkdown;
+		};
+		1A57586729D165380014FD88 /* Factory */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = Factory;
 		};
 		1A7E150F29C83CFD008DAB22 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;

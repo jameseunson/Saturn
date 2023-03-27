@@ -14,7 +14,7 @@ struct CommentHeaderView: View {
     let onTapOptions: ((CommentViewModel) -> Void)?
     let onTapUser: ((String) -> Void)?
     let onToggleExpanded: OnToggleExpandedCompletion?
-    let onTapVote: ((HTMLAPICommentVoteDirection) -> Void)?
+    let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
     
     @Binding var expanded: CommentExpandedState
     @Binding var commentOnScreen: Bool
@@ -23,7 +23,7 @@ struct CommentHeaderView: View {
          onTapOptions: ((CommentViewModel) -> Void)? = nil,
          onTapUser: ( (String) -> Void)? = nil,
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
-         onTapVote: ((HTMLAPICommentVoteDirection) -> Void)? = nil,
+         onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
          expanded: Binding<CommentExpandedState>,
          commentOnScreen: Binding<Bool>) {
         self.comment = comment

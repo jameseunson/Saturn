@@ -14,23 +14,25 @@ final class StoriesListInteractor: Interactor {
     private let pageLength = 10
     private let type: StoryListType
     private let networkConnectivityManager: NetworkConnectivityManaging
+    private let htmlApiManager = HTMLAPIManager()
     
     @Published private var currentPage: Int = 0
     @Published private var storyIds = [Int]()
     private var lastRefreshTimestamp: Date?
     
     // MARK: -
-    @Published private(set) var stories = [Story]()
+    @Published private(set) var stories = [StoryRowViewModel]()
     @Published private(set) var loadingState: LoadingState = .initialLoad
     @Published private(set) var cacheLoadState: CacheLoadState = .refreshNotAvailable
     @Published private(set) var canLoadNextPage: Bool = true
+    @Published private(set) var availableVotes: [Int: HTMLAPIVote] = [:]
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
     #endif
     
     init(type: StoryListType,
-         stories: [Story] = [],
+         stories: [StoryRowViewModel] = [],
          apiManager: APIManaging = APIManager(),
          lastRefreshTimestamp: Date? = SettingsManager.default.date(for: .lastRefreshTimestamp),
          networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
@@ -123,6 +125,30 @@ final class StoriesListInteractor: Interactor {
                 self.canLoadNextPage = canLoadNextPage
             }
             .store(in: &disposeBag)
+        
+        if SaturnKeychainWrapper.shared.isLoggedIn {
+            $loadingState
+                .filter { $0 == .loaded(.network) }
+                .flatMap { _ -> AnyPublisher<[Int: HTMLAPIVote], Error> in
+                    return self.htmlApiManager.loadAvailableVotesForStoriesList()
+                }
+                .receive(on: RunLoop.main)
+                .sink(receiveCompletion: { completion in
+                    if case let .failure(error) = completion {
+                        print(error)
+                        // TODO:
+                    }
+                }, receiveValue: { result in
+                    self.availableVotes = result
+                    
+                    for story in self.stories {
+                        if let vote = result[story.id] {
+                            story.vote = vote
+                        }
+                    }
+                })
+                .store(in: &disposeBag)
+        }
     }
     
     func loadNextPageFromSource() {
@@ -159,6 +185,24 @@ final class StoriesListInteractor: Interactor {
         cacheLoadState = .refreshing
         Task {
             await refreshStories()
+        }
+    }
+    
+    func didTapVote(story: StoryRowViewModel, direction: HTMLAPIVoteDirection) {
+        guard let info = story.vote else {
+            // TODO: Error
+            return
+        }
+        Task {
+            do {
+//                try await self.htmlApiManager.vote(direction: direction, info: info)
+                
+//                comment.vote?.state = direction
+//                self.comments.send(self.comments.value)
+                
+            } catch {
+                // TODO: Error
+            }
         }
     }
     
@@ -261,7 +305,16 @@ final class StoriesListInteractor: Interactor {
     }
     
     private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
-        self.stories.append(contentsOf: stories)
+        let viewModels = stories.map { StoryRowViewModel(story: $0) }
+        self.stories.append(contentsOf: viewModels)
+        
+        for viewModel in viewModels {
+            if SaturnKeychainWrapper.shared.isLoggedIn,
+               let vote = self.availableVotes[viewModel.id] {
+                viewModel.vote = vote
+            }
+        }
+        
         self.loadingState = .loaded(source)
         self.currentPage += 1
         
