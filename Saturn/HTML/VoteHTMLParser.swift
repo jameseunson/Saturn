@@ -23,6 +23,7 @@ final class VoteHTMLParser {
         let doc: Document = try SwiftSoup.parse(htmlString)
         var map = [Int: HTMLAPIVote]()
 
+        /// Depending on the mode, we either want to examine all comments (`athing.comtr`) or stories (just plain `athing`)
         let elements: Elements
         switch mode {
         case .comments(_):
@@ -46,23 +47,13 @@ final class VoteHTMLParser {
         var id: Int?
         var state: HTMLAPIVoteDirection?
         
-        if let upvote = try element.select("a.clicky").filter ({ $0.id().contains("up") }).first {
-            if let (idResult, authResult) = try parseVotingLink(element: upvote) {
-                id = idResult
-                auth = authResult
-            }
-            directions.append(.upvote)
-        }
-        if let downvote = try element.select("a.clicky").filter ({ $0.id().contains("down") }).first {
-            if id == nil || auth == nil {
-                if let (idResult, authResult) = try parseVotingLink(element: downvote) {
-                    id = idResult
-                    auth = authResult
-                }
-            }
-            directions.append(.downvote)
-        }
+//        if let user = try? element.select("a.hnuser"),
+//           let text = try? user.text(),
+//           text == "bbarnett" {
+//            print("bbarnett")
+//        }
         
+        /// Determine whether the user has recently voted, if so,  what direction?
         if let unvote = try element.select("span[id^=unv_] > a").first {
             let unvoteText = try unvote.text()
             if unvoteText == "unvote" {
@@ -73,6 +64,34 @@ final class VoteHTMLParser {
             }
         }
         
+        /// Extract upvote link, if exists. Hide if the the site instructs us to hide it (`nosee` class)
+        if let upvote = try element.select("a.clicky").filter ({ $0.id().contains("up") }).first {
+            if let (idResult, authResult) = try parseVotingLink(element: upvote) {
+                id = idResult
+                auth = authResult
+            }
+            if state == .upvote ||
+                !upvote.hasClass("nosee") {
+                directions.append(.upvote)
+            }
+        }
+        
+        /// Extract downvote link, if exists. Hide if the the site instructs us to hide it (`nosee` class)
+        if let downvote = try element.select("a.clicky").filter ({ $0.id().contains("down") }).first {
+            if id == nil || auth == nil {
+                if let (idResult, authResult) = try parseVotingLink(element: downvote) {
+                    id = idResult
+                    auth = authResult
+                }
+            }
+            if state == .downvote ||
+                !downvote.hasClass("nosee") {
+                directions.append(.downvote)
+            }
+        }
+        
+        /// If there is at least one available voting direction, return a vote object for this item
+        /// which contains all the information required to place or modify a vote
         if let auth,
            let id {
             let storyId: Int
@@ -93,6 +112,8 @@ final class VoteHTMLParser {
         }
     }
     
+    /// Extract the auth and id strings from the voting link (an element of type `a.clicky`)
+    /// Both are required in order to successfully vote, particularly the auth string
     private func parseVotingLink(element: Element) throws -> (Int, String)? {
         var id: Int?
         var auth: String?

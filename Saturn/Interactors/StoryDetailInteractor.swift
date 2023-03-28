@@ -78,9 +78,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .eraseToAnyPublisher()
         
         #if DEBUG
-        if displayingSwiftUIPreview {
-            return
-        }
+        if displayingSwiftUIPreview { return }
         #endif
         
         /// Workaround for the fact that we have no idea when loading is complete
@@ -115,6 +113,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         
         if let itemId {
             apiManager.loadUserItem(id: itemId)
+                .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         print(error)
@@ -122,9 +121,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 } receiveValue: { item in
                     switch item {
                     case let .story(story):
-                        DispatchQueue.main.async {
-                            self.story = story
-                        }
+                        self.story = story
                         self.loadComments()
                         
                     case let .comment(comment):
@@ -166,7 +163,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     func loadComments() {
         guard let kids = story?.kids,
-              let firstKid = kids.first else { return }
+              let firstKid = kids.first else {
+            return
+        }
         
         traverse(firstKid)
         loadedTopLevelComments.append(firstKid)

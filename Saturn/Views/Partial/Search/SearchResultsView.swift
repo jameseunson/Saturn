@@ -47,11 +47,10 @@ struct SearchResultsView: View {
             ForEach(results) { result in
                 if case let .searchResult(searchItem) = result {
                     NavigationLink(value: result) {
-                        StoryRowView(story: StoryRowViewModel(searchItem: searchItem),
+                        StoryRowView(story: StoryRowViewModel(story: Story(searchItem: searchItem)),
                                      onTapArticleLink: { url in
                             self.displayingSafariURL = url
                         })
-                        .padding([.leading, .trailing])
                         .padding(.bottom, 15)
                     }
                     Divider()

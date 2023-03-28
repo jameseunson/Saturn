@@ -10,12 +10,15 @@ import SwiftUI
 
 struct VoteBackdropView: View {
     @Binding var dragOffset: CGFloat
+    let vote: HTMLAPIVote
     
     var body: some View {
         HStack(spacing: 0) {
             ZStack {
-                Color.accentColor
-                Image(systemName: "arrow.up")
+                if vote.directions.contains(.upvote) {
+                    Color.accentColor
+                }
+                Image(systemName: vote.directions.contains(.upvote) ? "arrow.up" : "xmark")
                     .foregroundColor(.white)
                     .font(.title)
                     .padding(.trailing, 50)
@@ -23,8 +26,10 @@ struct VoteBackdropView: View {
             }
             Color(UIColor.systemBackground)
             ZStack {
-                Color.blue
-                Image(systemName: "arrow.down")
+                if vote.directions.contains(.downvote) {
+                    Color.blue
+                }
+                Image(systemName: vote.directions.contains(.downvote) ? "arrow.down" : "xmark")
                     .foregroundColor(.white)
                     .font(.title)
                     .padding(.leading, 50)

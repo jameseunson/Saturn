@@ -47,10 +47,10 @@ struct StoriesListView: View {
                         }
                     }
                 }
-                .navigationDestination(for: Story.self) { story in
-                    let interactor = StoryDetailInteractor(story: story)
+                .navigationDestination(for: StoryRowViewModel.self) { viewModel in
+                    let interactor = StoryDetailInteractor(story: viewModel.story)
                     StoryDetailView(interactor: interactor)
-                        .navigationTitle(story.title)
+                        .navigationTitle(viewModel.title)
                 }
                 .refreshable {
                     await interactor.refreshStories()

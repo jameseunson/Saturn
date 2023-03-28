@@ -60,6 +60,22 @@ struct Story: Codable, Identifiable, Hashable {
         }
     }
     
+    init(searchItem: SearchItem) {
+        self.id = searchItem.objectID
+        self.score = searchItem.points
+        
+        self.time = searchItem.createdAt
+        
+        self.descendants = searchItem.numComments
+        self.by = searchItem.author
+        self.title = searchItem.title
+        self.kids = nil
+        self.type = "story"
+        
+        self.url = searchItem.url
+        self.text = nil
+    }
+    
     func hasComments() -> Bool {
         kids?.count ?? 0 > 0
     }

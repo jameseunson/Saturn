@@ -55,9 +55,11 @@ struct CommentView: View {
     var body: some View {
         ZStack {
             if SaturnKeychainWrapper.shared.isLoggedIn,
+               let vote = comment.vote,
                frameHeight > 0,
                abs(dragOffset) > 0 {
-                VoteBackdropView(dragOffset: $dragOffset)
+                VoteBackdropView(dragOffset: $dragOffset,
+                                 vote: vote)
                     .transition(.identity)
             }
             HStack {
@@ -122,7 +124,9 @@ struct CommentView: View {
             })
         })
         .if(SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
-            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset, onTapVote: onTapVote))
+            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
+                                                  onTapVote: onTapVote,
+                                                  directionsEnabled: comment.vote?.directions ?? []))
         })
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in

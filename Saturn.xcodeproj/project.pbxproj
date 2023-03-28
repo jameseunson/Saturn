@@ -23,6 +23,8 @@
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586429D164B50014FD88 /* StoryRowURLView.swift */; };
 		1A57586829D165380014FD88 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 1A57586729D165380014FD88 /* Factory */; };
+		1A57586A29D166390014FD88 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586929D166390014FD88 /* Container.swift */; };
+		1A57586C29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
@@ -179,6 +181,8 @@
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
 		1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnMocks.swift; sourceTree = "<group>"; };
 		1A57586429D164B50014FD88 /* StoryRowURLView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowURLView.swift; sourceTree = "<group>"; };
+		1A57586929D166390014FD88 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
+		1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskDatabaseResponseCache.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
 		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
@@ -396,6 +400,7 @@
 				1A5DBBB8296933BB00D4D86E /* Assets.xcassets */,
 				1A5DBBBA296933BB00D4D86E /* Preview Content */,
 				1A5DBC10296BD44D00D4D86E /* BaseUtils.swift */,
+				1A57586929D166390014FD88 /* Container.swift */,
 			);
 			path = Saturn;
 			sourceTree = "<group>";
@@ -536,6 +541,7 @@
 			children = (
 				1AE4A9D829792B5A00D0B0D3 /* APIMemoryResponseCache.swift */,
 				1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */,
+				1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */,
 			);
 			path = Cache;
 			sourceTree = "<group>";
@@ -825,11 +831,13 @@
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1ACB6C1229BB042B000A94E0 /* SearchResultsView.swift in Sources */,
 				1ACB6C1429BB0437000A94E0 /* SearchHistoryView.swift in Sources */,
+				1A57586C29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
 				1ACB6C0D29B9C48E000A94E0 /* SettingValue.swift in Sources */,
 				1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */,
+				1A57586A29D166390014FD88 /* Container.swift in Sources */,
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,

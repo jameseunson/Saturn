@@ -6,9 +6,14 @@
 //
 import Foundation
 
-final class APIDiskResponseCache {
+protocol APIDiskResponseCaching: AnyObject {
+    func store(id: String, value: APIMemoryResponseCacheValue) throws
+    func retrieve(id: String, type: APIDiskResponseCacheType) throws -> APIMemoryResponseCacheValue
+    func loadAll() -> [String: APIMemoryResponseCacheItem]
+}
+
+final class APIDiskResponseCache: APIDiskResponseCaching {
     let fm: FileManaging
-    private let queue = DispatchQueue(label: "APIDiskResponseCache")
     
     #if DEBUG
     let isDebugLoggingEnabled = true

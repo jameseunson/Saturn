@@ -36,8 +36,11 @@ struct StoryRowView: View {
     var body: some View {
         ZStack {
             if SaturnKeychainWrapper.shared.isLoggedIn,
+               let vote = story.vote,
             abs(dragOffset) > 0 {
-                VoteBackdropView(dragOffset: $dragOffset)
+                VoteBackdropView(dragOffset: $dragOffset,
+                                 vote: vote)
+                .transition(.identity)
             }
             VStack(alignment: .leading) {
                 HStack(alignment: .top) {
@@ -103,39 +106,41 @@ struct StoryRowView: View {
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.leading)
                 }
-                HStack {
-                    Image(systemName: "ellipsis")
-                        .font(.body)
-                        .foregroundColor(.gray)
-                        .onTapGesture {
-                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                            impactMed.impactOccurred()
-                            // TODO:
-                            
-                            print("tap")
-                        }
-                    Spacer()
-                    if let vote = story.vote {
-                        if vote.directions.contains(.upvote) {
-                            Button {
+                if SaturnKeychainWrapper.shared.isLoggedIn {
+                    HStack {
+                        Image(systemName: "ellipsis")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .onTapGesture {
                                 let impactMed = UIImpactFeedbackGenerator(style: .medium)
                                 impactMed.impactOccurred()
-                                onTapVote?(.upvote)
-                            } label: {
-                                Text(Image(systemName: "arrow.up"))
-                                    .font(.body)
-                                    .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
+                                // TODO:
+                                
+                                print("tap")
                             }
-                        }
-                        if vote.directions.contains(.downvote) {
-                            Button {
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                                onTapVote?(.downvote)
-                            } label: {
-                                Text(Image(systemName: "arrow.down"))
-                                    .font(.body)
-                                    .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
+                        Spacer()
+                        if let vote = story.vote {
+                            if vote.directions.contains(.upvote) {
+                                Button {
+                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                    impactMed.impactOccurred()
+                                    onTapVote?(.upvote)
+                                } label: {
+                                    Text(Image(systemName: "arrow.up"))
+                                        .font(.body)
+                                        .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
+                                }
+                            }
+                            if vote.directions.contains(.downvote) {
+                                Button {
+                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                    impactMed.impactOccurred()
+                                    onTapVote?(.downvote)
+                                } label: {
+                                    Text(Image(systemName: "arrow.down"))
+                                        .font(.body)
+                                        .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
+                                }
                             }
                         }
                     }
@@ -156,7 +161,9 @@ struct StoryRowView: View {
             .padding([.leading, .trailing], 15)
         }
         .if(SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
-            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset, onTapVote: onTapVote))
+            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
+                                                  onTapVote: onTapVote,
+                                                  directionsEnabled: story.vote?.directions ?? []))
         })
         .onAppear {
             Task { @MainActor in

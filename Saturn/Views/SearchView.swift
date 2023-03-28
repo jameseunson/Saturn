@@ -51,7 +51,7 @@ struct SearchView: View {
         .navigationDestination(for: SearchResultItem.self) { item in
             switch item {
             case let .searchResult(searchItem):
-                let story = StoryRowViewModel(searchItem: searchItem)
+                let story = StoryRowViewModel(story: Story(searchItem: searchItem))
                 StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
                     .navigationTitle(story.title)
                 

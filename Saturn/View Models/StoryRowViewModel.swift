@@ -10,6 +10,7 @@ import SwiftUI
 
 final class StoryRowViewModel: Codable, Identifiable, Hashable {
     let id: Int
+    let story: Story
     let title: String
     let author: String
     let timeAgo: String
@@ -44,30 +45,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         self.url = story.url
         self.imageURL = story.urlForFavicon()
         self.image = image
-    }
-    
-    init(searchItem: SearchItem) {
-        self.id = searchItem.objectID
-        self.title = searchItem.title
-        
-        self.author = searchItem.author
-        self.timeAgo = RelativeDateTimeFormatter().localizedString(for: searchItem.createdAt, relativeTo: Date())
-        
-        if searchItem.points >= 1000 {
-            self.score = String(format: "%.1f", Double(searchItem.points) / 1000) + "k"
-        } else {
-            self.score = String(searchItem.points)
-        }
-        let kids = searchItem.numComments
-        if kids >= 1000 {
-            self.comments = String(format: "%.1f", Double(kids) / 1000) + "k"
-        } else {
-            self.comments = String(kids)
-        }
-        self.url = searchItem.url
-        
-        self.imageURL = nil
-        self.text = nil
+        self.story = story
     }
     
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {
@@ -98,5 +76,6 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         case url
         case imageURL
         case text
+        case story
     }
 }

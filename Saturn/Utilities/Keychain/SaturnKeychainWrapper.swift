@@ -9,7 +9,7 @@ import AuthenticationServices
 import Combine
 import Foundation
 
-protocol SaturnKeychainWrapping: ObservableObject {
+protocol SaturnKeychainWrapping: AnyObject {
     @discardableResult func store(cookie: String, username: String) -> Bool
     func clearCredential()
     func hasCredential() -> Bool
