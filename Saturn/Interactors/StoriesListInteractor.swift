@@ -23,7 +23,6 @@ final class StoriesListInteractor: Interactor {
     // MARK: -
     @Published private(set) var stories = [StoryRowViewModel]()
     @Published private(set) var loadingState: LoadingState = .initialLoad
-    @Published private(set) var cacheLoadState: CacheLoadState = .refreshNotAvailable
     @Published private(set) var canLoadNextPage: Bool = true
     @Published private(set) var availableVotes: [Int: HTMLAPIVote] = [:]
     
@@ -54,7 +53,6 @@ final class StoriesListInteractor: Interactor {
         #if DEBUG
         if displayingSwiftUIPreview {
             self.loadingState = .loaded(.cache)
-            self.cacheLoadState = .refreshAvailable
             return
         }
         #endif
@@ -76,20 +74,10 @@ final class StoriesListInteractor: Interactor {
                         // TODO:
                     }
                 }, receiveValue: { response in
-                    if response.source == .cache,
-                       self.networkConnectivityManager.isConnected() {
-                        
-                        /// If last refresh was within 30 minutes, do not suggest to refresh
-                        if let lastRefreshTimestamp = self.lastRefreshTimestamp,
-                           let thresholdTimestamp = Calendar.current.date(byAdding: .minute, value: -30, to: Date()),
-                           lastRefreshTimestamp > thresholdTimestamp {
-                                self.cacheLoadState = .refreshNotAvailable
-                            
-                        } else {
-                            /// Display the UI element prompting the user to refresh, if the response was from the offline disk cache
-                            self.cacheLoadState = .refreshAvailable
-                        }
+                    guard response.source == .cache else {
+                        return
                     }
+                    self.evaluateRefreshContent()
                 })
                 .store(in: &disposeBag)
         }
@@ -98,24 +86,30 @@ final class StoriesListInteractor: Interactor {
         /// If online (`loaded(source) == .network`), assumed we always can
         /// If offline (`loaded(source) == .cache`), check whether the next 10 stories
         /// live in the disk cache - if so, we can load
-        Publishers.CombineLatest($currentPage, $storyIds)
-            .map { currentPage, storyIds -> Bool in
-                guard case let .loaded(source) = self.loadingState else {
+        Publishers.CombineLatest3($currentPage, $storyIds, $loadingState)
+            .filter { _, _, loadingState in
+                if case .loaded = loadingState {
+                    return true
+                }
+                return false
+            }
+            .map { currentPage, storyIds, loadingState -> Bool in
+                guard case let .loaded(source) = loadingState else {
                     return false
                 }
                 switch source {
                 case .network:
                     return true
-                    
+
                 case .cache:
                     if storyIds.count == 0 { return false }
-                    
+
                     let ids = self.idsForPage(.page(self.currentPage + 1), with: storyIds)
                     var availableInCache = true
                     for id in ids {
                         if !self.apiManager.hasCachedResponse(for: id) { availableInCache = false; break }
                     }
-                    
+
                     return availableInCache
                 }
             }
@@ -174,7 +168,6 @@ final class StoriesListInteractor: Interactor {
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
             
             self.completeLoad(with: stories.response, source: .network)
-            self.cacheLoadState = .refreshNotAvailable
             
         } catch {
             // TODO: Handle error
@@ -182,7 +175,6 @@ final class StoriesListInteractor: Interactor {
     }
     
     func didTapRefreshButton() {
-        cacheLoadState = .refreshing
         Task {
             await refreshStories()
         }
@@ -206,6 +198,24 @@ final class StoriesListInteractor: Interactor {
         }
     }
     
+    func evaluateRefreshContent() {
+        print("evaluateRefreshContent")
+        guard self.networkConnectivityManager.isConnected() else {
+            return
+        }
+         
+         /// If last refresh was within 10 minutes, do not refresh
+         if let lastRefreshTimestamp = self.lastRefreshTimestamp,
+            let thresholdTimestamp = Calendar.current.date(byAdding: .minute, value: -10, to: Date()),
+            lastRefreshTimestamp > thresholdTimestamp {
+             return
+         }
+        
+        /// Conditions are met to refresh, begin refresh
+        self.loadingState = .refreshing
+        self.loadNextPage(cacheBehavior: .ignore)
+    }
+    
     // MARK: -
     @discardableResult
     private func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
@@ -220,7 +230,7 @@ final class StoriesListInteractor: Interactor {
                     return
                 case .loaded, .failed:
                     self.loadingState = .loadingMore
-                case .initialLoad:
+                case .initialLoad, .refreshing:
                     // fallthrough
                     break
                 }
@@ -322,12 +332,6 @@ final class StoriesListInteractor: Interactor {
             SettingsManager.default.set(value: .date(Date()), for: .lastRefreshTimestamp)
         }
     }
-}
-
-enum CacheLoadState {
-    case refreshNotAvailable
-    case refreshAvailable
-    case refreshing
 }
 
 enum IDPage: Equatable {

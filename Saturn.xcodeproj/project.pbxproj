@@ -25,6 +25,7 @@
 		1A57586829D165380014FD88 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 1A57586729D165380014FD88 /* Factory */; };
 		1A57586A29D166390014FD88 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586929D166390014FD88 /* Container.swift */; };
 		1A57586C29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */; };
+		1A57587529D2D56F0014FD88 /* GlobalErrorStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
@@ -183,6 +184,7 @@
 		1A57586429D164B50014FD88 /* StoryRowURLView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowURLView.swift; sourceTree = "<group>"; };
 		1A57586929D166390014FD88 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
 		1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskDatabaseResponseCache.swift; sourceTree = "<group>"; };
+		1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalErrorStream.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
 		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
@@ -360,6 +362,14 @@
 			path = Modifiers;
 			sourceTree = "<group>";
 		};
+		1A57587329D2D5640014FD88 /* Streams */ = {
+			isa = PBXGroup;
+			children = (
+				1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */,
+			);
+			path = Streams;
+			sourceTree = "<group>";
+		};
 		1A5DBBA8296933BA00D4D86E = {
 			isa = PBXGroup;
 			children = (
@@ -384,6 +394,7 @@
 		1A5DBBB3296933BA00D4D86E /* Saturn */ = {
 			isa = PBXGroup;
 			children = (
+				1A57587329D2D5640014FD88 /* Streams */,
 				1AAED95D29CAE0CA0093CED7 /* HTML */,
 				1A8890012999FF1500490A74 /* Cache */,
 				1A111DFE298B704E005B29B6 /* Extensions */,
@@ -848,6 +859,7 @@
 				1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */,
 				1AD1287229C45C3F00096DE7 /* SaturnKeychainWrapper.swift in Sources */,
 				1AE4A9D52979147200D0B0D3 /* UserItem.swift in Sources */,
+				1A57587529D2D56F0014FD88 /* GlobalErrorStream.swift in Sources */,
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
 				1AE4A9D32979146700D0B0D3 /* StoryListType.swift in Sources */,

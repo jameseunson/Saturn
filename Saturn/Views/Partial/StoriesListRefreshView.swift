@@ -9,31 +9,13 @@ import Foundation
 import SwiftUI
 
 struct StoriesListRefreshView: View {
-    @Binding var cacheLoadState: CacheLoadState
-    let onTapRefreshButton: (() -> Void)
-    
     var body: some View {
         HStack {
-            if cacheLoadState == .refreshing {
-                ProgressView()
-                    .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
-                    .padding([.leading, .trailing], 30)
-                    .padding([.top, .bottom], 15)
-                    .tint(.white)
-            } else {
-                Button {
-                    onTapRefreshButton()
-                    
-                } label: {
-                    Image(systemName: "arrow.clockwise.circle.fill")
-                        .padding([.leading], 30)
-                        .foregroundColor(.white)
-                    Text("Refresh")
-                        .padding([.trailing], 30)
-                        .padding([.top, .bottom], 15)
-                        .foregroundColor(.white)
-                }
-            }
+            ProgressView()
+                .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
+                .padding([.leading, .trailing], 30)
+                .padding([.top, .bottom], 15)
+                .tint(.white)
         }
         .background(.ultraThinMaterial)
         .mask {
@@ -45,6 +27,6 @@ struct StoriesListRefreshView: View {
 
 struct StoriesListRefreshView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListRefreshView(cacheLoadState: .constant(.refreshAvailable)) {}
+        StoriesListRefreshView()
     }
 }

@@ -31,33 +31,34 @@ final class StoriesListInteractorTests: XCTestCase {
         }
     }
     
-    func test_cachedResponseExpired_refreshAvailable() {
+    func test_cachedResponseExpired_refreshesImmediately() {
         let calendar = Calendar.current
-        let date = calendar.date(byAdding: .minute, value: -35, to: Date())
+        let date = calendar.date(byAdding: .minute, value: -15, to: Date())
         
         interactor = StoriesListInteractor(type: .top, apiManager: apiManager, lastRefreshTimestamp: date)
         interactor.activate()
         
-        let expectation = XCTestExpectation(description: "Await cacheLoadState value")
-        interactor.$cacheLoadState.dropFirst().sink { state in
-            XCTAssertEqual(state, .refreshAvailable)
-            expectation.fulfill()
+        let expectation = XCTestExpectation(description: "Await loadState value")
+        interactor.$loadingState.sink { state in
+            if state == .refreshing {
+                expectation.fulfill()
+            }
         }
         .store(in: &disposeBag)
         
         wait(for: [expectation], timeout: 1.0)
     }
     
-    func test_cachedResponseNotExpired_refreshNotAvailable() {
+    func test_cachedResponseNotExpired_doNotRefresh() {
         let calendar = Calendar.current
-        let date = calendar.date(byAdding: .minute, value: -10, to: Date())
+        let date = calendar.date(byAdding: .minute, value: -5, to: Date())
         
         interactor = StoriesListInteractor(type: .top, apiManager: apiManager, lastRefreshTimestamp: date)
         interactor.activate()
         
-        let expectation = XCTestExpectation(description: "Await cacheLoadState value")
-        interactor.$cacheLoadState.dropFirst().sink { state in
-            XCTAssertEqual(state, .refreshNotAvailable)
+        let expectation = XCTestExpectation(description: "Await loadState value")
+        interactor.$loadingState.dropFirst().sink { state in
+            XCTAssertEqual(state, .loaded(.cache))
             expectation.fulfill()
         }
         .store(in: &disposeBag)
@@ -94,6 +95,9 @@ final class StoriesListInteractorTests: XCTestCase {
     }
     
     func test_canLoadPage_loadedFromCache_nextPageCacheExists() {
+        let calendar = Calendar.current
+        let date = calendar.date(byAdding: .minute, value: -5, to: Date())
+        
         apiManager.hasCachedResponseHandler = { _ in return true }
         apiManager.loadStoryIdsHandler = { _, _ in return self.publisherForStoryIds(from: Array(0...20)) }
         apiManager.loadStoriesHandler = { _, _ in
@@ -106,14 +110,14 @@ final class StoriesListInteractorTests: XCTestCase {
         XCTAssertEqual(apiManager.hasCachedResponseCallCount, 0)
         
         let expectation = XCTestExpectation(description: "Await cacheLoadState value")
-        interactor = StoriesListInteractor(type: .top, apiManager: apiManager)
+        interactor = StoriesListInteractor(type: .top, apiManager: apiManager, lastRefreshTimestamp: date)
         interactor.activate()
         
-        interactor.$canLoadNextPage
+        interactor.$canLoadNextPage.dropFirst()
             .sink { canLoadNextPage in
                 XCTAssertTrue(canLoadNextPage)
-                /// Called for every story on page 2, (11-20, hence 10 calls)
-                XCTAssertEqual(self.apiManager.hasCachedResponseCallCount, 10)
+                /// Called for 2 pages worth of content, 20 calls
+                XCTAssertEqual(self.apiManager.hasCachedResponseCallCount, 20)
                 expectation.fulfill()
             }
             .store(in: &disposeBag)
@@ -122,6 +126,9 @@ final class StoriesListInteractorTests: XCTestCase {
     }
     
     func test_canLoadPage_loadedFromCache_nextPageCacheDoesNotExist() {
+        let calendar = Calendar.current
+        let date = calendar.date(byAdding: .minute, value: -5, to: Date())
+        
         apiManager.hasCachedResponseHandler = { _ in return false }
         apiManager.loadStoryIdsHandler = { _, _ in return self.publisherForStoryIds(from: Array(0...20)) }
         apiManager.loadStoriesHandler = { _, _ in
@@ -134,14 +141,14 @@ final class StoriesListInteractorTests: XCTestCase {
         XCTAssertEqual(apiManager.hasCachedResponseCallCount, 0)
         
         let expectation = XCTestExpectation(description: "Await cacheLoadState value")
-        interactor = StoriesListInteractor(type: .top, apiManager: apiManager)
+        interactor = StoriesListInteractor(type: .top, apiManager: apiManager, lastRefreshTimestamp: date)
         interactor.activate()
         
         interactor.$canLoadNextPage.dropFirst()
             .sink { canLoadNextPage in
                 XCTAssertFalse(canLoadNextPage)
-                /// First call fails, therefore subsequent calls are not evaluated, we expect only one call
-                XCTAssertEqual(self.apiManager.hasCachedResponseCallCount, 1)
+                /// First call fails for both pages, 2 calls
+                XCTAssertEqual(self.apiManager.hasCachedResponseCallCount, 2)
                 expectation.fulfill()
             }
             .store(in: &disposeBag)

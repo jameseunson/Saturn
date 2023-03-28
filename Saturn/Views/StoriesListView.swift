@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct StoriesListView: View {
+    @Environment(\.scenePhase) var scenePhase
     @StateObject var interactor: StoriesListInteractor
     
     @State var isSettingsVisible: Bool = false
@@ -16,7 +17,6 @@ struct StoriesListView: View {
     @State var selectedUser: String?
     @State var displayingSafariURL: URL?
     
-    @State var cacheLoadState: CacheLoadState = .refreshNotAvailable
     @State var canLoadNextPage: Bool = true
     
     #if DEBUG
@@ -35,16 +35,12 @@ struct StoriesListView: View {
     var body: some View {
         ZStack {
             switch interactor.loadingState {
-            case .loaded, .loadingMore, .failed:
+            case .loaded, .loadingMore, .failed, .refreshing:
                 ZStack(alignment: .top) {
                     contentScrollView()
                     
-                    if cacheLoadState == .refreshNotAvailable {
-                        EmptyView()
-                    } else {
-                        StoriesListRefreshView(cacheLoadState: $cacheLoadState) {
-                            interactor.didTapRefreshButton()
-                        }
+                    if interactor.loadingState == .refreshing {
+                        StoriesListRefreshView()
                     }
                 }
                 .navigationDestination(for: StoryRowViewModel.self) { viewModel in
@@ -110,9 +106,18 @@ struct StoriesListView: View {
         }
         .onAppear {
             interactor.activate()
+            if case .loaded = interactor.loadingState {
+                interactor.evaluateRefreshContent()
+            }
         }
-        .onReceive(interactor.$cacheLoadState) { output in
-            cacheLoadState = output
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active,
+               case .loaded = interactor.loadingState {
+                interactor.evaluateRefreshContent()
+            }
+        }
+        .onReceive(interactor.$loadingState) { output in
+            print("loadingState: \(output)")
         }
         .onReceive(interactor.$canLoadNextPage) { output in
             canLoadNextPage = output
@@ -144,17 +149,22 @@ struct StoriesListView: View {
                             }
                         }
                         .contextMenu {
-                            if SaturnKeychainWrapper.shared.isLoggedIn {
-                                Button(action: {
-                                    // TODO:
-                                }, label: {
-                                    Label("Upvote", systemImage: "arrow.up")
-                                })
-                                Button(action: {
-                                    // TODO:
-                                }, label: {
-                                    Label("Downvote", systemImage: "arrow.down")
-                                })
+                            if SaturnKeychainWrapper.shared.isLoggedIn,
+                               let vote = story.vote {
+                                if vote.directions.contains(.upvote) {
+                                    Button(action: {
+                                        interactor.didTapVote(story: story, direction: .upvote)
+                                    }, label: {
+                                        Label("Upvote", systemImage: "arrow.up")
+                                    })
+                                }
+                                if vote.directions.contains(.downvote) {
+                                    Button(action: {
+                                        interactor.didTapVote(story: story, direction: .downvote)
+                                    }, label: {
+                                        Label("Downvote", systemImage: "arrow.down")
+                                    })
+                                }
                             }
                             Button(action: { selectedShareItem = story.url }, label:
                             {

@@ -47,12 +47,6 @@ final class VoteHTMLParser {
         var id: Int?
         var state: HTMLAPIVoteDirection?
         
-//        if let user = try? element.select("a.hnuser"),
-//           let text = try? user.text(),
-//           text == "bbarnett" {
-//            print("bbarnett")
-//        }
-        
         /// Determine whether the user has recently voted, if so,  what direction?
         if let unvote = try element.select("span[id^=unv_] > a").first {
             let unvoteText = try unvote.text()
