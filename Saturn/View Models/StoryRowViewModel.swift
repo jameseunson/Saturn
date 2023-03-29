@@ -23,7 +23,7 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
     var image: Image?
     var vote: HTMLAPIVote?
     
-    init(story: Story, image: Image? = nil) {
+    init(story: Story, image: Image? = nil, vote: HTMLAPIVote? = nil) {
         self.id = story.id
         self.title = story.title
         self.text = story.text

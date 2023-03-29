@@ -11,6 +11,7 @@ import SwiftUI
 struct StoryRowView: View {
     @State var image: Image?
     @State private var dragOffset: CGFloat = 0
+    @State private var isLoggedIn = false
     
     let apiManager = APIManager()
     
@@ -19,23 +20,28 @@ struct StoryRowView: View {
     let onTapArticleLink: ((URL) -> Void)?
     let onTapUser: ((String) -> Void)?
     let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
+    let onTapSheet: ((StoryRowViewModel) -> Void)?
     let context: StoryRowViewContext
     
     init(story: StoryRowViewModel,
          onTapArticleLink: ((URL) -> Void)? = nil,
          onTapUser: ((String) -> Void)? = nil,
          onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
-         context: StoryRowViewContext = .storiesList) {
+         onTapSheet: ((StoryRowViewModel) -> Void)? = nil,
+         context: StoryRowViewContext = .storiesList,
+         keychainWrapper: SaturnKeychainWrapping = SaturnKeychainWrapper.shared) {
         self.story = story
         self.onTapArticleLink = onTapArticleLink
         self.onTapUser = onTapUser
         self.context = context
         self.onTapVote = onTapVote
+        self.onTapSheet = onTapSheet
+        _isLoggedIn = .init(initialValue: keychainWrapper.isLoggedIn)
     }
     
     var body: some View {
         ZStack {
-            if SaturnKeychainWrapper.shared.isLoggedIn,
+            if isLoggedIn,
                let vote = story.vote,
             abs(dragOffset) > 0 {
                 VoteBackdropView(dragOffset: $dragOffset,
@@ -106,17 +112,19 @@ struct StoryRowView: View {
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.leading)
                 }
-                if SaturnKeychainWrapper.shared.isLoggedIn {
-                    HStack {
+                if isLoggedIn,
+                   context != .user {
+                    HStack(alignment: .top) {
                         Image(systemName: "ellipsis")
+                            .contentShape(Rectangle())
                             .font(.body)
                             .foregroundColor(.gray)
+                            .frame(width: 30, height: 30)
                             .onTapGesture {
                                 let impactMed = UIImpactFeedbackGenerator(style: .medium)
                                 impactMed.impactOccurred()
-                                // TODO:
                                 
-                                print("tap")
+                                onTapSheet?(story)
                             }
                         Spacer()
                         if let vote = story.vote {
@@ -144,6 +152,7 @@ struct StoryRowView: View {
                             }
                         }
                     }
+                    .frame(minHeight: 33)
                 }
             }
             .offset(.init(width: dragOffset, height: 0))
@@ -160,7 +169,7 @@ struct StoryRowView: View {
             }
             .padding([.leading, .trailing], 15)
         }
-        .if(SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
+        .if(isLoggedIn, transform: { view in
             view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: story.vote?.directions ?? []))
@@ -178,7 +187,8 @@ struct StoryRowView: View {
 
 struct StoryRowView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!))
+        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()),
+                     keychainWrapper: SaturnKeychainWrapper(loginOverride: true))
     }
 }
 

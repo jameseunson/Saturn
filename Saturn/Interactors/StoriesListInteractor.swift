@@ -24,7 +24,7 @@ final class StoriesListInteractor: Interactor {
     @Published private(set) var stories = [StoryRowViewModel]()
     @Published private(set) var loadingState: LoadingState = .initialLoad
     @Published private(set) var canLoadNextPage: Bool = true
-    @Published private(set) var availableVotes: [Int: HTMLAPIVote] = [:]
+    @Published private(set) var availableVotes: [String: HTMLAPIVote] = [:]
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -120,11 +120,21 @@ final class StoriesListInteractor: Interactor {
             }
             .store(in: &disposeBag)
         
+        /// Load votes for the current page
+        /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
+        /// which involves scraping the html of news.ycombinator.com
+        /// Firebase pages are 10 items, whereas HTML pages are 30 items, so every 3 Firebase pages a new HTML page is scraped
         if SaturnKeychainWrapper.shared.isLoggedIn {
-            $loadingState
-                .filter { $0 == .loaded(.network) }
-                .flatMap { _ -> AnyPublisher<[Int: HTMLAPIVote], Error> in
-                    return self.htmlApiManager.loadAvailableVotesForStoriesList()
+            Publishers.CombineLatest($loadingState, $currentPage)
+                .filter { loadingState, currentPage in
+                    if case .loaded = loadingState {
+                        return true
+                    }
+                    return false
+                }
+                .flatMap { _, currentPage -> AnyPublisher<APIResponse<[String: HTMLAPIVote]>, Error> in
+                    let htmlPageNumber = currentPage / 3
+                    return self.htmlApiManager.loadAvailableVotesForStoriesList(page: htmlPageNumber)
                 }
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
@@ -133,10 +143,10 @@ final class StoriesListInteractor: Interactor {
                         // TODO:
                     }
                 }, receiveValue: { result in
-                    self.availableVotes = result
+                    self.availableVotes = result.response
                     
                     for story in self.stories {
-                        if let vote = result[story.id] {
+                        if let vote = result.response[String(story.id)] {
                             story.vote = vote
                         }
                     }
@@ -151,7 +161,7 @@ final class StoriesListInteractor: Interactor {
         }
         switch source {
         case .network:
-            loadNextPage(cacheBehavior: .default)
+            loadNextPage(cacheBehavior: .ignore)
         case .cache:
             loadNextPage(cacheBehavior: .offlineOnly)
         }
@@ -185,12 +195,12 @@ final class StoriesListInteractor: Interactor {
             // TODO: Error
             return
         }
-        Task {
+        Task { @MainActor in
             do {
-//                try await self.htmlApiManager.vote(direction: direction, info: info)
+                try await self.htmlApiManager.vote(direction: direction, info: info)
                 
-//                comment.vote?.state = direction
-//                self.comments.send(self.comments.value)
+                story.vote?.state = direction
+                self.objectWillChange.send()
                 
             } catch {
                 // TODO: Error
@@ -213,12 +223,14 @@ final class StoriesListInteractor: Interactor {
         
         /// Conditions are met to refresh, begin refresh
         self.loadingState = .refreshing
-        self.loadNextPage(cacheBehavior: .ignore)
+        Task {
+            await refreshStories()
+        }
     }
     
     // MARK: -
     @discardableResult
-    private func loadNextPage(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
+    private func loadNextPage(cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<[Story]>, Error> {
         Future { [weak self] promise in
             guard let self else { return }
             
@@ -261,26 +273,21 @@ final class StoriesListInteractor: Interactor {
         .eraseToAnyPublisher()
     }
     
-    private func getStoryIds(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[Int], Error> {
+    private func getStoryIds(cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[Int], Error> {
         Future { [weak self] promise in
             guard let self else { return }
             
-            if self.storyIds.isEmpty {
-                self.apiManager.loadStoryIds(type: self.type, cacheBehavior: cacheBehavior)
-                    .handleEvents(receiveOutput: { ids in
-                        self.storyIds.append(contentsOf: ids.response)
-                    })
-                    .sink { completion in
-                        if case let .failure(error) = completion {
-                            promise(.failure(error))
-                        }
-                    } receiveValue: { ids in
-                        promise(.success(ids.response))
+            self.apiManager.loadStoryIds(type: self.type, cacheBehavior: cacheBehavior)
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        promise(.failure(error))
                     }
-                    .store(in: &self.disposeBag)
-            } else {
-                promise(.success(self.storyIds))
-            }
+                } receiveValue: { ids in
+                    self.storyIds.append(contentsOf: ids.response)
+                    promise(.success(ids.response))
+                }
+                .store(in: &self.disposeBag)
             
         }.eraseToAnyPublisher()
     }
@@ -320,7 +327,7 @@ final class StoriesListInteractor: Interactor {
         
         for viewModel in viewModels {
             if SaturnKeychainWrapper.shared.isLoggedIn,
-               let vote = self.availableVotes[viewModel.id] {
+               let vote = self.availableVotes[String(viewModel.id)] {
                 viewModel.vote = vote
             }
         }
@@ -329,7 +336,9 @@ final class StoriesListInteractor: Interactor {
         self.currentPage += 1
         
         if source == .network {
-            SettingsManager.default.set(value: .date(Date()), for: .lastRefreshTimestamp)
+            let timestamp = Date()
+            SettingsManager.default.set(value: .date(timestamp), for: .lastRefreshTimestamp)
+            self.lastRefreshTimestamp = timestamp
         }
     }
 }

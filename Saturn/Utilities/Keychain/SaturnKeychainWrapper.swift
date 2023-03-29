@@ -9,11 +9,13 @@ import AuthenticationServices
 import Combine
 import Foundation
 
+/// @mockable
 protocol SaturnKeychainWrapping: AnyObject {
     @discardableResult func store(cookie: String, username: String) -> Bool
     func clearCredential()
     func hasCredential() -> Bool
     func retrieve(for key: KeychainItemKeys) -> String?
+    var isLoggedIn: Bool { get }
 }
 
 final class SaturnKeychainWrapper: SaturnKeychainWrapping {
@@ -22,8 +24,12 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
     
     @Published public var isLoggedIn: Bool = false
     
-    init() {
-        isLoggedIn = hasCredential()
+    init(loginOverride: Bool? = nil) {
+        if let loginOverride {
+            isLoggedIn = loginOverride
+        } else {
+            isLoggedIn = hasCredential()
+        }
     }
     
     @discardableResult

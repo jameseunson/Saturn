@@ -22,11 +22,11 @@ final class StoriesListInteractorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        apiManager.loadStoryIdsHandler = { (type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error> in
+        apiManager.loadStoryIdsHandler = { (type: StoryListType, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error> in
             return self.publisherForStoryIds(from: [1])
         }
         
-        apiManager.loadStoriesHandler = { (storyIds: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error> in
+        apiManager.loadStoriesHandler = { (storyIds: [Int], cacheBehavior: CacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error> in
             return self.publisherForStories(from: [self.apiResponseForStory(with: Story.fakeStory()!)])
         }
     }

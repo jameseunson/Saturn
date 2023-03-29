@@ -130,7 +130,10 @@ struct StoryDetailView: View {
                              onTapArticleLink: { url in self.displayingSafariURL = url },
                              onTapUser: { user in self.selectedUser = user },
                              context: .storyDetail)
-                    .padding([.top, .bottom])
+                    .padding(.top)
+                    .if(!SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
+                        view.padding(.bottom)
+                    })
                     .onTapGesture {
                         if story.url != nil {
                             displayingSafariURL = story.url

@@ -14,14 +14,14 @@ import SwiftUI
 
 /// @mockable
 protocol APIManaging: AnyObject {
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error>
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<[Story]>
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error>
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Array<Int>>
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Story>, Error>
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Story>
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Comment>, Error>
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Comment>
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error>
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior) async throws -> APIResponse<[Story]>
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error>
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior) async throws -> APIResponse<Array<Int>>
+    func loadStory(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Story>, Error>
+    func loadStory(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Story>
+    func loadComment(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Saturn.Comment>, Error>
+    func loadComment(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Saturn.Comment>
     func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error>
     func loadUserItem(id: Int) async throws -> UserItem
     func loadUserItems(ids: [Int]) -> AnyPublisher<[UserItem], Error>
@@ -36,6 +36,7 @@ final class APIManager: APIManaging {
     private let cache: APIMemoryResponseCaching
     private let timeoutSeconds: Int
     private let networkConnectivityManager: NetworkConnectivityManaging
+    private let decoder: APIDecoder
     
     #if DEBUG
     let isDebugLoggingEnabled = true
@@ -46,21 +47,23 @@ final class APIManager: APIManaging {
     init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
          ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
          timeoutSeconds: Int = 15,
-         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
+         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance,
+         decoder: APIDecoder = APIDecoder()) {
         self.cache = cache
         self.ref = ref
         self.timeoutSeconds = timeoutSeconds
         self.networkConnectivityManager = networkConnectivityManager
+        self.decoder = decoder
     }
 
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
         let stories = ids.map { return self.loadStory(id: $0, cacheBehavior: cacheBehavior) }
         return Publishers.MergeMany(stories)
             .collect()
             .eraseToAnyPublisher()
     }
     
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<[Story]> {
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<[Story]> {
         return try await withThrowingTaskGroup(of: APIResponse<Story>.self, body: { group in
             for id in ids {
                 group.addTask {
@@ -81,7 +84,7 @@ final class APIManager: APIManaging {
         })
     }
     
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
         if cacheBehavior == .offlineOnly,
            cache.get(for: type.cacheKey) == nil {
             return Just(APIResponse(response: [], source: .cache))
@@ -117,7 +120,7 @@ final class APIManager: APIManaging {
         }
     }
     
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<Array<Int>> {
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Array<Int>> {
         if let response = cache.get(for: type.cacheKey),
            response.isValid(cacheBehavior: cacheBehavior),
            case let .json(value) = response.value,
@@ -135,19 +138,19 @@ final class APIManager: APIManaging {
         }
     }
     
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<Story>, Error> {
+    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Story>, Error> {
         return retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<Story> {
+    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Story> {
         return try await retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<Comment>, Error> {
+    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Saturn.Comment>, Error> {
         return retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<Comment> {
+    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Saturn.Comment> {
         return try await retrieveObject(id: id, cacheBehavior: cacheBehavior)
     }
     
@@ -240,7 +243,7 @@ final class APIManager: APIManaging {
     func loadUser(id: String) -> AnyPublisher<User, Error> {
         return retrieve(from: "v0/user/\(id)")
             .flatMap { response in
-                return self.decodeResponse(response)
+                return self.decoder.decodeResponse(response)
             }
             .eraseToAnyPublisher()
     }
@@ -258,16 +261,12 @@ final class APIManager: APIManaging {
     }
     
     // MARK: -
-    private func loadImage(for story: StoryRowViewModel, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> Image {
+    private func loadImage(for story: StoryRowViewModel, cacheBehavior: CacheBehavior = .default) async throws -> Image {
         guard let imageURL = story.imageURL else {
             throw APIManagerError.generic
         }
   
-        let cacheKey = imageURL.absoluteString
-            .replacingOccurrences(of: "/", with: "-")
-            .replacingOccurrences(of: ".", with: "-")
-            .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted)
-            .joined()
+        let cacheKey = imageURL.cacheKey
         
         if let response = cache.get(for: cacheKey),
            response.isValid(cacheBehavior: cacheBehavior),
@@ -286,7 +285,7 @@ final class APIManager: APIManaging {
         return Image(uiImage: image)
     }
     
-    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> AnyPublisher<APIResponse<T>, Error> {
+    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<T>, Error> {
         let cacheBehaviorForConnectivity = networkConnectivityManager.isConnected() ? cacheBehavior : .offlineOnly
         
         if let response = cache.get(for: String(id)),
@@ -297,7 +296,7 @@ final class APIManager: APIManaging {
                     if self.isDebugLoggingEnabled { print("cache hit: \(id)") }
                 })
                 .flatMap { response in
-                    return self.decodeResponse(value)
+                    return self.decoder.decodeResponse(value)
                 }
                 .compactMap { APIResponse<T>(response: $0, source: .cache) }
                 .eraseToAnyPublisher()
@@ -309,7 +308,7 @@ final class APIManager: APIManaging {
                     self.cache.set(value: .json(response), for: String(id))
                 })
                 .flatMap { response in
-                    self.decodeResponse(response)
+                    self.decoder.decodeResponse(response)
                 }
                 .compactMap { $0 }
                 .map { APIResponse<T>(response: $0, source: .network) }
@@ -334,13 +333,13 @@ final class APIManager: APIManaging {
         .eraseToAnyPublisher()
     }
     
-    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior = .default) async throws -> APIResponse<T> {
+    private func retrieveObject<T: Codable>(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<T> {
         if let response = cache.get(for: String(id)),
            response.isValid(cacheBehavior: cacheBehavior),
            case let .json(value) = response.value {
             if isDebugLoggingEnabled { print("cache hit (async): \(id)") }
             
-            let decodedResponse: T = try self.decodeResponse(value)
+            let decodedResponse: T = try self.decoder.decodeResponse(value)
             return APIResponse<T>(response: decodedResponse, source: .cache)
             
         } else {
@@ -348,7 +347,7 @@ final class APIManager: APIManaging {
             let response = try await retrieve(from: "v0/item/\(id)")
             self.cache.set(value: .json(response), for: String(id))
             
-            let decodedResponse: T = try self.decodeResponse(response)
+            let decodedResponse: T = try self.decoder.decodeResponse(response)
             return APIResponse<T>(response: decodedResponse, source: .network)
         }
     }
@@ -396,41 +395,6 @@ final class APIManager: APIManaging {
                 }
             }
         }
-    }
-    
-    private func decodeResponse<T: Codable>(_ response: Any) -> AnyPublisher<T, Error> {
-        return Future { promise in
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    let object: T = try self.decodeResponse(response)
-                    
-                    DispatchQueue.main.async {
-                        promise(.success(object))
-                    }
-                    
-                } catch let error {
-                    promise(.failure(error))
-                }
-            }
-
-        }
-        .eraseToAnyPublisher()
-    }
-    
-    private func decodeResponse<T: Codable>(_ response: Any) throws -> T {
-        if let dict = response as? Dictionary<String, Any>,
-           dict.keys.contains("deleted") {
-            throw APIManagerError.deleted
-        }
-        
-        if response is NSNull {
-            throw APIManagerError.noData
-        }
-        
-        let jsonData = try JSONSerialization.data(withJSONObject: response)
-        let object = try JSONDecoder().decode(T.self, from: jsonData)
-        
-        return object
     }
 }
 

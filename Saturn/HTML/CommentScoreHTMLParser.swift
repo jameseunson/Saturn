@@ -12,11 +12,11 @@ import SwiftSoup
 /// This information is only available to the current user about their own comments,
 /// so we do not attempt to extract scores for comments by other users
 final class CommentScoreHTMLParser {
-    func parseHTML(_ htmlString: String, for username: String) throws -> [Int: Int] {
+    func parseHTML(_ htmlString: String, for username: String) throws -> [String: Int] {
         let doc: Document = try SwiftSoup.parse(htmlString)
         let elements = try doc.select("tr.athing.comtr")
         
-        var map: [Int: Int] = [:]
+        var map: [String: Int] = [:]
         
         for element in elements {
             guard let elementId = Int(element.id()),
@@ -38,7 +38,7 @@ final class CommentScoreHTMLParser {
                   let scoreInt = Int(scoreString) else {
                 throw HTMLAPIManagerError.invalidScore
             }
-            map[elementId] = scoreInt
+            map[String(elementId)] = scoreInt
         }
         
         return map

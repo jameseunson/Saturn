@@ -11,17 +11,17 @@ import SwiftSoup
 /// Extracts which directions each can be voted on (up and/or down),
 /// the auth key required to vote on each comment and the id of each comment
 final class VoteHTMLParser {
-    func parseCommentHTML(_ htmlString: String, storyId: Int) throws -> [Int: HTMLAPIVote]  {
+    func parseCommentHTML(_ htmlString: String, storyId: Int) throws -> [String: HTMLAPIVote]  {
         return try parse(htmlString, mode: .comments(storyId))
     }
     
-    func parseStoryListHTML(_ htmlString: String) throws -> [Int: HTMLAPIVote] {
+    func parseStoryListHTML(_ htmlString: String) throws -> [String: HTMLAPIVote] {
         return try parse(htmlString, mode: .storyList)
     }
     
-    private func parse(_ htmlString: String, mode: VoteHTMLParserMode) throws -> [Int: HTMLAPIVote] {
+    private func parse(_ htmlString: String, mode: VoteHTMLParserMode) throws -> [String: HTMLAPIVote] {
         let doc: Document = try SwiftSoup.parse(htmlString)
-        var map = [Int: HTMLAPIVote]()
+        var map = [String: HTMLAPIVote]()
 
         /// Depending on the mode, we either want to examine all comments (`athing.comtr`) or stories (just plain `athing`)
         let elements: Elements
@@ -34,7 +34,7 @@ final class VoteHTMLParser {
         
         for element in elements {
             if let vote = try extractVote(from: element, mode: mode) {
-                map[vote.id] = vote
+                map[String(vote.id)] = vote
             }
         }
 
@@ -44,7 +44,7 @@ final class VoteHTMLParser {
     private func extractVote(from element: Element, mode: VoteHTMLParserMode) throws -> HTMLAPIVote? {
         var directions = [HTMLAPIVoteDirection]()
         var auth: String?
-        var id: Int?
+        var id: String?
         var state: HTMLAPIVoteDirection?
         
         /// Determine whether the user has recently voted, if so,  what direction?
@@ -87,16 +87,18 @@ final class VoteHTMLParser {
         /// If there is at least one available voting direction, return a vote object for this item
         /// which contains all the information required to place or modify a vote
         if let auth,
-           let id {
+           let id,
+            let idInt = Int(id) {
+            
             let storyId: Int
             switch mode {
             case .comments(let commentsStoryId):
                 storyId = commentsStoryId
             case .storyList:
-                storyId = id
+                storyId = idInt
             }
             
-            return HTMLAPIVote(id: id,
+            return HTMLAPIVote(id: idInt,
                                directions: directions,
                                auth: auth,
                                storyId: storyId,
@@ -108,8 +110,8 @@ final class VoteHTMLParser {
     
     /// Extract the auth and id strings from the voting link (an element of type `a.clicky`)
     /// Both are required in order to successfully vote, particularly the auth string
-    private func parseVotingLink(element: Element) throws -> (Int, String)? {
-        var id: Int?
+    private func parseVotingLink(element: Element) throws -> (String, String)? {
+        var id: String?
         var auth: String?
         
         let hrefString = try element.attr("href")
@@ -122,8 +124,9 @@ final class VoteHTMLParser {
         for item in queryItems {
             switch item.name {
             case "id":
-                if let itemValue = item.value {
-                    id = Int(itemValue)
+                if let itemValue = item.value,
+                   let idInt = Int(itemValue) {
+                    id = String(idInt)
                 }
             case "auth":
                 auth = item.value

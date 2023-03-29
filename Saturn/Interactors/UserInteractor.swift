@@ -19,7 +19,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     private var currentPage: Int = 0
     private var submittedIds = [Int]()
-    private var scoreMap = [Int: Int]()
+    private var scoreMap = [String: Int]()
     
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
     @Published private var itemsLoaded = 0
@@ -121,13 +121,13 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     .map { ($0, ids) }
                     .eraseToAnyPublisher()
             }
-            .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [Int: Int]), Error> in
+            .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [String: Int]), Error> in
                 if self.shouldLoadCommentScores() {
                     return self.htmlApiManager.loadScoresForLoggedInUserComments(startFrom: self.scoreMapStartFrom())
                         .map { (items, ids, $0) }
                         .eraseToAnyPublisher()
                 } else {
-                    return Just((items, ids, [Int:Int]())).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    return Just((items, ids, [String:Int]())).setFailureType(to: Error.self).eraseToAnyPublisher()
                 }
             }
             .receive(on: RunLoop.main)
@@ -226,12 +226,12 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     /// Sets the score for every comment we have a score for
-    private func applyScoreMap(scoreMap: [Int: Int], items: [UserItem]) {
+    private func applyScoreMap(scoreMap: [String: Int], items: [UserItem]) {
         scoreMap.forEach { (key, value) in self.scoreMap[key] = value }
         
         for item in items {
             guard case let .comment(model) = item,
-                  let score = self.scoreMap[model.id] else {
+                  let score = self.scoreMap[String(model.id)] else {
                 continue
             }
             model.score = score

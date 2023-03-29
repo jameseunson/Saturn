@@ -21,7 +21,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var commentsRemainingToLoad: Bool = true
     @Published private(set) var story: Story?
-    @Published private(set) var availableVotes: [Int: HTMLAPIVote] = [:]
+    @Published private(set) var availableVotes: [String: HTMLAPIVote] = [:]
     
     var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
@@ -151,7 +151,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                     self.availableVotes = result
                     
                     for comment in self.comments.value {
-                        if let vote = result[comment.id] {
+                        if let vote = result[String(comment.id)] {
                             comment.vote = vote
                         }
                     }
@@ -260,12 +260,12 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             // TODO: Error
             return
         }
-        Task {
+        Task { @MainActor in
             do {
                 try await self.htmlApiManager.vote(direction: direction, info: info)
                 
                 comment.vote?.state = direction
-                self.comments.send(self.comments.value)
+                self.objectWillChange.send()
                 
             } catch {
                 // TODO: Error
@@ -295,7 +295,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                                              parent: parent)
             
             if SaturnKeychainWrapper.shared.isLoggedIn,
-               let vote = self.availableVotes[viewModel.id] {
+               let vote = self.availableVotes[String(viewModel.id)] {
                 viewModel.vote = vote
             }
                

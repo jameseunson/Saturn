@@ -16,6 +16,7 @@ struct StoriesListView: View {
     @State var selectedShareItem: URL?
     @State var selectedUser: String?
     @State var displayingSafariURL: URL?
+    @State var displayingConfirmSheetForStory: StoryRowViewModel?
     
     @State var canLoadNextPage: Bool = true
     
@@ -104,6 +105,35 @@ struct StoriesListView: View {
                     .ignoresSafeArea()
             }
         }
+        .confirmationDialog("Story", isPresented: createBoolBinding(from: $displayingConfirmSheetForStory), actions: {
+            if let story = displayingConfirmSheetForStory {
+                if SaturnKeychainWrapper.shared.isLoggedIn,
+                   let vote = story.vote {
+                    if vote.directions.contains(.upvote) {
+                        Button(action: {
+                            interactor.didTapVote(story: story, direction: .upvote)
+                        }, label: {
+                            Label("Upvote", systemImage: "arrow.up")
+                        })
+                    }
+                    if vote.directions.contains(.downvote) {
+                        Button(action: {
+                            interactor.didTapVote(story: story, direction: .downvote)
+                        }, label: {
+                            Label("Downvote", systemImage: "arrow.down")
+                        })
+                    }
+                }
+                Button(action: { selectedShareItem = story.url }, label:
+                {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                })
+                Button(action: { selectedUser = story.author }, label:
+                {
+                    Label(story.author, systemImage: "person.circle")
+                })
+            }
+        })
         .onAppear {
             interactor.activate()
             if case .loaded = interactor.loadingState {
@@ -136,6 +166,7 @@ struct StoriesListView: View {
                                      onTapArticleLink: { url in self.displayingSafariURL = url },
                                      onTapUser: { user in self.selectedUser = user },
                                      onTapVote: { direction in self.interactor.didTapVote(story: story, direction: direction) },
+                                     onTapSheet: { story in self.displayingConfirmSheetForStory = story },
                                      context: .storiesList)
                         .onAppear {
                             #if DEBUG
@@ -175,10 +206,12 @@ struct StoriesListView: View {
                                 Label(story.author, systemImage: "person.circle")
                             })
                         }
-                        .padding(.bottom, 25)
+                        .padding(.bottom, SaturnKeychainWrapper.shared.isLoggedIn ? 0 : 25)
                     }
+                    .buttonStyle(StoriesListButtonStyle())
                 }
-                if canLoadNextPage {
+                if canLoadNextPage,
+                   interactor.loadingState == .loadingMore {
                     ListLoadingView()
                 }
             }
@@ -189,5 +222,12 @@ struct StoriesListView: View {
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
         StoriesListView(interactor: StoriesListInteractor(type: .top, stories: [StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!)]))
+    }
+}
+
+struct StoriesListButtonStyle: ButtonStyle {
+    public func makeBody(configuration: StoriesListButtonStyle.Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 1 : 1)
     }
 }

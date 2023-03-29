@@ -64,7 +64,7 @@ struct APIMemoryResponseCacheItem {
     let value: APIMemoryResponseCacheValue
     let timestamp: Date
     
-    func isValid(cacheBehavior: APIMemoryResponseCacheBehavior = .default) -> Bool {
+    func isValid(cacheBehavior: CacheBehavior = .default) -> Bool {
         switch cacheBehavior {
         case .`default`:
             return timestamp >= Date().addingTimeInterval(-(60*10))
@@ -81,7 +81,7 @@ enum APIMemoryResponseCacheValue {
     case data(Data)
 }
 
-enum APIMemoryResponseCacheBehavior {
+enum CacheBehavior {
     /// Ignores any cache more than 10 minutes old
     case `default`
     

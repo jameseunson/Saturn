@@ -3,17 +3,18 @@
 ///
 
 
-
+@testable import Saturn
+import AuthenticationServices
 import Combine
 import Firebase
 import FirebaseCore
 import FirebaseDatabase
 import Foundation
 import Network
+import SwiftSoup
 import SwiftUI
 import UIKit
 import os
-@testable import Saturn
 
 
 class APIMemoryResponseCachingMock: APIMemoryResponseCaching {
@@ -164,13 +165,64 @@ class NetworkConnectivityManagingMock: NetworkConnectivityManaging {
     }
 }
 
+class SaturnKeychainWrappingMock: SaturnKeychainWrapping {
+    init() { }
+    init(isLoggedIn: Bool = false) {
+        self.isLoggedIn = isLoggedIn
+    }
+
+
+    private(set) var storeCallCount = 0
+    var storeHandler: ((String, String) -> (Bool))?
+    func store(cookie: String, username: String) -> Bool {
+        storeCallCount += 1
+        if let storeHandler = storeHandler {
+            return storeHandler(cookie, username)
+        }
+        return false
+    }
+
+    private(set) var clearCredentialCallCount = 0
+    var clearCredentialHandler: (() -> ())?
+    func clearCredential()  {
+        clearCredentialCallCount += 1
+        if let clearCredentialHandler = clearCredentialHandler {
+            clearCredentialHandler()
+        }
+        
+    }
+
+    private(set) var hasCredentialCallCount = 0
+    var hasCredentialHandler: (() -> (Bool))?
+    func hasCredential() -> Bool {
+        hasCredentialCallCount += 1
+        if let hasCredentialHandler = hasCredentialHandler {
+            return hasCredentialHandler()
+        }
+        return false
+    }
+
+    private(set) var retrieveCallCount = 0
+    var retrieveHandler: ((KeychainItemKeys) -> (String?))?
+    func retrieve(for key: KeychainItemKeys) -> String? {
+        retrieveCallCount += 1
+        if let retrieveHandler = retrieveHandler {
+            return retrieveHandler(key)
+        }
+        return nil
+    }
+
+    private(set) var isLoggedInSetCallCount = 0
+    var isLoggedIn: Bool = false { didSet { isLoggedInSetCallCount += 1 } }
+}
+
 class APIManagingMock: APIManaging {
     init() { }
 
 
     private(set) var loadStoriesCallCount = 0
-    var loadStoriesHandler: (([Int], APIMemoryResponseCacheBehavior) -> (AnyPublisher<[APIResponse<Story>], Error>))?
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error> {
+    var loadStoriesHandler: (([Int], CacheBehavior) -> (AnyPublisher<[APIResponse<Story>], Error>))?
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior) -> AnyPublisher<[APIResponse<Story>], Error> {
         loadStoriesCallCount += 1
         if let loadStoriesHandler = loadStoriesHandler {
             return loadStoriesHandler(ids, cacheBehavior)
@@ -179,8 +231,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadStoriesIdsCallCount = 0
-    var loadStoriesIdsHandler: (([Int], APIMemoryResponseCacheBehavior) async throws -> (APIResponse<[Story]>))?
-    func loadStories(ids: [Int], cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<[Story]> {
+    var loadStoriesIdsHandler: (([Int], CacheBehavior) async throws -> (APIResponse<[Story]>))?
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior) async throws -> APIResponse<[Story]> {
         loadStoriesIdsCallCount += 1
         if let loadStoriesIdsHandler = loadStoriesIdsHandler {
             return try await loadStoriesIdsHandler(ids, cacheBehavior)
@@ -189,8 +241,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadStoryIdsCallCount = 0
-    var loadStoryIdsHandler: ((StoryListType, APIMemoryResponseCacheBehavior) -> (AnyPublisher<APIResponse<Array<Int>>, Error>))?
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
+    var loadStoryIdsHandler: ((StoryListType, CacheBehavior) -> (AnyPublisher<APIResponse<Array<Int>>, Error>))?
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
         loadStoryIdsCallCount += 1
         if let loadStoryIdsHandler = loadStoryIdsHandler {
             return loadStoryIdsHandler(type, cacheBehavior)
@@ -199,8 +251,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadStoryIdsTypeCallCount = 0
-    var loadStoryIdsTypeHandler: ((StoryListType, APIMemoryResponseCacheBehavior) async throws -> (APIResponse<Array<Int>>))?
-    func loadStoryIds(type: StoryListType, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Array<Int>> {
+    var loadStoryIdsTypeHandler: ((StoryListType, CacheBehavior) async throws -> (APIResponse<Array<Int>>))?
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior) async throws -> APIResponse<Array<Int>> {
         loadStoryIdsTypeCallCount += 1
         if let loadStoryIdsTypeHandler = loadStoryIdsTypeHandler {
             return try await loadStoryIdsTypeHandler(type, cacheBehavior)
@@ -209,8 +261,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadStoryCallCount = 0
-    var loadStoryHandler: ((Int, APIMemoryResponseCacheBehavior) -> (AnyPublisher<APIResponse<Story>, Error>))?
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Story>, Error> {
+    var loadStoryHandler: ((Int, CacheBehavior) -> (AnyPublisher<APIResponse<Story>, Error>))?
+    func loadStory(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Story>, Error> {
         loadStoryCallCount += 1
         if let loadStoryHandler = loadStoryHandler {
             return loadStoryHandler(id, cacheBehavior)
@@ -219,8 +271,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadStoryIdCallCount = 0
-    var loadStoryIdHandler: ((Int, APIMemoryResponseCacheBehavior) async throws -> (APIResponse<Story>))?
-    func loadStory(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Story> {
+    var loadStoryIdHandler: ((Int, CacheBehavior) async throws -> (APIResponse<Story>))?
+    func loadStory(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Story> {
         loadStoryIdCallCount += 1
         if let loadStoryIdHandler = loadStoryIdHandler {
             return try await loadStoryIdHandler(id, cacheBehavior)
@@ -229,8 +281,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadCommentCallCount = 0
-    var loadCommentHandler: ((Int, APIMemoryResponseCacheBehavior) -> (AnyPublisher<APIResponse<Comment>, Error>))?
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) -> AnyPublisher<APIResponse<Comment>, Error> {
+    var loadCommentHandler: ((Int, CacheBehavior) -> (AnyPublisher<APIResponse<Saturn.Comment>, Error>))?
+    func loadComment(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Saturn.Comment>, Error> {
         loadCommentCallCount += 1
         if let loadCommentHandler = loadCommentHandler {
             return loadCommentHandler(id, cacheBehavior)
@@ -239,8 +291,8 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadCommentIdCallCount = 0
-    var loadCommentIdHandler: ((Int, APIMemoryResponseCacheBehavior) async throws -> (APIResponse<Comment>))?
-    func loadComment(id: Int, cacheBehavior: APIMemoryResponseCacheBehavior) async throws -> APIResponse<Comment> {
+    var loadCommentIdHandler: ((Int, CacheBehavior) async throws -> (APIResponse<Saturn.Comment>))?
+    func loadComment(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Saturn.Comment> {
         loadCommentIdCallCount += 1
         if let loadCommentIdHandler = loadCommentIdHandler {
             return try await loadCommentIdHandler(id, cacheBehavior)
