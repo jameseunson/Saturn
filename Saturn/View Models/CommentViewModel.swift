@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CommentViewModel: Codable, Hashable, Identifiable {
+final class CommentViewModel: Codable, Hashable, Identifiable, Votable {
     static let formatter = RelativeDateTimeFormatter()
     
     let id: Int
@@ -72,4 +72,8 @@ enum CommentAnimatingState: Codable {
     case expanding
     case collapsing
     case none
+}
+
+protocol Votable: AnyObject {
+    var vote: HTMLAPIVote? { get set }
 }

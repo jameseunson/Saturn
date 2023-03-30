@@ -8,7 +8,7 @@
 import Foundation
 
 enum StoryDetailShareItem {
-    case story(Story)
+    case story(StoryRowViewModel)
     case comment(CommentViewModel)
     
     var url: URL? {
@@ -18,7 +18,7 @@ enum StoryDetailShareItem {
                 url = comment.comment.url
             
             case let .story(story):
-                url = story.url
+                url = story.story.url
         }
         return url
     }

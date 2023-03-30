@@ -19,6 +19,8 @@
 		1A13B842299DEA25009E3E70 /* APIManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13B841299DEA25009E3E70 /* APIManagerTests.swift */; };
 		1A13B844299E17C2009E3E70 /* APIDiskResponseCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */; };
 		1A2F380D297A86B500F35844 /* CommentNavigationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */; };
+		1A32040C29D5317E00CFB4C2 /* VoteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A32040B29D5317E00CFB4C2 /* VoteManager.swift */; };
+		1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */; };
 		1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586429D164B50014FD88 /* StoryRowURLView.swift */; };
@@ -183,6 +185,8 @@
 		1A13B841299DEA25009E3E70 /* APIManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManagerTests.swift; sourceTree = "<group>"; };
 		1A13B843299E17C2009E3E70 /* APIDiskResponseCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCacheTests.swift; sourceTree = "<group>"; };
 		1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentNavigationModifier.swift; sourceTree = "<group>"; };
+		1A32040B29D5317E00CFB4C2 /* VoteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteManager.swift; sourceTree = "<group>"; };
+		1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryContextSheetModifier.swift; sourceTree = "<group>"; };
 		1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnMocks.swift; sourceTree = "<group>"; };
 		1A57586429D164B50014FD88 /* StoryRowURLView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowURLView.swift; sourceTree = "<group>"; };
 		1A57586929D166390014FD88 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
@@ -365,6 +369,7 @@
 				1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */,
 				1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */,
 				1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */,
+				1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */,
 			);
 			path = Modifiers;
 			sourceTree = "<group>";
@@ -510,6 +515,7 @@
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
 				1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */,
 				1AA05D7329D401F200D3013C /* APIDecoder.swift */,
+				1A32040B29D5317E00CFB4C2 /* VoteManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -856,6 +862,7 @@
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
 				1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */,
+				1A32040C29D5317E00CFB4C2 /* VoteManager.swift in Sources */,
 				1ACB6C0D29B9C48E000A94E0 /* SettingValue.swift in Sources */,
 				1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */,
 				1A57586A29D166390014FD88 /* Container.swift in Sources */,
@@ -908,6 +915,7 @@
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1AA05D7029D3D22700D3013C /* HTMLAPIVote.swift in Sources */,
+				1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */,
 				1A888FBF2992351900490A74 /* SettingsIndentationSelectColorView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
 				1AE4A99D2977B83E00D0B0D3 /* SearchInteractor.swift in Sources */,

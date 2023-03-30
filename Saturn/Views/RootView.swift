@@ -62,6 +62,7 @@ struct RootView: View {
         }
         .onAppear {
             interactor.activate()
+            UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(named: "AccentColor")
         }
         .onReceive(SaturnKeychainWrapper.shared.$isLoggedIn) { output in
             if output,

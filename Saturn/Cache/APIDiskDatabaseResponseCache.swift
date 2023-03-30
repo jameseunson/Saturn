@@ -19,4 +19,8 @@ final class APIDiskDatabaseResponseCache: APIDiskResponseCaching {
     func loadAll() -> [String : APIMemoryResponseCacheItem] {
         return [:]
     }
+    
+    func clearCache() throws {
+        // TODO: 
+    }
 }

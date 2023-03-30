@@ -10,6 +10,7 @@ protocol APIDiskResponseCaching: AnyObject {
     func store(id: String, value: APIMemoryResponseCacheValue) throws
     func retrieve(id: String, type: APIDiskResponseCacheType) throws -> APIMemoryResponseCacheValue
     func loadAll() -> [String: APIMemoryResponseCacheItem]
+    func clearCache() throws
 }
 
 final class APIDiskResponseCache: APIDiskResponseCaching {
@@ -110,6 +111,15 @@ final class APIDiskResponseCache: APIDiskResponseCaching {
             
         } catch {
             return [:]
+        }
+    }
+    
+    func clearCache() throws {
+        let cacheDirURL = try urlForCacheDirectory()
+        let cacheItems = try fm.contentsOfDirectory(at: cacheDirURL, includingPropertiesForKeys: nil, options: [])
+        
+        for url in cacheItems {
+            try fm.removeItem(atPath: url.path)
         }
     }
     

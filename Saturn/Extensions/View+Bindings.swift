@@ -18,3 +18,12 @@ extension View {
     }
 }
 
+extension ViewModifier {
+    func createBoolBinding<T>(from binding: Binding<T?>) -> Binding<Bool> {
+        Binding {
+            binding.wrappedValue != nil
+        } set: { value in
+            if !value { binding.wrappedValue = nil }
+        }
+    }
+}

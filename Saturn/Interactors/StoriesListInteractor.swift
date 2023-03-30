@@ -15,6 +15,7 @@ final class StoriesListInteractor: Interactor {
     private let type: StoryListType
     private let networkConnectivityManager: NetworkConnectivityManaging
     private let htmlApiManager = HTMLAPIManager()
+    private let voteManager = VoteManager()
     
     @Published private var currentPage: Int = 0
     @Published private var storyIds = [Int]()
@@ -41,6 +42,8 @@ final class StoriesListInteractor: Interactor {
         self.stories = stories
         self.lastRefreshTimestamp = lastRefreshTimestamp
         self.networkConnectivityManager = networkConnectivityManager
+        
+//        try? APIMemoryResponseCache.default.diskCache.clearCache()
         
         #if DEBUG
         if stories.count > 0 {
@@ -119,40 +122,6 @@ final class StoriesListInteractor: Interactor {
                 self.canLoadNextPage = canLoadNextPage
             }
             .store(in: &disposeBag)
-        
-        /// Load votes for the current page
-        /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
-        /// which involves scraping the html of news.ycombinator.com
-        /// Firebase pages are 10 items, whereas HTML pages are 30 items, so every 3 Firebase pages a new HTML page is scraped
-        if SaturnKeychainWrapper.shared.isLoggedIn {
-            Publishers.CombineLatest($loadingState, $currentPage)
-                .filter { loadingState, currentPage in
-                    if case .loaded = loadingState {
-                        return true
-                    }
-                    return false
-                }
-                .flatMap { _, currentPage -> AnyPublisher<APIResponse<[String: HTMLAPIVote]>, Error> in
-                    let htmlPageNumber = currentPage / 3
-                    return self.htmlApiManager.loadAvailableVotesForStoriesList(page: htmlPageNumber)
-                }
-                .receive(on: RunLoop.main)
-                .sink(receiveCompletion: { completion in
-                    if case let .failure(error) = completion {
-                        print(error)
-                        // TODO:
-                    }
-                }, receiveValue: { result in
-                    self.availableVotes = result.response
-                    
-                    for story in self.stories {
-                        if let vote = result.response[String(story.id)] {
-                            story.vote = vote
-                        }
-                    }
-                })
-                .store(in: &disposeBag)
-        }
     }
     
     func loadNextPageFromSource() {
@@ -168,43 +137,37 @@ final class StoriesListInteractor: Interactor {
     }
     
     @MainActor
-    func refreshStories() async {
+    func refreshStories(source: APIRefreshingSource) async {
         do {
+            self.loadingState = .refreshing(source)
             self.currentPage = 0
+            
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
+            let scoreMap: APIResponse<[String: HTMLAPIVote]>
             
-            self.completeLoad(with: stories.response, source: .network)
+            if SaturnKeychainWrapper.shared.isLoggedIn {
+                scoreMap = try await htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: .ignore)
+            } else {
+                scoreMap = APIResponse(response: [String: HTMLAPIVote](), source: .network)
+            }
+            
+            self.completeLoad(with: stories.response,
+                              scoreMap: scoreMap.response,
+                              source: .network)
             
         } catch {
             // TODO: Handle error
+            print(error)
         }
     }
     
-    func didTapRefreshButton() {
-        Task {
-            await refreshStories()
-        }
-    }
-    
-    func didTapVote(story: StoryRowViewModel, direction: HTMLAPIVoteDirection) {
-        guard let info = story.vote else {
-            // TODO: Error
-            return
-        }
-        Task { @MainActor in
-            do {
-                try await self.htmlApiManager.vote(direction: direction, info: info)
-                
-                story.vote?.state = direction
-                self.objectWillChange.send()
-                
-            } catch {
-                // TODO: Error
-            }
+    func didTapVote(item: Votable, direction: HTMLAPIVoteDirection) {
+        voteManager.vote(item: item, direction: direction) { [weak self] in
+            self?.objectWillChange.send()
         }
     }
     
@@ -222,9 +185,8 @@ final class StoriesListInteractor: Interactor {
          }
         
         /// Conditions are met to refresh, begin refresh
-        self.loadingState = .refreshing
         Task {
-            await refreshStories()
+            await refreshStories(source: .autoRefresh)
         }
     }
     
@@ -252,6 +214,23 @@ final class StoriesListInteractor: Interactor {
                 .flatMap { ids -> AnyPublisher<[APIResponse<Story>], Error> in
                     return self.apiManager.loadStories(ids: self.idsForPage(.current, with: ids), cacheBehavior: cacheBehavior)
                 }
+                .flatMap { stories -> AnyPublisher<(APIResponse<[String: HTMLAPIVote]>, [APIResponse<Story>]), Error> in
+                    if SaturnKeychainWrapper.shared.isLoggedIn {
+                        /// Load votes for the current page
+                        /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
+                        /// which involves scraping the html of news.ycombinator.com
+                        /// Firebase pages are 10 items, whereas HTML pages are 30 items, so every 3 Firebase pages a new HTML page is scraped
+                        return self.htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: cacheBehavior)
+                            .map { ($0, stories) }
+                            .eraseToAnyPublisher()
+                    } else {
+                        /// If not logged in, return an empty dictionary
+                        return Just(APIResponse(response: [String: HTMLAPIVote](), source: .network))
+                            .map { ($0, stories) }
+                            .setFailureType(to: Error.self)
+                            .eraseToAnyPublisher()
+                    }
+                }
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
@@ -260,11 +239,15 @@ final class StoriesListInteractor: Interactor {
                         promise(.failure(error))
                     }
 
-                } receiveValue: { stories in
+                } receiveValue: { scoreMapResult, stories in
+                    print("loadNextPage receiveValue")
+                    
+                    /// Handle loading stories
                     var source: APIResponseLoadSource = .network
                     stories.forEach { if $0.source == .cache { source = .cache } }
                     
-                    self.completeLoad(with: stories.map { $0.response }, source: source)
+                    /// Complete load
+                    self.completeLoad(with: stories.map { $0.response }, scoreMap: scoreMapResult.response, source: source)
                     promise(.success(APIResponse(response: stories.map { $0.response },
                                                  source: source)))
                 }
@@ -321,7 +304,8 @@ final class StoriesListInteractor: Interactor {
         return idsPage
     }
     
-    private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
+    private func completeLoad(with stories: [Story], scoreMap: [String: HTMLAPIVote], source: APIResponseLoadSource) {
+        /// Handle stories
         let viewModels = stories.map { StoryRowViewModel(story: $0) }
         self.stories.append(contentsOf: viewModels)
         
@@ -332,6 +316,16 @@ final class StoriesListInteractor: Interactor {
             }
         }
         
+        /// Handle scoremap (if exists)
+        self.availableVotes = scoreMap
+        
+        for story in self.stories {
+            if let vote = scoreMap[String(story.id)] {
+                story.vote = vote
+            }
+        }
+        
+        /// Housekeeping after update
         self.loadingState = .loaded(source)
         self.currentPage += 1
         

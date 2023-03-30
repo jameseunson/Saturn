@@ -13,7 +13,7 @@ struct StoriesListView: View {
     
     @State var isSettingsVisible: Bool = false
     @State var isSearchVisible: Bool = false
-    @State var selectedShareItem: URL?
+    @State var selectedShareItem: StoryDetailShareItem?
     @State var selectedUser: String?
     @State var displayingSafariURL: URL?
     @State var displayingConfirmSheetForStory: StoryRowViewModel?
@@ -40,17 +40,20 @@ struct StoriesListView: View {
                 ZStack(alignment: .top) {
                     contentScrollView()
                     
-                    if interactor.loadingState == .refreshing {
+                    if case .refreshing(let source) = interactor.loadingState,
+                       source == .autoRefresh {
                         StoriesListRefreshView()
                     }
                 }
                 .navigationDestination(for: StoryRowViewModel.self) { viewModel in
-                    let interactor = StoryDetailInteractor(story: viewModel.story)
+                    let interactor = StoryDetailInteractor(story: viewModel)
                     StoryDetailView(interactor: interactor)
                         .navigationTitle(viewModel.title)
                 }
                 .refreshable {
-                    await interactor.refreshStories()
+                    Task {
+                        await interactor.refreshStories(source: .pullToRefresh)
+                    }
                 }
                 
                 if isSearchVisible {
@@ -105,35 +108,14 @@ struct StoriesListView: View {
                     .ignoresSafeArea()
             }
         }
-        .confirmationDialog("Story", isPresented: createBoolBinding(from: $displayingConfirmSheetForStory), actions: {
+        .modifier(StoryContextSheetModifier(displayingConfirmSheetForStory: $displayingConfirmSheetForStory,
+                                            selectedShareItem: $selectedShareItem,
+                                            selectedUser: $selectedUser,
+                                            onTapVote: { direction in
             if let story = displayingConfirmSheetForStory {
-                if SaturnKeychainWrapper.shared.isLoggedIn,
-                   let vote = story.vote {
-                    if vote.directions.contains(.upvote) {
-                        Button(action: {
-                            interactor.didTapVote(story: story, direction: .upvote)
-                        }, label: {
-                            Label("Upvote", systemImage: "arrow.up")
-                        })
-                    }
-                    if vote.directions.contains(.downvote) {
-                        Button(action: {
-                            interactor.didTapVote(story: story, direction: .downvote)
-                        }, label: {
-                            Label("Downvote", systemImage: "arrow.down")
-                        })
-                    }
-                }
-                Button(action: { selectedShareItem = story.url }, label:
-                {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                })
-                Button(action: { selectedUser = story.author }, label:
-                {
-                    Label(story.author, systemImage: "person.circle")
-                })
+                self.interactor.didTapVote(item: story, direction: direction)
             }
-        })
+        }))
         .onAppear {
             interactor.activate()
             if case .loaded = interactor.loadingState {
@@ -165,7 +147,7 @@ struct StoriesListView: View {
                         StoryRowView(story: story,
                                      onTapArticleLink: { url in self.displayingSafariURL = url },
                                      onTapUser: { user in self.selectedUser = user },
-                                     onTapVote: { direction in self.interactor.didTapVote(story: story, direction: direction) },
+                                     onTapVote: { direction in self.interactor.didTapVote(item: story, direction: direction) },
                                      onTapSheet: { story in self.displayingConfirmSheetForStory = story },
                                      context: .storiesList)
                         .onAppear {
@@ -184,20 +166,20 @@ struct StoriesListView: View {
                                let vote = story.vote {
                                 if vote.directions.contains(.upvote) {
                                     Button(action: {
-                                        interactor.didTapVote(story: story, direction: .upvote)
+                                        interactor.didTapVote(item: story, direction: .upvote)
                                     }, label: {
                                         Label("Upvote", systemImage: "arrow.up")
                                     })
                                 }
                                 if vote.directions.contains(.downvote) {
                                     Button(action: {
-                                        interactor.didTapVote(story: story, direction: .downvote)
+                                        interactor.didTapVote(item: story, direction: .downvote)
                                     }, label: {
                                         Label("Downvote", systemImage: "arrow.down")
                                     })
                                 }
                             }
-                            Button(action: { selectedShareItem = story.url }, label:
+                            Button(action: { selectedShareItem = .story(story) }, label:
                             {
                                 Label("Share", systemImage: "square.and.arrow.up")
                             })

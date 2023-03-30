@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-final class StoryRowViewModel: Codable, Identifiable, Hashable {
+final class StoryRowViewModel: Codable, Identifiable, Hashable, Votable {
     let id: Int
     let story: Story
     let title: String
@@ -64,6 +64,14 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable {
         hasher.combine(timeAgo)
         hasher.combine(score)
         hasher.combine(comments)
+    }
+    
+    func hasComments() -> Bool {
+        story.hasComments()
+    }
+    
+    var descendants: Int? {
+        story.descendants
     }
     
     enum CodingKeys: CodingKey {

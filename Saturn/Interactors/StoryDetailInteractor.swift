@@ -20,15 +20,17 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     // MARK: - Public
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var commentsRemainingToLoad: Bool = true
-    @Published private(set) var story: Story?
+    @Published private(set) var story: StoryRowViewModel?
     @Published private(set) var availableVotes: [String: HTMLAPIVote] = [:]
+    
+    @Published private(set) var focusedCommentViewModel: CommentViewModel?
+    @Published private(set) var hasPendingExpandedUpdate: Bool = false /// Bypass debounce for comment expand/collapse
     
     var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
     
     var commentsExpanded = CurrentValueSubject<Dictionary<CommentViewModel, CommentExpandedState>, Never>([:])
     var commentsExpandedDebounced: AnyPublisher<Dictionary<CommentViewModel, CommentExpandedState>, Never> = Empty().eraseToAnyPublisher()
-    @Published private(set) var hasPendingExpandedUpdate: Bool = false /// Bypass debounce for comment expand/collapse
     
     // MARK: - Private
     private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
@@ -37,20 +39,20 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private var itemId: Int?
     private let apiManager = APIManager()
     private let htmlApiManager = HTMLAPIManager()
+    private let voteManager = VoteManager()
     
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
     
     // MARK: - Comment Focused View
     private var commentChain = [Comment]()
-    @Published private(set) var focusedCommentViewModel: CommentViewModel?
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
     #endif
     
     /// Entry from StoriesView, we already have a `Story` object
-    init(story: Story, comments: [CommentViewModel] = []) {
+    init(story: StoryRowViewModel, comments: [CommentViewModel] = []) {
         self.itemId = story.id
         self.story = story
         
@@ -121,7 +123,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 } receiveValue: { item in
                     switch item {
                     case let .story(story):
-                        self.story = story
+                        self.story = StoryRowViewModel(story: story)
                         self.loadComments()
                         
                     case let .comment(comment):
@@ -162,7 +164,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func loadComments() {
-        guard let kids = story?.kids,
+        guard let kids = story?.story.kids,
               let firstKid = kids.first else {
             return
         }
@@ -177,7 +179,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     func loadMoreItems() {
         guard commentsRemainingToLoad,
-              let kids = story?.kids else { return }
+              let kids = story?.story.kids else { return }
         
         var nextKidToLoad: Int?
         for kid in kids {
@@ -209,7 +211,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             topLevelComments.removeAll()
             loadedTopLevelComments.removeAll()
             
-            self.story = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore).response
+            let storyModel = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore).response
+            self.story = StoryRowViewModel(story: storyModel)
             loadComments()
         }
     }
@@ -255,21 +258,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .forEach { $0.isAnimating = .none }
     }
     
-    func didTapVote(comment: CommentViewModel, direction: HTMLAPIVoteDirection) {
-        guard let info = comment.vote else {
-            // TODO: Error
-            return
-        }
-        Task { @MainActor in
-            do {
-                try await self.htmlApiManager.vote(direction: direction, info: info)
-                
-                comment.vote?.state = direction
-                self.objectWillChange.send()
-                
-            } catch {
-                // TODO: Error
-            }
+    func didTapVote(item: Votable, direction: HTMLAPIVoteDirection) {
+        voteManager.vote(item: item, direction: direction) { [weak self] in
+            self?.objectWillChange.send()
         }
     }
     
@@ -384,7 +375,7 @@ extension StoryDetailInteractor {
                     self.traverse(comment)
                     
                 case let .story(story):
-                    self.story = story
+                    self.story = StoryRowViewModel(story: story)
                     
                     self.processComments()
                 }

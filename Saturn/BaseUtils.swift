@@ -18,7 +18,7 @@ enum LoadableResource<T: Codable> {
 enum LoadingState: Equatable {
     case initialLoad
     case loadingMore
-    case refreshing
+    case refreshing(APIRefreshingSource)
     case loaded(APIResponseLoadSource)
     case failed
 }
@@ -37,4 +37,9 @@ open class Interactor: ObservableObject {
         }
     }
     func didBecomeActive() {}
+}
+
+enum APIRefreshingSource {
+    case autoRefresh
+    case pullToRefresh
 }

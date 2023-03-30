@@ -19,6 +19,7 @@ struct StoryDetailView: View {
     @State var displayingInternalStoryId: Int?
     @State var selectedComment: CommentViewModel?
     @State var displayingSafariURL: URL?
+    @State var displayingConfirmSheetForStory: StoryRowViewModel?
     
     /// Infinite scroll
     @State private var readyToLoadMore = false
@@ -43,7 +44,6 @@ struct StoryDetailView: View {
         }
         .onAppear {
             interactor.activate()
-            UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(named: "AccentColor")
         }
         .onReceive(interactor.$readyToLoadMore, perform: { output in
             readyToLoadMore = output
@@ -83,7 +83,16 @@ struct StoryDetailView: View {
         .modifier(CommentNavigationModifier(selectedShareItem: $selectedShareItem,
                                             selectedUser: $selectedUser,
                                             displayingInternalStoryId: $displayingInternalStoryId,
-                                            selectedComment: $selectedComment))
+                                            selectedComment: $selectedComment)
+        )
+        .modifier(StoryContextSheetModifier(displayingConfirmSheetForStory: $displayingConfirmSheetForStory,
+                                            selectedShareItem: $selectedShareItem,
+                                            selectedUser: $selectedUser,
+                                            onTapVote: { direction in
+            if let story = displayingConfirmSheetForStory {
+                self.interactor.didTapVote(item: story, direction: direction)
+            }
+        }))
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
@@ -119,16 +128,18 @@ struct StoryDetailView: View {
         }
     }
     
-    func contentView(for story: Story) -> some View {
+    func contentView(for story: StoryRowViewModel) -> some View {
         return ScrollViewReader { reader in
             InfiniteScrollView(loader: interactor,
                                readyToLoadMore: $readyToLoadMore,
                                itemsRemainingToLoad: $commentsRemainingToLoad,
                                requiresLazy: (story.descendants ?? 0) > 100) { /// More than 100 comments requires a LazyVStack to remain performant
                 
-                StoryRowView(story: StoryRowViewModel(story: story),
+                StoryRowView(story: story,
                              onTapArticleLink: { url in self.displayingSafariURL = url },
                              onTapUser: { user in self.selectedUser = user },
+                             onTapVote: { direction in self.interactor.didTapVote(item: story, direction: direction) },
+                             onTapSheet: { story in self.displayingConfirmSheetForStory = story },
                              context: .storyDetail)
                     .padding(.top)
                     .if(!SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
@@ -187,7 +198,7 @@ struct StoryDetailView: View {
                                     displayingSafariURL = url
                                     
                                 } onTapVote: { direction in
-                                    self.interactor.didTapVote(comment: comment, direction: direction)
+                                    self.interactor.didTapVote(item: comment, direction: direction)
                                 }
                                 .id(comment.id)
                                 .onAppear {
@@ -252,7 +263,7 @@ struct StoryDetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
             if let story = Story.fakeStoryWithNoComments() {
-                StoryDetailView(interactor: StoryDetailInteractor(story: story, comments: [])) // CommentViewModel.fakeComment()
+                StoryDetailView(interactor: StoryDetailInteractor(story: StoryRowViewModel(story: story), comments: [])) // CommentViewModel.fakeComment()
                     .navigationTitle("Story")
                     .navigationBarTitleDisplayMode(.inline)
             } else {

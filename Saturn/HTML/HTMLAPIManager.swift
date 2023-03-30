@@ -113,7 +113,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
             throw HTMLAPIManagerError.cannotVote
         }
         components.queryItems = [URLQueryItem(name: "id", value: String(info.id)),
-                                 URLQueryItem(name: "how", value: direction == .upvote ? "up" : "down"),
+                                 URLQueryItem(name: "how", value: direction.rawValue),
                                  URLQueryItem(name: "auth", value: info.auth),
                                  URLQueryItem(name: "goto", value: "item%3Fid%3D\(info.storyId)#\(info.id)")]
         guard let url = components.url else {
@@ -137,6 +137,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
         var mutableRequest = URLRequest(url: url)
         mutableRequest.addDefaultHeaders()
         mutableRequest.addValue(cookie, forHTTPHeaderField: "Cookie")
+        print("loadHTML: \(url)")
         
         let (data, _) = try await URLSession.shared.data(for: mutableRequest)
         guard let htmlString = String(data: data, encoding: .utf8) else {

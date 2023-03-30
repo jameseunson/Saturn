@@ -47,6 +47,19 @@ final class VoteHTMLParser {
         var id: String?
         var state: HTMLAPIVoteDirection?
         
+        /// HTML structure is slightly difference for comments and stories
+        /// For stories, the vote state is stored in the next sibling <tr> element
+        /// while for comments, everything is contained within the same <tr>
+        if mode == .storyList,
+            let sibling = try element.nextElementSibling() {
+//            let title = try element.select("span[class=titleline] > a").text()
+//            print(title)
+            state = try extractExistingVoteState(element: sibling)
+            
+        } else {
+            state = try extractExistingVoteState(element: element)
+        }
+        
         /// Determine whether the user has recently voted, if so,  what direction?
         if let unvote = try element.select("span[id^=unv_] > a").first {
             let unvoteText = try unvote.text()
@@ -141,9 +154,25 @@ final class VoteHTMLParser {
         }
         return (id, auth)
     }
+    
+    /// Determine whether the user has recently voted, if so,  what direction?
+    private func extractExistingVoteState(element: Element) throws -> HTMLAPIVoteDirection? {
+        var state: HTMLAPIVoteDirection?
+        if let unvote = try element.select("span[id^=unv_] > a").first {
+            let unvoteText = try unvote.text()
+            if unvoteText == "unvote" {
+                state = .upvote
+                
+            } else if unvoteText == "undown" {
+                state = .downvote
+            }
+        }
+        
+        return state
+    }
 }
 
-enum VoteHTMLParserMode {
+enum VoteHTMLParserMode: Equatable {
     case comments(Int)
     case storyList
 }
