@@ -200,6 +200,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
+    /// Pull-to-refresh action
     func refreshStory() async {
         Task { @MainActor in
             guard let story else { return }
@@ -347,6 +348,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         return flat
     }
     
+    /// Calculate the total number of child comments from the current tree node
+    /// Called recursively until the whole tree is coveredd
     private func incrementTotalChildCount(_ root: CommentViewModel) {
         root.totalChildCount += 1
         if let parent = root.parent {

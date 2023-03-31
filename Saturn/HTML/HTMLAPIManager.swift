@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftSoup
 
+/// @mockable
 protocol HTMLAPIManaging: AnyObject {
     func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [String: Int]
     func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[String: Int], Error>
@@ -18,6 +19,7 @@ protocol HTMLAPIManaging: AnyObject {
     func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<[String: HTMLAPIVote]>, Error>
     func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws
     func unvote(info: HTMLAPIVote) async throws
+    func flag(info: HTMLAPIVote) async throws
 }
 
 /// The HN API is read-only and does not support authenticated accounts, so when we want to login as a specific user
@@ -109,23 +111,31 @@ final class HTMLAPIManager: HTMLAPIManaging {
     /// Perform the actual vote
     /// Example URL: https://news.ycombinator.com/vote?id=34864921&how=up&auth=3bbde44e83c06ae4cae14b4f7b980cacc915ebd4&goto=item%3Fid%3D34858691#34864921
     func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws {
-        guard var components = URLComponents(string: "https://news.ycombinator.com/vote") else {
-            throw HTMLAPIManagerError.cannotVote
-        }
-        components.queryItems = [URLQueryItem(name: "id", value: String(info.id)),
-                                 URLQueryItem(name: "how", value: direction.rawValue),
-                                 URLQueryItem(name: "auth", value: info.auth),
-                                 URLQueryItem(name: "goto", value: "item%3Fid%3D\(info.storyId)#\(info.id)")]
-        guard let url = components.url else {
+        guard var components = URLComponents(string: "https://news.ycombinator.com/vote"),
+              let url = components.applyQueryParameters(for: info, direction: direction).url else {
             throw HTMLAPIManagerError.cannotVote
         }
         
         let htmlString = try await loadHTML(for: url)
         print(htmlString)
+        
+        // TODO: Error handling
     }
     
     func unvote(info: HTMLAPIVote) async throws {
         try await vote(direction: .unvote, info: info)
+    }
+    
+    func flag(info: HTMLAPIVote) async throws {
+        guard var components = URLComponents(string: "https://news.ycombinator.com/flag"),
+              let url = components.applyQueryParameters(for: info).url else {
+            throw HTMLAPIManagerError.cannotFlag
+        }
+        
+        let htmlString = try await loadHTML(for: url)
+        print(htmlString)
+        
+        // TODO: Error handling
     }
     
     // MARK: -
@@ -167,4 +177,17 @@ enum HTMLAPIManagerError: Error {
     case invalidScore
     case cannotFindElements
     case cannotVote
+    case cannotFlag
+}
+
+extension URLComponents {
+    mutating func applyQueryParameters(for info: HTMLAPIVote, direction: HTMLAPIVoteDirection? = nil) -> URLComponents {
+        self.queryItems = [URLQueryItem(name: "id", value: String(info.id)),
+                           URLQueryItem(name: "auth", value: info.auth),
+                           URLQueryItem(name: "goto", value: "item%3Fid%3D\(info.storyId)#\(info.id)")]
+        if let direction {
+            self.queryItems?.append(URLQueryItem(name: "how", value: direction.rawValue))
+        }
+        return self
+    }
 }
