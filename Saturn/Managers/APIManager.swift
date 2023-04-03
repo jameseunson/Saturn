@@ -440,3 +440,31 @@ extension DatabaseReference: DatabaseReferencing {
         getData(completion: block)
     }
 }
+
+/// Add `cacheBehavior` defaults to `APIManaging` protocol
+extension APIManaging {
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
+        loadStories(ids: ids, cacheBehavior: cacheBehavior)
+    }
+    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<[Story]> {
+        try await loadStories(ids: ids, cacheBehavior: cacheBehavior)
+    }
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
+        loadStoryIds(type: type, cacheBehavior: cacheBehavior)
+    }
+    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Array<Int>> {
+        try await loadStoryIds(type: type, cacheBehavior: cacheBehavior)
+    }
+    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Story>, Error> {
+        loadStory(id: id, cacheBehavior: cacheBehavior)
+    }
+    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Story> {
+        try await loadStory(id: id, cacheBehavior: cacheBehavior)
+    }
+    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Saturn.Comment>, Error> {
+        loadComment(id: id, cacheBehavior: cacheBehavior)
+    }
+    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Saturn.Comment> {
+        try await loadComment(id: id, cacheBehavior: cacheBehavior)
+    }
+}

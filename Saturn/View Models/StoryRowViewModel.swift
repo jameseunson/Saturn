@@ -42,10 +42,13 @@ final class StoryRowViewModel: Codable, Identifiable, Hashable, Votable {
         } else {
             self.comments = String(kids)
         }
+        
         self.url = story.url
         self.imageURL = story.urlForFavicon()
+        
         self.image = image
         self.story = story
+        self.vote = vote
     }
     
     static func == (lhs: StoryRowViewModel, rhs: StoryRowViewModel) -> Bool {

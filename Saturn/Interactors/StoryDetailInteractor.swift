@@ -9,14 +9,16 @@ import Combine
 import Foundation
 import SwiftUI
 import UIKit
-
-enum CommentExpandedState: Equatable {
-    case expanded
-    case collapsed
-    case hidden
-}
+import Factory
 
 final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
+    // MARK: - Deps
+    @Injected(\.apiManager) private var apiManager
+    @Injected(\.htmlApiManager) private var htmlApiManager
+    @Injected(\.voteManager) private var voteManager
+    @Injected(\.commentAvailableVoteLoader) private var commentAvailableVoteLoader
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     // MARK: - Public
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var commentsRemainingToLoad: Bool = true
@@ -26,21 +28,16 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Published private(set) var focusedCommentViewModel: CommentViewModel?
     @Published private(set) var hasPendingExpandedUpdate: Bool = false /// Bypass debounce for comment expand/collapse
     
-    var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
-    
     var commentsExpanded = CurrentValueSubject<Dictionary<CommentViewModel, CommentExpandedState>, Never>([:])
     var commentsExpandedDebounced: AnyPublisher<Dictionary<CommentViewModel, CommentExpandedState>, Never> = Empty().eraseToAnyPublisher()
     
     // MARK: - Private
+    private var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
     private var currentlyLoadingComment = CurrentValueSubject<CommentViewModel?, Never>(nil)
     
     private var itemId: Int?
-    private let apiManager = APIManager()
-    private let htmlApiManager = HTMLAPIManager()
-    private let voteManager = VoteManager()
-    
     private var topLevelComments = [CommentViewModel]()
     private var loadedTopLevelComments = [Int]()
     
@@ -123,7 +120,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 } receiveValue: { item in
                     switch item {
                     case let .story(story):
-                        self.story = StoryRowViewModel(story: story)
+                        let storyModel = StoryRowViewModel(story: story, vote: self.story?.vote)
+                        self.story = storyModel
                         self.loadComments()
                         
                     case let .comment(comment):
@@ -139,25 +137,29 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         
         /// Load voting information about each comment, if the user is logged in (as the user can only vote
         /// if they are logged in)
-        if SaturnKeychainWrapper.shared.isLoggedIn {
-            $story.compactMap { $0 }
-                .flatMap { story in
-                    return self.htmlApiManager.loadAvailableVotesForComments(storyId: story.id)
-                }
+        if keychainWrapper.isLoggedIn {
+            commentAvailableVoteLoader.availableVotes
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         print(error)
                     }
-                } receiveValue: { result in
-                    self.availableVotes = result
-                    
+                } receiveValue: { scoreMap in
+                    self.availableVotes = scoreMap
+
                     for comment in self.comments.value {
-                        if let vote = result[String(comment.id)] {
+                        if let vote = scoreMap[String(comment.id)] {
                             comment.vote = vote
                         }
                     }
-                    self.comments.send(self.comments.value)
+                    self.objectWillChange.send()
+                }
+                .store(in: &disposeBag)
+            
+            Publishers.CombineLatest($story.compactMap { $0 },
+                                     commentsDebounced.filter { !$0.isEmpty }.prefix(1)) /// Ensure only loads once comments are at least partially loaded, avoiding redundant requests
+                .sink { story, _ in
+                    self.commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(for: story)
                 }
                 .store(in: &disposeBag)
         }
@@ -177,9 +179,11 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
+    /// Load next top-level comment and the associated tree of replies (if exists), triggered by scrolling
     func loadMoreItems() {
         guard commentsRemainingToLoad,
-              let kids = story?.story.kids else { return }
+              let story,
+              let kids = story.story.kids else { return }
         
         var nextKidToLoad: Int?
         for kid in kids {
@@ -194,7 +198,11 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         if let nextKidToLoad {
             traverse(nextKidToLoad)
             loadedTopLevelComments.append(nextKidToLoad)
+
+            let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
+            commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
         }
+        
         if loadedTopLevelComments.count == kids.count {
             commentsRemainingToLoad = false
         }
@@ -218,6 +226,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
+    /// When a comment is expanded or contracted, propagate the updated state iteratively to all children
+    /// `hasPendingExpandedUpdate` is used to batch animate all updates, which significantly improves performance
     func updateExpanded(_ expanded: Dictionary<CommentViewModel, CommentExpandedState>, for comment: CommentViewModel, _ set: CommentExpandedState) {
         var mutableExpanded = expanded
         
@@ -286,7 +296,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                                              indendation: indentation,
                                              parent: parent)
             
-            if SaturnKeychainWrapper.shared.isLoggedIn,
+            if self.keychainWrapper.isLoggedIn,
                let vote = self.availableVotes[String(viewModel.id)] {
                 viewModel.vote = vote
             }
@@ -359,7 +369,10 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
 }
 
 // MARK: - Comment Focused View
+/// These functions are used when `StoryDetailInteractor` is initialized with an `itemId` that points to a `Comment`
+/// signifying that we are comment-focused mode. This mode is triggered by tapping a comment on the `UserView` page.
 extension StoryDetailInteractor {
+    /// Recursively load all parent comments until we hit the root node - the `Story` object
     func traverse(_ comment: Comment) {
         DispatchQueue.main.async { [weak self] in
             self?.commentsRemainingToLoad = false
@@ -386,6 +399,7 @@ extension StoryDetailInteractor {
             .store(in: &disposeBag)
     }
     
+    /// Flattens parent comments into an array and prepares them for presentation
     func processComments() {
         var parent: CommentViewModel?
         var mutableComments = self.comments.value

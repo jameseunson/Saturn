@@ -147,16 +147,16 @@ final class StoriesListInteractor: Interactor {
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
-            let scoreMap: APIResponse<[String: HTMLAPIVote]>
+            let scoreMap: APIResponse<VoteHTMLParserResponse>
             
             if SaturnKeychainWrapper.shared.isLoggedIn {
                 scoreMap = try await htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: .ignore)
             } else {
-                scoreMap = APIResponse(response: [String: HTMLAPIVote](), source: .network)
+                scoreMap = APIResponse(response: VoteHTMLParserResponse(scoreMap: [String: HTMLAPIVote](), hasNextPage: false), source: .network)
             }
             
             self.completeLoad(with: stories.response,
-                              scoreMap: scoreMap.response,
+                              scoreMap: scoreMap.response.scoreMap,
                               source: .network)
             
         } catch {
@@ -214,7 +214,7 @@ final class StoriesListInteractor: Interactor {
                 .flatMap { ids -> AnyPublisher<[APIResponse<Story>], Error> in
                     return self.apiManager.loadStories(ids: self.idsForPage(.current, with: ids), cacheBehavior: cacheBehavior)
                 }
-                .flatMap { stories -> AnyPublisher<(APIResponse<[String: HTMLAPIVote]>, [APIResponse<Story>]), Error> in
+                .flatMap { stories -> AnyPublisher<(APIResponse<VoteHTMLParserResponse>, [APIResponse<Story>]), Error> in
                     if SaturnKeychainWrapper.shared.isLoggedIn {
                         /// Load votes for the current page
                         /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
@@ -225,7 +225,7 @@ final class StoriesListInteractor: Interactor {
                             .eraseToAnyPublisher()
                     } else {
                         /// If not logged in, return an empty dictionary
-                        return Just(APIResponse(response: [String: HTMLAPIVote](), source: .network))
+                        return Just(APIResponse(response: VoteHTMLParserResponse(scoreMap: [String: HTMLAPIVote](), hasNextPage: false), source: .network))
                             .map { ($0, stories) }
                             .setFailureType(to: Error.self)
                             .eraseToAnyPublisher()
@@ -247,7 +247,7 @@ final class StoriesListInteractor: Interactor {
                     stories.forEach { if $0.source == .cache { source = .cache } }
                     
                     /// Complete load
-                    self.completeLoad(with: stories.map { $0.response }, scoreMap: scoreMapResult.response, source: source)
+                    self.completeLoad(with: stories.map { $0.response }, scoreMap: scoreMapResult.response.scoreMap, source: source)
                     promise(.success(APIResponse(response: stories.map { $0.response },
                                                  source: source)))
                 }

@@ -13,10 +13,10 @@ import SwiftSoup
 protocol HTMLAPIManaging: AnyObject {
     func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [String: Int]
     func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[String: Int], Error>
-    func loadAvailableVotesForComments(storyId: Int) async throws -> [String: HTMLAPIVote]
-    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[String: HTMLAPIVote], Error>
-    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<[String: HTMLAPIVote]>
-    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<[String: HTMLAPIVote]>, Error>
+    func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> VoteHTMLParserResponse
+    func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error>
+    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
+    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws
     func unvote(info: HTMLAPIVote) async throws
     func flag(info: HTMLAPIVote) async throws
@@ -59,21 +59,30 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
     
     /// Loads whether we can upvote or downvote certain comments in a story thread
-    func loadAvailableVotesForComments(storyId: Int) async throws -> [String: HTMLAPIVote] {
-        guard let url = URL(string: "https://news.ycombinator.com/item?id=\(storyId)") else {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> VoteHTMLParserResponse {
+        guard var urlComponents = URLComponents(string: "https://news.ycombinator.com/item") else {
             throw HTMLAPIManagerError.cannotLoad
         }
+        if page > 1 {
+            urlComponents.queryItems = [URLQueryItem(name: "p", value: String(page)), URLQueryItem(name: "id", value: String(storyId))]
+        } else {
+            urlComponents.queryItems = [URLQueryItem(name: "id", value: String(storyId))]
+        }
+        guard let url = urlComponents.url else {
+            throw HTMLAPIManagerError.cannotLoad
+        }
+        
         let htmlString = try await loadHTML(for: url)
         return try VoteHTMLParser().parseCommentHTML(htmlString, storyId: storyId)
     }
     
-    func loadAvailableVotesForComments(storyId: Int) -> AnyPublisher<[String: HTMLAPIVote], Error> {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
         return publisherForAsync {
-            try await self.loadAvailableVotesForComments(storyId: storyId)
+            try await self.loadAvailableVotesForComments(page: page, storyId: storyId)
         }
     }
     
-    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<[String: HTMLAPIVote]> {
+    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
         guard var urlComponents = URLComponents(string: "https://news.ycombinator.com") else {
             throw HTMLAPIManagerError.cannotLoad
         }
@@ -85,7 +94,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         let cacheKey = url.cacheKey
         
-        let voteMap: [String: HTMLAPIVote]
+        let voteResponse: VoteHTMLParserResponse
         if let response = cache.get(for: cacheKey),
            response.isValid(cacheBehavior: cacheBehavior),
            case let .json(data) = response.value {
@@ -93,16 +102,16 @@ final class HTMLAPIManager: HTMLAPIManaging {
             
         } else {
             let htmlString = try await loadHTML(for: url)
-            voteMap = try VoteHTMLParser().parseStoryListHTML(htmlString)
+            voteResponse = try VoteHTMLParser().parseStoryListHTML(htmlString)
             
-            APIMemoryResponseCache.default.set(value: .json(voteMap.mapValues { $0.dict }),
+            APIMemoryResponseCache.default.set(value: .json(voteResponse.dict),
                                                for: cacheKey)
         }
         
-        return APIResponse(response: voteMap, source: .network)
+        return APIResponse(response: voteResponse, source: .network)
     }
     
-    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<[String: HTMLAPIVote]>, Error> {
+    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         return publisherForAsync {
             try await self.loadAvailableVotesForStoriesList(page: page)
         }
@@ -189,5 +198,15 @@ extension URLComponents {
             self.queryItems?.append(URLQueryItem(name: "how", value: direction.rawValue))
         }
         return self
+    }
+}
+
+/// Add `page` defaults to `HTMLAPIManaging` protocol
+extension HTMLAPIManaging {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> VoteHTMLParserResponse {
+        try await loadAvailableVotesForComments(page: page, storyId: storyId)
+    }
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
+        loadAvailableVotesForComments(page: page, storyId: storyId)
     }
 }

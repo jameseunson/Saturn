@@ -7,7 +7,11 @@
 
 import Foundation
 
-final class VoteManager {
+protocol VoteManaging: AnyObject {
+    func vote(item: Votable, direction: HTMLAPIVoteDirection, shouldUpdate: @escaping (() -> ()))
+}
+
+final class VoteManager: VoteManaging {
     private let htmlApiManager = HTMLAPIManager()
     
     func vote(item: Votable, direction: HTMLAPIVoteDirection, shouldUpdate: @escaping (() -> ())) {

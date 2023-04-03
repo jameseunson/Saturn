@@ -105,3 +105,9 @@ extension Comment {
         return Comment(id: 1234, by: "person", kids: nil, parent: 1234, text: "asdf", time: Date(), score: 10)
     }
 }
+
+enum CommentExpandedState: Equatable {
+    case expanded
+    case collapsed
+    case hidden
+}

@@ -17,4 +17,16 @@ extension Container {
         self { SaturnKeychainWrapper() }
             .singleton
     }
+    var apiManager: Factory<APIManaging> {
+        self { APIManager() }
+    }
+    var htmlApiManager: Factory<HTMLAPIManaging> {
+        self { HTMLAPIManager() }
+    }
+    var voteManager: Factory<VoteManaging> {
+        self { VoteManager() }
+    }
+    var commentAvailableVoteLoader: Factory<CommentAvailableVoteLoading> {
+        self { CommentAvailableVoteLoader() }
+    }
 }

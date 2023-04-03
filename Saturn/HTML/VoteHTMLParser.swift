@@ -11,15 +11,15 @@ import SwiftSoup
 /// Extracts which directions each can be voted on (up and/or down),
 /// the auth key required to vote on each comment and the id of each comment
 final class VoteHTMLParser {
-    func parseCommentHTML(_ htmlString: String, storyId: Int) throws -> [String: HTMLAPIVote]  {
+    func parseCommentHTML(_ htmlString: String, storyId: Int) throws -> VoteHTMLParserResponse  {
         return try parse(htmlString, mode: .comments(storyId))
     }
     
-    func parseStoryListHTML(_ htmlString: String) throws -> [String: HTMLAPIVote] {
+    func parseStoryListHTML(_ htmlString: String) throws -> VoteHTMLParserResponse {
         return try parse(htmlString, mode: .storyList)
     }
     
-    private func parse(_ htmlString: String, mode: VoteHTMLParserMode) throws -> [String: HTMLAPIVote] {
+    private func parse(_ htmlString: String, mode: VoteHTMLParserMode) throws -> VoteHTMLParserResponse {
         let doc: Document = try SwiftSoup.parse(htmlString)
         var map = [String: HTMLAPIVote]()
 
@@ -37,8 +37,14 @@ final class VoteHTMLParser {
                 map[String(vote.id)] = vote
             }
         }
+        
+        /// Find whether there's additional pages available for the full comment set
+        var hasNextPage = false
+        if let _ = try? doc.select("a.morelink").first() {
+            hasNextPage = true
+        }
 
-        return map
+        return VoteHTMLParserResponse(scoreMap: map, hasNextPage: hasNextPage)
     }
     
     private func extractVote(from element: Element, mode: VoteHTMLParserMode) throws -> HTMLAPIVote? {
@@ -175,4 +181,14 @@ final class VoteHTMLParser {
 enum VoteHTMLParserMode: Equatable {
     case comments(Int)
     case storyList
+}
+
+struct VoteHTMLParserResponse: Codable {
+    let scoreMap: [String: HTMLAPIVote]
+    let hasNextPage: Bool
+    
+    var dict: [String: Any] {
+        ["scoreMap": scoreMap.mapValues { $0.dict },
+        "hasNextPage": hasNextPage]
+    }
 }
