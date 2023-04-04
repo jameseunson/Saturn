@@ -3,5 +3,5 @@
 
 A Hacker News client for iOS using the Swift 5.7, Combine, async/await and SwiftUI. Download here https://apps.apple.com/us/app/saturn-hn-reader/id1671969287. More info https://saturn.hn
 
-![Simulator Screen Shot - iPhone 14 Pro Max - 2023-02-13 at 22 44 22](https://user-images.githubusercontent.com/51029/218449542-75e02c82-4049-4027-9280-293e411c9529.png)
-![Simulator Screen Shot - iPhone 14 Pro Max - 2023-02-13 at 22 44 06](https://user-images.githubusercontent.com/51029/218449550-abe06b73-0a9c-4d8e-a33b-c8fce6643636.png)
+![ss1](https://user-images.githubusercontent.com/51029/229675065-dd2c3eb8-e200-4714-88de-60a58353da40.png)
+![ss2](https://user-images.githubusercontent.com/51029/229675080-6701470a-f299-4a7f-99dc-31443274db42.png)
