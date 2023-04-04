@@ -6,16 +6,18 @@
 //
 
 import Combine
+import Factory
 import Foundation
 import SwiftUI
 
 final class StoriesListInteractor: Interactor {
-    private let apiManager: APIManaging
+    @Injected(\.apiManager) private var apiManager
+    @Injected(\.htmlApiManager) private var htmlApiManager
+    @Injected(\.voteManager) private var voteManager
+    @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    
     private let pageLength = 10
     private let type: StoryListType
-    private let networkConnectivityManager: NetworkConnectivityManaging
-    private let htmlApiManager = HTMLAPIManager()
-    private let voteManager = VoteManager()
     
     @Published private var currentPage: Int = 0
     @Published private var storyIds = [Int]()
@@ -33,15 +35,11 @@ final class StoriesListInteractor: Interactor {
     
     init(type: StoryListType,
          stories: [StoryRowViewModel] = [],
-         apiManager: APIManaging = APIManager(),
-         lastRefreshTimestamp: Date? = SettingsManager.default.date(for: .lastRefreshTimestamp),
-         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
+         lastRefreshTimestamp: Date? = SettingsManager.default.date(for: .lastRefreshTimestamp)) {
         
-        self.apiManager = apiManager
         self.type = type
         self.stories = stories
         self.lastRefreshTimestamp = lastRefreshTimestamp
-        self.networkConnectivityManager = networkConnectivityManager
         
 //        try? APIMemoryResponseCache.default.diskCache.clearCache()
         
