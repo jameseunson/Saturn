@@ -16,6 +16,8 @@ protocol CommentAvailableVoteLoading: AnyObject {
 
 final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
     @Injected(\.htmlApiManager) private var htmlApiManager
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     lazy var availableVotes: AnyPublisher<[String: HTMLAPIVote], Error> = availableVotesSubject.eraseToAnyPublisher()
     
     private var disposeBag = Set<AnyCancellable>()
@@ -24,7 +26,7 @@ final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
     }
     
     private var hasNextPageAvailableVotes = false
-    private var loadingNextPageAvailableVotes = false
+    private var isLoadingNextPageAvailableVotes = false
     private var currentVotePage = 1
     
     private var availableVotesSubject = CurrentValueSubject<[String: HTMLAPIVote], Error>([:])
@@ -37,7 +39,7 @@ final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
     
     /// Check if user has scrolled beyond current threshold of loaded votes from HTML API
     func evaluateShouldLoadNextPageAvailableVotes(numberOfCommentsLoaded: Int = 0, for story: StoryRowViewModel) {
-        guard SaturnKeychainWrapper.shared.isLoggedIn else { return }
+        guard keychainWrapper.isLoggedIn else { return }
         
         /// Vote loading is possible when we either have:
         /// - no votes or
@@ -49,8 +51,8 @@ final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
         
         if isDebugLoggingEnabled { print("CommentAvailableVoteLoader: \(numberOfCommentsLoaded) > \(self.availableVotesSubject.value.count)") }
         if numberOfCommentsLoaded >= self.availableVotesSubject.value.count,
-           !loadingNextPageAvailableVotes {
-            loadingNextPageAvailableVotes = true
+           !isLoadingNextPageAvailableVotes {
+            isLoadingNextPageAvailableVotes = true
             if isDebugLoggingEnabled {  print("CommentAvailableVoteLoader, exceeded loaded votes, page: \(currentVotePage)") }
             
             self.htmlApiManager.loadAvailableVotesForComments(page: currentVotePage, storyId: story.id)
@@ -58,6 +60,7 @@ final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
                     if case let .failure(error) = completion {
                         print(error)
                     }
+                    // TODO:
                 } receiveValue: { result in
                     var mutableVotes = self.availableVotesSubject.value
                     result.scoreMap.forEach { mutableVotes[$0] = $1 }
@@ -65,7 +68,7 @@ final class CommentAvailableVoteLoader: CommentAvailableVoteLoading {
                     
                     self.hasNextPageAvailableVotes = result.hasNextPage
                     self.currentVotePage += 1
-                    self.loadingNextPageAvailableVotes = false
+                    self.isLoadingNextPageAvailableVotes = false
                 }
                 .store(in: &disposeBag)
 

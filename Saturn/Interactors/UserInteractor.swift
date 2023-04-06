@@ -118,7 +118,12 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
                 let ids = self.idsForCurrentPage(with: ids)
                 return self.apiManager.loadUserItems(ids: ids)
-                    .map { ($0, ids) }
+                    .map { userItems in
+                        let sortedUserItems = userItems.sorted { lhs, rhs in
+                            return lhs.time > rhs.time
+                        }
+                        return (sortedUserItems, ids)
+                    }
                     .eraseToAnyPublisher()
             }
             .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [String: Int]), Error> in
