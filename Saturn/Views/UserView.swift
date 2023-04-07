@@ -145,8 +145,9 @@ struct UserView: View {
                 }
             }
             .navigationDestination(isPresented: createBoolBinding(from: $selectedCommentToView)) {
-                if let selectedCommentToView {
-                    StoryDetailView(interactor: StoryDetailInteractor(itemId: selectedCommentToView.id))
+                if let selectedCommentToView,
+                   let thread = contexts[selectedCommentToView.id] {
+                    StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
                 } else {
                     EmptyView()
                 }

@@ -176,7 +176,9 @@ struct StoryDetailView: View {
                     } else {
                         ForEach(comments, id: \.self) { comment in
                             if comment.isAnimating != .none || self.commentsExpanded[comment] != .hidden {
-                                CommentView(expanded: binding(for: comment), comment: comment) { comment in
+                                CommentView(expanded: binding(for: comment),
+                                            comment: comment,
+                                            isHighlighted: interactor.focusedCommentViewModel == comment) { comment in
                                     selectedComment = comment
                                     
                                 } onTapUser: { user in

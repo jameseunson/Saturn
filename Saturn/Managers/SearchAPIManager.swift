@@ -79,7 +79,7 @@ final class SearchAPIManager {
     
     private func publisherForUser(query: String) -> AnyPublisher<SearchResultItem, Error> {
         return apiManager.loadUser(id: query)
-            .map { SearchResultItem.user($0) }
+            .map { SearchResultItem.user($0.response) }
             .eraseToAnyPublisher()
     }
 }

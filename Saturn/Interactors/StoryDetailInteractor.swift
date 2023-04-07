@@ -18,6 +18,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.voteManager) private var voteManager
     @Injected(\.commentAvailableVoteLoader) private var commentAvailableVoteLoader
     @Injected(\.keychainWrapper) private var keychainWrapper
+    @Injected(\.commentLoader) private var commentLoader
     
     // MARK: - Public
     @Published private(set) var readyToLoadMore: Bool = false
@@ -68,6 +69,22 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     /// where we don't yet have a full `Story` or `Comment` object, and it must be loaded as part of the interactor startup
     init(itemId: Int) {
         self.itemId = itemId
+    }
+    
+    init(comment: CommentViewModel, thread: CommentLoaderContainer) {
+        if let story = thread.story {
+            self.story = StoryRowViewModel(story: story)
+            self.commentChain = [comment.comment]
+            self.commentChain.insert(contentsOf: thread.commentChain, at: 0)
+            
+            super.init()
+            
+            self.processComments()
+            
+        } else {
+            self.itemId = comment.id
+            super.init()
+        }
     }
     
     override func didBecomeActive() {
@@ -131,7 +148,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
             
-        } else {
+        } else if commentChain.isEmpty {
             loadComments()
         }
         
@@ -182,29 +199,42 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     /// Load next top-level comment and the associated tree of replies (if exists), triggered by scrolling
     func loadMoreItems() {
         guard commentsRemainingToLoad,
-              let story,
-              let kids = story.story.kids else { return }
-        
-        var nextKidToLoad: Int?
-        for kid in kids {
-            if loadedTopLevelComments.contains(kid) {
-                continue
-            } else {
-                nextKidToLoad = kid
-                break
+              let story else { return }
+                    
+        if let focusedCommentViewModel { /// Comment-focused mode
+            guard let kids = focusedCommentViewModel.comment.kids else {
+                commentsRemainingToLoad = false
+                return
             }
-        }
-        
-        if let nextKidToLoad {
-            traverse(nextKidToLoad)
-            loadedTopLevelComments.append(nextKidToLoad)
-
-            let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
-            commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
-        }
-        
-        if loadedTopLevelComments.count == kids.count {
+            for kid in kids {
+                traverse(kid, parent: focusedCommentViewModel, indentation: focusedCommentViewModel.indendation + 1)
+            }
             commentsRemainingToLoad = false
+            
+        } else {
+            guard let kids = story.story.kids else { return }
+            
+            var nextKidToLoad: Int?
+            for kid in kids {
+                if loadedTopLevelComments.contains(kid) {
+                    continue
+                } else {
+                    nextKidToLoad = kid
+                    break
+                }
+            }
+            
+            if let nextKidToLoad {
+                traverse(nextKidToLoad)
+                loadedTopLevelComments.append(nextKidToLoad)
+
+                let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
+                commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
+            }
+            
+            if loadedTopLevelComments.count == kids.count {
+                commentsRemainingToLoad = false
+            }
         }
     }
     
@@ -373,30 +403,18 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
 /// signifying that we are comment-focused mode. This mode is triggered by tapping a comment on the `UserView` page.
 extension StoryDetailInteractor {
     /// Recursively load all parent comments until we hit the root node - the `Story` object
-    func traverse(_ comment: Comment) {
-        DispatchQueue.main.async { [weak self] in
-            self?.commentsRemainingToLoad = false
-        }
-        
-        apiManager.loadUserItem(id: comment.parent)
-            .receive(on: RunLoop.main)
-            .sink { completion in
-                if case let .failure(error) = completion {
-                    print(error)
-                }
-            } receiveValue: { item in
-                switch item {
-                case let .comment(comment):
-                    self.commentChain.insert(comment, at: 0)
-                    self.traverse(comment)
-                    
-                case let .story(story):
-                    self.story = StoryRowViewModel(story: story)
-                    
-                    self.processComments()
-                }
+    func traverse(_ rootComment: Comment) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let result = try await self.commentLoader.traverse(rootComment)
+            
+            if let story = result.story {
+                self.story = StoryRowViewModel(story: story)
             }
-            .store(in: &disposeBag)
+            
+            self.commentChain.insert(contentsOf: result.commentChain, at: 0)
+            self.processComments()
+        }
     }
     
     /// Flattens parent comments into an array and prepares them for presentation
@@ -407,6 +425,8 @@ extension StoryDetailInteractor {
         
         for (i, comment) in commentChain.enumerated() {
             let model = CommentViewModel(comment: comment, indendation: i, parent: parent)
+            self.currentlyLoadingComment.send(model)
+            
             if let parent {
                 parent.children.append(model)
             }
@@ -414,9 +434,11 @@ extension StoryDetailInteractor {
             mutableComments.append(model)
             
             if i == 0 {
-                self.focusedCommentViewModel = model
                 self.topLevelComments.append(model)
                 self.loadedTopLevelComments.append(model.id)
+                
+            } else if i == self.commentChain.count-1 {
+                self.focusedCommentViewModel = model
             }
             
             mutableCommentsExpanded[model] = .expanded

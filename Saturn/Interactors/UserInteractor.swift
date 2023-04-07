@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import Factory
 
 final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Published var user: User?
@@ -24,9 +25,9 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
     @Published private var itemsLoaded = 0
     
-    private let apiManager = APIManager()
-    private let commentLoader = CommentLoader()
-    private let htmlApiManager = HTMLAPIManager()
+    @Injected(\.apiManager) private var apiManager
+    @Injected(\.htmlApiManager) private var htmlApiManager
+    @Injected(\.commentLoader) private var commentLoader
     
     init(username: String) {
         self.username = username
@@ -47,7 +48,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     }
                     
                 } receiveValue: { user in
-                    self.user = user
+                    self.user = user.response
                 }
                 .store(in: &disposeBag)
         }
@@ -177,6 +178,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             self.scoreMap.removeAll()
             
             self.currentPage = 0
+            self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
             let ids = idsForCurrentPage(with: user.submitted)
             let items = try await self.apiManager.loadUserItems(ids: ids)
             

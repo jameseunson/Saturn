@@ -29,4 +29,7 @@ extension Container {
     var commentAvailableVoteLoader: Factory<CommentAvailableVoteLoading> {
         self { CommentAvailableVoteLoader() }
     }
+    var commentLoader: Factory<CommentLoading> {
+        self { CommentLoader() }
+    }
 }

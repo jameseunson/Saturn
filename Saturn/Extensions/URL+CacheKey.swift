@@ -9,7 +9,13 @@ import Foundation
 
 extension URL {
     var cacheKey: String {
-        return self.absoluteString
+        return self.absoluteString.cacheKey
+    }
+}
+
+extension String {
+    var cacheKey: String {
+        return self
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ".", with: "-")
             .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted)

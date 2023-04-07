@@ -25,6 +25,7 @@ struct CommentView: View {
     let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
     
     let displaysStory: Bool
+    let isHighlighted: Bool
     
     static let collapsedHeight: CGFloat = 30
     
@@ -35,6 +36,7 @@ struct CommentView: View {
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
          displaysStory: Bool = false,
+         isHighlighted: Bool = false,
          onTapOptions: @escaping (CommentViewModel) -> Void,
          onTapUser: ((String) -> Void)? = nil,
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
@@ -44,6 +46,7 @@ struct CommentView: View {
         _expanded = expanded
         self.comment = comment
         self.displaysStory = displaysStory
+        self.isHighlighted = isHighlighted
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
@@ -92,9 +95,17 @@ struct CommentView: View {
             .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
             .offset(.init(width: dragOffset, height: 0))
             .background {
-                Color(UIColor.systemBackground)
-                    .edgesIgnoringSafeArea(.all)
-                    .offset(.init(width: dragOffset, height: 0))
+                if isHighlighted {
+                    Color.indentationColor()
+                        .opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                        .padding(.leading, CGFloat(comment.indendation) * 20)
+                } else {
+                    Color(UIColor.systemBackground)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                }
             }
         }
         .contextMenu(menuItems: {

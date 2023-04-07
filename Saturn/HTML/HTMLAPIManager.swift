@@ -209,4 +209,10 @@ extension HTMLAPIManaging {
     func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
         loadAvailableVotesForComments(page: page, storyId: storyId)
     }
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [String: Int] {
+        try await loadScoresForLoggedInUserComments(startFrom: startFrom)
+    }
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<[String: Int], Error> {
+        loadScoresForLoggedInUserComments(startFrom: startFrom)
+    }
 }

@@ -8,7 +8,11 @@
 import Foundation
 import Combine
 
-actor CommentLoader {
+protocol CommentLoading: AnyObject {
+    func traverse(_ comment: Comment) async throws -> CommentLoaderContainer
+}
+
+actor CommentLoader: CommentLoading {
     let apiManager = APIManager()
     private var activeTasks = [Int: Task<UserItem, Error>]()
     
