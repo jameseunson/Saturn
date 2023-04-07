@@ -23,6 +23,8 @@
 		1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */; };
 		1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */; };
 		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
+		1A4890F729E0235A00BB7022 /* DiskCache.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1A4890F529E0235A00BB7022 /* DiskCache.xcdatamodeld */; };
+		1A4890FE29E0252A00BB7022 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */; };
 		1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586429D164B50014FD88 /* StoryRowURLView.swift */; };
 		1A57586829D165380014FD88 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 1A57586729D165380014FD88 /* Factory */; };
 		1A57586A29D166390014FD88 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586929D166390014FD88 /* Container.swift */; };
@@ -189,6 +191,8 @@
 		1A32040B29D5317E00CFB4C2 /* VoteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteManager.swift; sourceTree = "<group>"; };
 		1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryContextSheetModifier.swift; sourceTree = "<group>"; };
 		1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaturnMocks.swift; sourceTree = "<group>"; };
+		1A4890F629E0235A00BB7022 /* DiskCache.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DiskCache.xcdatamodel; sourceTree = "<group>"; };
+		1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceManager.swift; sourceTree = "<group>"; };
 		1A57586429D164B50014FD88 /* StoryRowURLView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowURLView.swift; sourceTree = "<group>"; };
 		1A57586929D166390014FD88 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
 		1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskDatabaseResponseCache.swift; sourceTree = "<group>"; };
@@ -426,6 +430,7 @@
 				1A5DBBBA296933BB00D4D86E /* Preview Content */,
 				1A5DBC10296BD44D00D4D86E /* BaseUtils.swift */,
 				1A57586929D166390014FD88 /* Container.swift */,
+				1A4890F529E0235A00BB7022 /* DiskCache.xcdatamodeld */,
 			);
 			path = Saturn;
 			sourceTree = "<group>";
@@ -519,6 +524,7 @@
 				1AA05D7329D401F200D3013C /* APIDecoder.swift */,
 				1A32040B29D5317E00CFB4C2 /* VoteManager.swift */,
 				1AE288FE29DAC97400E041AA /* CommentAvailableVoteLoader.swift */,
+				1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -873,6 +879,7 @@
 				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
+				1A4890FE29E0252A00BB7022 /* PersistenceManager.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,
 				1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */,
@@ -883,6 +890,7 @@
 				1A57587529D2D56F0014FD88 /* GlobalErrorStream.swift in Sources */,
 				1AE4A9CD297913E400D0B0D3 /* StoryDetailShareItem.swift in Sources */,
 				1A5DBC0F296BD43800D4D86E /* StoryDetailInteractor.swift in Sources */,
+				1A4890F729E0235A00BB7022 /* DiskCache.xcdatamodeld in Sources */,
 				1AE4A9D32979146700D0B0D3 /* StoryListType.swift in Sources */,
 				1AE288FF29DAC97400E041AA /* CommentAvailableVoteLoader.swift in Sources */,
 				1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */,
@@ -1538,6 +1546,19 @@
 			productName = FirebaseRemoteConfigSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		1A4890F529E0235A00BB7022 /* DiskCache.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				1A4890F629E0235A00BB7022 /* DiskCache.xcdatamodel */,
+			);
+			currentVersion = 1A4890F629E0235A00BB7022 /* DiskCache.xcdatamodel */;
+			path = DiskCache.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 1A5DBBA9296933BA00D4D86E /* Project object */;
 }

@@ -11,9 +11,12 @@ import AlertToast
 import Factory
 
 struct RootView: View {
+    @Environment(\.scenePhase) var scenePhase
+    
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.appRemoteConfig) private var appRemoteConfig
+    @Injected(\.persistenceManager) private var persistenceManager
     
     @StateObject var interactor = RootInteractor()
     
@@ -84,5 +87,8 @@ struct RootView: View {
             AlertToast(type: .regular, title: "No internet connection")
             
         }, onTap: nil, completion: nil)
+        .onChange(of: scenePhase) { _ in
+            persistenceManager.saveContext()
+        }
     }
 }

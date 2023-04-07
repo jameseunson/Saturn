@@ -41,12 +41,11 @@ final class APIManager: APIManaging {
     @Injected(\.apiDecoder) private var decoder
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     
-//    #if DEBUG
-//    let isDebugLoggingEnabled = true
-//    #else
-//    let isDebugLoggingEnabled = false
-//    #endif
+    #if DEBUG
+    let isDebugLoggingEnabled = true
+    #else
     let isDebugLoggingEnabled = false
+    #endif
     
     init(ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
          timeoutSeconds: Int = 15) {

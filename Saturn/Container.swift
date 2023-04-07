@@ -13,45 +13,62 @@ extension Container {
         self { NetworkConnectivityManager() }
             .singleton
     }
+    
     var keychainWrapper: Factory<SaturnKeychainWrapping> {
         self { SaturnKeychainWrapper() }
             .singleton
     }
+    
     var apiManager: Factory<APIManaging> {
         self { APIManager() }
     }
+    
     var htmlApiManager: Factory<HTMLAPIManaging> {
         self { HTMLAPIManager() }
     }
+    
     var voteManager: Factory<VoteManaging> {
         self { VoteManager() }
     }
+    
     var commentAvailableVoteLoader: Factory<CommentAvailableVoteLoading> {
         self { CommentAvailableVoteLoader() }
     }
+    
     var commentLoader: Factory<CommentLoading> {
         self { CommentLoader() }
     }
+    
     var settingsManager: Factory<SettingsManaging> {
         self { SettingsManager() }
             .singleton
     }
+    
     var searchApiManager: Factory<SearchAPIManaging> {
         self { SearchAPIManager() }
     }
+    
     var apiMemoryResponseCache: Factory<APIMemoryResponseCaching> {
         self { APIMemoryResponseCache() }
             .singleton
     }
+    
     var apiDecoder: Factory<APIDecoder> {
         self { APIDecoder() }
     }
+    
     var layoutManager: Factory<LayoutManaging> {
         self { LayoutManager() }
             .singleton
     }
+    
     var appRemoteConfig: Factory<AppRemoteConfig> {
         self { AppRemoteConfigImpl() }
+            .singleton
+    }
+    
+    var persistenceManager: Factory<PersistenceManager> {
+        self { PersistenceManager() }
             .singleton
     }
 }
