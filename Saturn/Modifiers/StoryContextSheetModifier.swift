@@ -7,8 +7,11 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct StoryContextSheetModifier: ViewModifier {
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     @Binding var displayingConfirmSheetForStory: StoryRowViewModel?
     @Binding var selectedShareItem: StoryDetailShareItem?
     @Binding var selectedUser: String?
@@ -19,7 +22,7 @@ struct StoryContextSheetModifier: ViewModifier {
         content
             .confirmationDialog("Story", isPresented: createBoolBinding(from: $displayingConfirmSheetForStory), actions: {
                 if let story = displayingConfirmSheetForStory {
-                    if SaturnKeychainWrapper.shared.isLoggedIn,
+                    if keychainWrapper.isLoggedIn,
                        let vote = story.vote {
                         if vote.directions.contains(.upvote) {
                             Button(action: {

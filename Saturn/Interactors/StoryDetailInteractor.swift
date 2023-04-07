@@ -437,7 +437,8 @@ extension StoryDetailInteractor {
                 self.topLevelComments.append(model)
                 self.loadedTopLevelComments.append(model.id)
                 
-            } else if i == self.commentChain.count-1 {
+            }
+            if i == self.commentChain.count-1 {
                 self.focusedCommentViewModel = model
             }
             

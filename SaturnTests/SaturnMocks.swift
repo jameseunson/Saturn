@@ -6,6 +6,7 @@
 @testable import Saturn
 import AuthenticationServices
 import Combine
+import Factory
 import Firebase
 import FirebaseCore
 import FirebaseDatabase
@@ -44,6 +45,9 @@ class APIMemoryResponseCachingMock: APIMemoryResponseCaching {
 
 class SettingsManagingMock: SettingsManaging {
     init() { }
+    init(settings: CurrentValueSubject<[SettingKey: SettingValue], Never>) {
+        self._settings = settings
+    }
 
 
     private(set) var setCallCount = 0
@@ -114,6 +118,108 @@ class SettingsManagingMock: SettingsManaging {
             return intHandler(key)
         }
         return 0
+    }
+
+    private(set) var settingsSetCallCount = 0
+    private var _settings: CurrentValueSubject<[SettingKey: SettingValue], Never>!  { didSet { settingsSetCallCount += 1 } }
+    var settings: CurrentValueSubject<[SettingKey: SettingValue], Never> {
+        get { return _settings }
+        set { _settings = newValue }
+    }
+}
+
+class HTMLAPIManagingMock: HTMLAPIManaging {
+    init() { }
+
+
+    private(set) var loadScoresForLoggedInUserCommentsCallCount = 0
+    var loadScoresForLoggedInUserCommentsHandler: ((Int?) async throws -> ([String: Int]))?
+    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [String: Int] {
+        loadScoresForLoggedInUserCommentsCallCount += 1
+        if let loadScoresForLoggedInUserCommentsHandler = loadScoresForLoggedInUserCommentsHandler {
+            return try await loadScoresForLoggedInUserCommentsHandler(startFrom)
+        }
+        return [String: Int]()
+    }
+
+    private(set) var loadScoresForLoggedInUserCommentsStartFromCallCount = 0
+    var loadScoresForLoggedInUserCommentsStartFromHandler: ((Int?) -> (AnyPublisher<[String: Int], Error>))?
+    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[String: Int], Error> {
+        loadScoresForLoggedInUserCommentsStartFromCallCount += 1
+        if let loadScoresForLoggedInUserCommentsStartFromHandler = loadScoresForLoggedInUserCommentsStartFromHandler {
+            return loadScoresForLoggedInUserCommentsStartFromHandler(startFrom)
+        }
+        fatalError("loadScoresForLoggedInUserCommentsStartFromHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var loadAvailableVotesForCommentsCallCount = 0
+    var loadAvailableVotesForCommentsHandler: ((Int, Int) async throws -> (VoteHTMLParserResponse))?
+    func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> VoteHTMLParserResponse {
+        loadAvailableVotesForCommentsCallCount += 1
+        if let loadAvailableVotesForCommentsHandler = loadAvailableVotesForCommentsHandler {
+            return try await loadAvailableVotesForCommentsHandler(page, storyId)
+        }
+        fatalError("loadAvailableVotesForCommentsHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var loadAvailableVotesForCommentsPageCallCount = 0
+    var loadAvailableVotesForCommentsPageHandler: ((Int, Int) -> (AnyPublisher<VoteHTMLParserResponse, Error>))?
+    func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
+        loadAvailableVotesForCommentsPageCallCount += 1
+        if let loadAvailableVotesForCommentsPageHandler = loadAvailableVotesForCommentsPageHandler {
+            return loadAvailableVotesForCommentsPageHandler(page, storyId)
+        }
+        fatalError("loadAvailableVotesForCommentsPageHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var loadAvailableVotesForStoriesListCallCount = 0
+    var loadAvailableVotesForStoriesListHandler: ((Int, CacheBehavior) async throws -> (APIResponse<VoteHTMLParserResponse>))?
+    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse> {
+        loadAvailableVotesForStoriesListCallCount += 1
+        if let loadAvailableVotesForStoriesListHandler = loadAvailableVotesForStoriesListHandler {
+            return try await loadAvailableVotesForStoriesListHandler(page, cacheBehavior)
+        }
+        fatalError("loadAvailableVotesForStoriesListHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var loadAvailableVotesForStoriesListPageCallCount = 0
+    var loadAvailableVotesForStoriesListPageHandler: ((Int, CacheBehavior) -> (AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>))?
+    func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
+        loadAvailableVotesForStoriesListPageCallCount += 1
+        if let loadAvailableVotesForStoriesListPageHandler = loadAvailableVotesForStoriesListPageHandler {
+            return loadAvailableVotesForStoriesListPageHandler(page, cacheBehavior)
+        }
+        fatalError("loadAvailableVotesForStoriesListPageHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var voteCallCount = 0
+    var voteHandler: ((HTMLAPIVoteDirection, HTMLAPIVote) async throws -> ())?
+    func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws  {
+        voteCallCount += 1
+        if let voteHandler = voteHandler {
+            try await voteHandler(direction, info)
+        }
+        
+    }
+
+    private(set) var unvoteCallCount = 0
+    var unvoteHandler: ((HTMLAPIVote) async throws -> ())?
+    func unvote(info: HTMLAPIVote) async throws  {
+        unvoteCallCount += 1
+        if let unvoteHandler = unvoteHandler {
+            try await unvoteHandler(info)
+        }
+        
+    }
+
+    private(set) var flagCallCount = 0
+    var flagHandler: ((HTMLAPIVote) async throws -> ())?
+    func flag(info: HTMLAPIVote) async throws  {
+        flagCallCount += 1
+        if let flagHandler = flagHandler {
+            try await flagHandler(info)
+        }
+        
     }
 }
 
@@ -341,13 +447,23 @@ class APIManagingMock: APIManaging {
     }
 
     private(set) var loadUserCallCount = 0
-    var loadUserHandler: ((String) -> (AnyPublisher<User, Error>))?
-    func loadUser(id: String) -> AnyPublisher<User, Error> {
+    var loadUserHandler: ((String, CacheBehavior) -> (AnyPublisher<APIResponse<User>, Error>))?
+    func loadUser(id: String, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<User>, Error> {
         loadUserCallCount += 1
         if let loadUserHandler = loadUserHandler {
-            return loadUserHandler(id)
+            return loadUserHandler(id, cacheBehavior)
         }
         fatalError("loadUserHandler returns can't have a default value thus its handler must be set")
+    }
+
+    private(set) var loadUserIdCallCount = 0
+    var loadUserIdHandler: ((String, CacheBehavior) async throws -> (APIResponse<User>))?
+    func loadUser(id: String, cacheBehavior: CacheBehavior) async throws -> APIResponse<User> {
+        loadUserIdCallCount += 1
+        if let loadUserIdHandler = loadUserIdHandler {
+            return try await loadUserIdHandler(id, cacheBehavior)
+        }
+        fatalError("loadUserIdHandler returns can't have a default value thus its handler must be set")
     }
 
     private(set) var getImageCallCount = 0

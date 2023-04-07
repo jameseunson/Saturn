@@ -11,6 +11,7 @@ import FirebaseCore
 import Firebase
 import FirebaseDatabase
 import SwiftUI
+import Factory
 
 /// @mockable
 protocol APIManaging: AnyObject {
@@ -34,10 +35,11 @@ protocol APIManaging: AnyObject {
 
 final class APIManager: APIManaging {
     private let ref: DatabaseReferencing
-    private let cache: APIMemoryResponseCaching
     private let timeoutSeconds: Int
-    private let networkConnectivityManager: NetworkConnectivityManaging
-    private let decoder: APIDecoder
+    
+    @Injected(\.apiMemoryResponseCache) private var cache
+    @Injected(\.apiDecoder) private var decoder
+    @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     
 //    #if DEBUG
 //    let isDebugLoggingEnabled = true
@@ -46,16 +48,10 @@ final class APIManager: APIManaging {
 //    #endif
     let isDebugLoggingEnabled = false
     
-    init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
-         ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
-         timeoutSeconds: Int = 15,
-         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance,
-         decoder: APIDecoder = APIDecoder()) {
-        self.cache = cache
+    init(ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
+         timeoutSeconds: Int = 15) {
         self.ref = ref
         self.timeoutSeconds = timeoutSeconds
-        self.networkConnectivityManager = networkConnectivityManager
-        self.decoder = decoder
     }
 
     func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
@@ -115,7 +111,7 @@ final class APIManager: APIManaging {
                     return APIResponse(response: ids, source: .network)
                 }
                 .handleEvents(receiveOutput: { ids in
-                    APIMemoryResponseCache.default.set(value: .json(ids.response),
+                    self.cache.set(value: .json(ids.response),
                                                        for: type.cacheKey)
                 })
                 .eraseToAnyPublisher()
@@ -131,7 +127,7 @@ final class APIManager: APIManaging {
             
         } else if let response = try await retrieve(from: type.path) as? Array<Int> {
             let apiResponse = APIResponse(response: response, source: .network)
-            APIMemoryResponseCache.default.set(value: .json(apiResponse.response),
+            self.cache.set(value: .json(apiResponse.response),
                                                for: type.cacheKey)
             return apiResponse
             

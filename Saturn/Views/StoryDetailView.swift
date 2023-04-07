@@ -7,8 +7,11 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct StoryDetailView: View {
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     @StateObject var interactor: StoryDetailInteractor
     @State private var comments: Array<CommentViewModel> = []
     @State private var commentsExpanded: Dictionary<CommentViewModel, CommentExpandedState> = [:]
@@ -142,7 +145,7 @@ struct StoryDetailView: View {
                              onTapSheet: { story in self.displayingConfirmSheetForStory = story },
                              context: .storyDetail)
                     .padding(.top)
-                    .if(!SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
+                    .if(!keychainWrapper.isLoggedIn, transform: { view in
                         view.padding(.bottom)
                     })
                     .onTapGesture {
@@ -172,7 +175,7 @@ struct StoryDetailView: View {
                     if comments.count == 0 {
                         ListLoadingView()
                             .listRowSeparator(.hidden)
-                        
+
                     } else {
                         ForEach(comments, id: \.self) { comment in
                             if comment.isAnimating != .none || self.commentsExpanded[comment] != .hidden {
@@ -180,10 +183,10 @@ struct StoryDetailView: View {
                                             comment: comment,
                                             isHighlighted: interactor.focusedCommentViewModel == comment) { comment in
                                     selectedComment = comment
-                                    
+
                                 } onTapUser: { user in
                                     selectedUser = user
-                                    
+
                                 } onToggleExpanded: { comment, expanded, commentOnScreen in
                                     if expanded == .collapsed,
                                        !commentOnScreen {
@@ -192,13 +195,13 @@ struct StoryDetailView: View {
                                         }
                                     }
                                     self.interactor.updateExpanded(commentsExpanded, for: comment, expanded)
-                                    
+
                                 } onTapStoryId: { storyId in
                                     self.displayingInternalStoryId = storyId
-                                    
+
                                 } onTapURL: { url in
                                     displayingSafariURL = url
-                                    
+
                                 } onTapVote: { direction in
                                     self.interactor.didTapVote(item: comment, direction: direction)
                                 }
@@ -214,22 +217,22 @@ struct StoryDetailView: View {
                                         }
                                     }
                                 }
-                                
+
                                 Divider()
                                     .padding(.leading, CGFloat(comment.indendation) * 20)
                             }
                         }
-                        
+
                         if interactor.commentsRemainingToLoad {
                             ListLoadingView()
                         }
-                        
+
                         if interactor.focusedCommentViewModel != nil {
                             Spacer()
                                 .padding([.bottom], 100)
                         }
                     }
-                    
+
                 } else {
                     HStack {
                         Spacer()

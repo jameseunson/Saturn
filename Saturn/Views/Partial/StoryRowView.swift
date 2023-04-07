@@ -7,8 +7,10 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct StoryRowView: View {
+    @Injected(\.keychainWrapper) private var keychainWrapper
     @State var image: Image?
     @State private var dragOffset: CGFloat = 0
     @State private var isLoggedIn = false
@@ -28,8 +30,7 @@ struct StoryRowView: View {
          onTapUser: ((String) -> Void)? = nil,
          onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
          onTapSheet: ((StoryRowViewModel) -> Void)? = nil,
-         context: StoryRowViewContext = .storiesList,
-         keychainWrapper: SaturnKeychainWrapping = SaturnKeychainWrapper.shared) {
+         context: StoryRowViewContext = .storiesList) {
         self.story = story
         self.onTapArticleLink = onTapArticleLink
         self.onTapUser = onTapUser
@@ -187,8 +188,7 @@ struct StoryRowView: View {
 
 struct StoryRowView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()),
-                     keychainWrapper: SaturnKeychainWrapper(loginOverride: true))
+        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()))
     }
 }
 

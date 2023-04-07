@@ -7,12 +7,13 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 extension Color {
     static var randomLevelColors: [Int: Color] = [:]
     
     static func indentationColor(for comment: CommentViewModel) -> Color {
-        let color = SettingsManager.default.indentationColor()
+        let color = Container.shared.settingsManager().indentationColor()
         if color == .randomLevel {
             if let levelColor = randomLevelColors[comment.indendation] {
                 return levelColor
@@ -28,7 +29,7 @@ extension Color {
     }
     
     static func indentationColor() -> Color {
-        let color = SettingsManager.default.indentationColor()
+        let color = Container.shared.settingsManager().indentationColor()
         switch color {
         case .randomLevel:
             return Color.random

@@ -7,10 +7,14 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 typealias OnToggleExpandedCompletion = (CommentViewModel, CommentExpandedState, Bool) -> Void
 
 struct CommentView: View {
+    @Injected(\.layoutManager) private var layoutManager
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     @State var frameHeight: CGFloat = 0
     @Binding var expanded: CommentExpandedState
     
@@ -57,7 +61,7 @@ struct CommentView: View {
     
     var body: some View {
         ZStack {
-            if SaturnKeychainWrapper.shared.isLoggedIn,
+            if keychainWrapper.isLoggedIn,
                let vote = comment.vote,
                frameHeight > 0,
                abs(dragOffset) > 0 {
@@ -109,7 +113,7 @@ struct CommentView: View {
             }
         }
         .contextMenu(menuItems: {
-            if SaturnKeychainWrapper.shared.isLoggedIn {
+            if keychainWrapper.isLoggedIn {
                 Button(action: {
                     onTapVote?(.upvote)
                 }, label: {
@@ -134,7 +138,7 @@ struct CommentView: View {
                 Label(comment.by, systemImage: "person.circle")
             })
         })
-        .if(SaturnKeychainWrapper.shared.isLoggedIn, transform: { view in
+        .if(keychainWrapper.isLoggedIn, transform: { view in
             view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: comment.vote?.directions ?? []))
@@ -142,7 +146,7 @@ struct CommentView: View {
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in
             DispatchQueue.main.async {
-                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (LayoutManager.default.statusBarHeight + navBarHeight + 10)
+                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (layoutManager.statusBarHeight + navBarHeight + 10)
             }
             return Color.clear
         })

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftSoup
+import Factory
 
 /// @mockable
 protocol HTMLAPIManaging: AnyObject {
@@ -26,18 +27,15 @@ protocol HTMLAPIManaging: AnyObject {
 /// and perform write operations (upvote, etc), the only way to implement this is through HTML scraping using an authenticated cookie
 /// Therefore, this class implements various user-authenticated functions using scraping
 final class HTMLAPIManager: HTMLAPIManaging {
-    private let cache: APIMemoryResponseCaching
-    private let decoder: APIDecoder
+    @Injected(\.apiMemoryResponseCache) private var cache
+    @Injected(\.apiDecoder) private var decoder
+    @Injected(\.keychainWrapper) private var keychainWrapper
     
-    init(cache: APIMemoryResponseCaching = APIMemoryResponseCache.default,
-         decoder: APIDecoder = APIDecoder()) {
-        self.cache = cache
-        self.decoder = decoder
-    }
+    init() {}
     
     /// Load score for each user comment, used on the User page
     func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [String: Int] {
-        guard let username = SaturnKeychainWrapper.shared.retrieve(for: .username) else { throw HTMLAPIManagerError.cannotLoad }
+        guard let username = keychainWrapper.retrieve(for: .username) else { throw HTMLAPIManagerError.cannotLoad }
         
         let commentURL: URL?
         if let startFrom {
@@ -104,7 +102,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
             let htmlString = try await loadHTML(for: url)
             voteResponse = try VoteHTMLParser().parseStoryListHTML(htmlString)
             
-            APIMemoryResponseCache.default.set(value: .json(voteResponse.dict),
+            cache.set(value: .json(voteResponse.dict),
                                                for: cacheKey)
         }
         
@@ -149,7 +147,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     
     // MARK: -
     private func loadHTML(for url: URL) async throws -> String {
-        guard let cookie = SaturnKeychainWrapper.shared.retrieve(for: .cookie) else {
+        guard let cookie = keychainWrapper.retrieve(for: .cookie) else {
             throw HTMLAPIManagerError.cannotLoad
         }
               

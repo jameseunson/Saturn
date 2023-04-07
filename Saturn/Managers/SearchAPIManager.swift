@@ -7,8 +7,15 @@
 
 import Foundation
 import Combine
+import Factory
 
-final class SearchAPIManager {
+protocol SearchAPIManaging: AnyObject {
+    func search(query: String) -> AnyPublisher<[SearchResultItem], Error>
+}
+
+final class SearchAPIManager: SearchAPIManaging {
+    @Injected(\.apiManager) private var apiManager
+    
     let baseURLString = "https://uj5wyc0l7x-dsn.algolia.net/1/indexes/Item_production_ordered/query"
     
     let urlParams = ["x-algolia-agent": "Algolia for JavaScript (4.0.2); Browser (lite)",
@@ -22,8 +29,6 @@ final class SearchAPIManager {
     let postBody = """
     {"query":"%s","analyticsTags":["web"],"page":0,"hitsPerPage":30,"minWordSizefor1Typo":4,"minWordSizefor2Typos":8,"advancedSyntax":true,"ignorePlurals":false,"clickAnalytics":true,"minProximity":7,"numericFilters":[],"tagFilters":["story",[]],"typoTolerance":true,"queryType":"prefixNone","restrictSearchableAttributes":["title","comment_text","url","story_text","author"],"getRankingInfo":true}:
     """
-    
-    let apiManager = APIManager()
     
     func search(query: String) -> AnyPublisher<[SearchResultItem], Error> {
         guard var urlComponents = URLComponents(string: baseURLString) else {

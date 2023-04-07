@@ -8,8 +8,13 @@
 import Foundation
 import SwiftUI
 import AlertToast
+import Factory
 
 struct RootView: View {
+    @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    @Injected(\.appRemoteConfig) private var appRemoteConfig
+    
     @StateObject var interactor = RootInteractor()
     
     @State var titleForUser = "User"
@@ -49,7 +54,7 @@ struct RootView: View {
             .tabItem {
                 Label("Ask", systemImage: "text.bubble")
             }
-            if AppRemoteConfig.instance.isLoggedInEnabled() {
+            if appRemoteConfig.isLoggedInEnabled() {
                 NavigationStack {
                     LoggedInView()
                         .navigationTitle(titleForUser)
@@ -64,15 +69,15 @@ struct RootView: View {
             interactor.activate()
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(named: "AccentColor")
         }
-        .onReceive(SaturnKeychainWrapper.shared.$isLoggedIn) { output in
+        .onReceive(keychainWrapper.isLoggedInSubject) { output in
             if output,
-               let username = SaturnKeychainWrapper.shared.retrieve(for: .username) {
+               let username = keychainWrapper.retrieve(for: .username) {
                 titleForUser = username
             } else {
                 titleForUser = "User"
             }
         }
-        .onReceive(NetworkConnectivityManager.instance.isConnectedPublisher) { output in
+        .onReceive(networkConnectivityManager.isConnectedPublisher) { output in
             showConnectionAlert = !output
         }
         .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {

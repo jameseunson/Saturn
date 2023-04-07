@@ -7,8 +7,11 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct LoggedInView: View {
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     @State var isDisplayingLoginPrompt: Bool = false
     @State var isLoggedIn: Bool = false
     @State var isDisplayingLogoutConfirm: Bool = false
@@ -16,7 +19,7 @@ struct LoggedInView: View {
     var body: some View {
         ZStack {
             if isLoggedIn,
-            let username = SaturnKeychainWrapper.shared.retrieve(for: .username) {
+            let username = keychainWrapper.retrieve(for: .username) {
                 UserView(interactor: UserInteractor(username: username))
                 
             } else {
@@ -54,7 +57,7 @@ struct LoggedInView: View {
         .sheet(isPresented: $isDisplayingLoginPrompt, content: {
             LoginAuthenticationView(isDisplayingLoginPrompt: $isDisplayingLoginPrompt)
         })
-        .onReceive(SaturnKeychainWrapper.shared.$isLoggedIn, perform: { output in
+        .onReceive(keychainWrapper.isLoggedInSubject, perform: { output in
             isLoggedIn = output
         })
         .toolbar {
@@ -71,7 +74,7 @@ struct LoggedInView: View {
         }
         .confirmationDialog("Logout?", isPresented: $isDisplayingLogoutConfirm, actions: {
             Button(role: .destructive) {
-                SaturnKeychainWrapper.shared.clearCredential()
+                keychainWrapper.clearCredential()
                 isLoggedIn = false
             } label: {
                 Text("Logout")

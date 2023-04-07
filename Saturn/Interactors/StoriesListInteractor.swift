@@ -15,6 +15,8 @@ final class StoriesListInteractor: Interactor {
     @Injected(\.htmlApiManager) private var htmlApiManager
     @Injected(\.voteManager) private var voteManager
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    @Injected(\.settingsManager) private var settingsManager
+    @Injected(\.keychainWrapper) private var keychainWrapper
     
     private let pageLength = 10
     private let type: StoryListType
@@ -34,12 +36,10 @@ final class StoriesListInteractor: Interactor {
     #endif
     
     init(type: StoryListType,
-         stories: [StoryRowViewModel] = [],
-         lastRefreshTimestamp: Date? = SettingsManager.default.date(for: .lastRefreshTimestamp)) {
+         stories: [StoryRowViewModel] = []) {
         
         self.type = type
         self.stories = stories
-        self.lastRefreshTimestamp = lastRefreshTimestamp
         
 //        try? APIMemoryResponseCache.default.diskCache.clearCache()
         
@@ -48,6 +48,9 @@ final class StoriesListInteractor: Interactor {
             self.displayingSwiftUIPreview = true
         }
         #endif
+        super.init()
+        
+        self.lastRefreshTimestamp = settingsManager.date(for: .lastRefreshTimestamp)
     }
     
     override func didBecomeActive() {
@@ -147,7 +150,7 @@ final class StoriesListInteractor: Interactor {
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
             let scoreMap: APIResponse<VoteHTMLParserResponse>
             
-            if SaturnKeychainWrapper.shared.isLoggedIn {
+            if keychainWrapper.isLoggedIn {
                 scoreMap = try await htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: .ignore)
             } else {
                 scoreMap = APIResponse(response: VoteHTMLParserResponse(scoreMap: [String: HTMLAPIVote](), hasNextPage: false), source: .network)
@@ -213,7 +216,7 @@ final class StoriesListInteractor: Interactor {
                     return self.apiManager.loadStories(ids: self.idsForPage(.current, with: ids), cacheBehavior: cacheBehavior)
                 }
                 .flatMap { stories -> AnyPublisher<(APIResponse<VoteHTMLParserResponse>, [APIResponse<Story>]), Error> in
-                    if SaturnKeychainWrapper.shared.isLoggedIn {
+                    if self.keychainWrapper.isLoggedIn {
                         /// Load votes for the current page
                         /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
                         /// which involves scraping the html of news.ycombinator.com
@@ -308,7 +311,7 @@ final class StoriesListInteractor: Interactor {
         self.stories.append(contentsOf: viewModels)
         
         for viewModel in viewModels {
-            if SaturnKeychainWrapper.shared.isLoggedIn,
+            if keychainWrapper.isLoggedIn,
                let vote = self.availableVotes[String(viewModel.id)] {
                 viewModel.vote = vote
             }
@@ -329,7 +332,7 @@ final class StoriesListInteractor: Interactor {
         
         if source == .network {
             let timestamp = Date()
-            SettingsManager.default.set(value: .date(timestamp), for: .lastRefreshTimestamp)
+            settingsManager.set(value: .date(timestamp), for: .lastRefreshTimestamp)
             self.lastRefreshTimestamp = timestamp
         }
     }

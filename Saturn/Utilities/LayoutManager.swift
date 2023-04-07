@@ -8,9 +8,11 @@
 import Foundation
 import UIKit
 
-final class LayoutManager {
-    static let `default` = LayoutManager()
-    
+protocol LayoutManaging: AnyObject {
+    var statusBarHeight: CGFloat { get }
+}
+
+final class LayoutManager: LayoutManaging {
     let statusBarHeight: CGFloat
     
     init() {

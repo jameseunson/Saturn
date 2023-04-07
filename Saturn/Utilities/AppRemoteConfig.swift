@@ -9,9 +9,13 @@ import Foundation
 import Firebase
 import FirebaseRemoteConfig
 
-final class AppRemoteConfig {
-    static let instance = AppRemoteConfig()
-    
+protocol AppRemoteConfig: AnyObject {
+    func isSearchEnabled() -> Bool
+    func isLoggedInEnabled() -> Bool
+    func numberOfLaunchesToRequestReview() -> Int
+}
+
+final class AppRemoteConfigImpl: AppRemoteConfig {
     let remoteConfig: RemoteConfig
     
     init() {

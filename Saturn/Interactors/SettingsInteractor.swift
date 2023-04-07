@@ -7,18 +7,20 @@
 
 import Combine
 import Foundation
+import Factory
 
 final class SettingsInteractor: Interactor {
     @Published var settingsValues: [SettingKey: SettingValue] = [:]
+    @Injected(\.settingsManager) private var settingsManager
     
     override func didBecomeActive() {
-        SettingsManager.default.settings.sink { map in
+        settingsManager.settings.sink { map in
             self.settingsValues = map
         }
         .store(in: &disposeBag)
     }
     
     func set(_ key: SettingKey, value: SettingValue) {
-        SettingsManager.default.set(value: value, for: key)
+        settingsManager.set(value: value, for: key)
     }
 }

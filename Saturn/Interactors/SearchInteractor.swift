@@ -7,11 +7,13 @@
 
 import Foundation
 import Combine
+import Factory
 
 final class SearchInteractor: Interactor {
-    @Published var results: LoadableResource<[SearchResultItem]> = .notLoading
+    @Injected(\.settingsManager) private var settingsManager
+    @Injected(\.searchApiManager) private var apiManager
     
-    private let apiManager = SearchAPIManager()
+    @Published var results: LoadableResource<[SearchResultItem]> = .notLoading
     private let querySubject = PassthroughSubject<String, Never>()
     
     private var resultsAccumulator = [SearchResultItem]()
@@ -62,7 +64,7 @@ final class SearchInteractor: Interactor {
     }
     
     func deleteSearchHistoryItem(item: SettingSearchHistoryItem) {
-        let searchHistory = SettingsManager.default.searchHistory()
+        let searchHistory = settingsManager.searchHistory()
         var searchHistoryList = searchHistory.history
         
         guard let index = searchHistoryList.firstIndex(of: item) else {
@@ -70,18 +72,18 @@ final class SearchInteractor: Interactor {
         }
         searchHistoryList.remove(at: index)
         
-        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+        settingsManager.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
                              for: .searchHistory)
     }
     
     func clearSearchHistory() {
-        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory()),
+        settingsManager.set(value: .searchHistory(SettingSearchHistory()),
                              for: .searchHistory)
     }
     
     // MARK: -
     private func updateSearchHistory(with query: String) {
-        let searchHistory = SettingsManager.default.searchHistory()
+        let searchHistory = settingsManager.searchHistory()
         var searchHistoryList = searchHistory.history
         
         /// Do not add duplicate search queries
@@ -96,7 +98,7 @@ final class SearchInteractor: Interactor {
             searchHistoryList.removeLast()
         }
         
-        SettingsManager.default.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
+        settingsManager.set(value: .searchHistory(SettingSearchHistory(history: searchHistoryList)),
                              for: .searchHistory)
     }
 }

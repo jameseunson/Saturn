@@ -24,6 +24,7 @@ struct UserView: View {
     @State var selectedCommentToShare: CommentViewModel?
     @State var selectedStoryToView: StoryRowViewModel?
     @State var selectedCommentToView: CommentViewModel?
+    @State var displayingInternalStoryId: Int?
     
     /// NSUserActivity - handoff
     static let userActivity = "com.JEON.Saturn.view-user"
@@ -39,7 +40,7 @@ struct UserView: View {
                         // TODO:
                         
                     } onTapStoryId: { storyId in
-                        // TODO:
+                        displayingInternalStoryId = storyId
                         
                     } onTapURL: { url in
                         displayingSafariURL = url
@@ -64,6 +65,9 @@ struct UserView: View {
                                 
                             } onToggleExpanded: { comment, expanded, commentOnScreen in
                                 selectedCommentToView = comment
+                                
+                            } onTapStoryId: { storyId in
+                                displayingInternalStoryId = storyId
                                 
                             } onTapURL: { url in
                                 self.displayingSafariURL = url
@@ -148,6 +152,13 @@ struct UserView: View {
                 if let selectedCommentToView,
                    let thread = contexts[selectedCommentToView.id] {
                     StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
+                } else {
+                    EmptyView()
+                }
+            }
+            .navigationDestination(isPresented: createBoolBinding(from: $displayingInternalStoryId)) {
+                if let displayingInternalStoryId {
+                    StoryDetailView(interactor: StoryDetailInteractor(itemId: displayingInternalStoryId))
                 } else {
                     EmptyView()
                 }

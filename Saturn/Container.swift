@@ -32,4 +32,26 @@ extension Container {
     var commentLoader: Factory<CommentLoading> {
         self { CommentLoader() }
     }
+    var settingsManager: Factory<SettingsManaging> {
+        self { SettingsManager() }
+            .singleton
+    }
+    var searchApiManager: Factory<SearchAPIManaging> {
+        self { SearchAPIManager() }
+    }
+    var apiMemoryResponseCache: Factory<APIMemoryResponseCaching> {
+        self { APIMemoryResponseCache() }
+            .singleton
+    }
+    var apiDecoder: Factory<APIDecoder> {
+        self { APIDecoder() }
+    }
+    var layoutManager: Factory<LayoutManaging> {
+        self { LayoutManager() }
+            .singleton
+    }
+    var appRemoteConfig: Factory<AppRemoteConfig> {
+        self { AppRemoteConfigImpl() }
+            .singleton
+    }
 }

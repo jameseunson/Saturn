@@ -6,8 +6,11 @@
 //
 
 import Foundation
+import Factory
 
 final class LoginAuthenticationInteractor: Interactor {
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     let delegate = LoginAuthenticationURLSessionDelegate()
     lazy var urlSession = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
     
@@ -49,8 +52,8 @@ final class LoginAuthenticationInteractor: Interactor {
             throw LoginError.generic
         }
         
-        return SaturnKeychainWrapper.shared.store(cookie: cookie,
-                                                  username: username)
+        return keychainWrapper.store(cookie: cookie,
+                                     username: username)
     }
 }
 

@@ -20,7 +20,6 @@ protocol NetworkConnectivityManaging: AnyObject {
 
 public final class NetworkConnectivityManager: NetworkConnectivityManaging {
     public var isConnectedPublisher: AnyPublisher<Bool, Never>
-    public static let instance = NetworkConnectivityManager()
     
     private var isConnectedSubject = CurrentValueSubject<Bool, Never>(true)
     private let nwMonitor = NWPathMonitor()

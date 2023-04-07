@@ -8,17 +8,13 @@
 import Foundation
 import UIKit
 import StoreKit
+import Factory
 
 final class RootInteractor: Interactor {
-    let settingsManager: SettingsManaging
-    let networkConnectivityManager: NetworkConnectivityManaging
-    
-    init(settingsManager: SettingsManaging = SettingsManager.default,
-         networkConnectivityManager: NetworkConnectivityManaging = NetworkConnectivityManager.instance) {
-        self.settingsManager = settingsManager
-        self.networkConnectivityManager = networkConnectivityManager
-    }
-    
+    @Injected(\.settingsManager) private var settingsManager
+    @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    @Injected(\.appRemoteConfig) private var appRemoteConfig
+
     override func didBecomeActive() {
         networkConnectivityManager.start()
         
@@ -33,7 +29,7 @@ final class RootInteractor: Interactor {
         let numberOfLaunches = settingsManager.int(for: .numberOfLaunches)
         settingsManager.set(value: .int(numberOfLaunches + 1), for: .numberOfLaunches)
         
-        if numberOfLaunches == AppRemoteConfig.instance.numberOfLaunchesToRequestReview() {
+        if numberOfLaunches == appRemoteConfig.numberOfLaunchesToRequestReview() {
             if let windowScene = UIApplication.shared.connectedScenes.first,
                let scene = windowScene as? UIWindowScene {
                 SKStoreReviewController.requestReview(in: scene)

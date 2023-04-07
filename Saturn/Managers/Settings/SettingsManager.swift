@@ -18,6 +18,7 @@ protocol SettingsManaging: AnyObject {
     func searchHistory() -> SettingSearchHistory
     func date(for key: SettingKey) -> Date?
     func int(for key: SettingKey) -> Int
+    var settings: CurrentValueSubject<[SettingKey: SettingValue], Never> { get }
 }
 
 class SettingsManager: SettingsManaging {
@@ -27,8 +28,6 @@ class SettingsManager: SettingsManaging {
     private let fm = FileManager.default
     
     public let settings = CurrentValueSubject<[SettingKey: SettingValue], Never>([:])
-    
-    public static let `default` = SettingsManager()
     
     public static let types: [SettingKey: SettingType] = [
         .entersReader: .bool,

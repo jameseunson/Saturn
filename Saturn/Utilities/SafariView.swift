@@ -8,14 +8,16 @@
 import Foundation
 import SafariServices
 import SwiftUI
+import Factory
 
 struct SafariView: UIViewControllerRepresentable {
+    @Injected(\.settingsManager) private var settingsManager
     let url: URL
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
         
         let configuration = SFSafariViewController.Configuration()
-        configuration.entersReaderIfAvailable = SettingsManager.default.bool(for: .entersReader)
+        configuration.entersReaderIfAvailable = settingsManager.bool(for: .entersReader)
         
         let vc = SFSafariViewController(url: url, configuration: configuration)
         vc.preferredControlTintColor = UIColor(Color.accentColor)

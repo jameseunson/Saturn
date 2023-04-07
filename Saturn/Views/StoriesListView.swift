@@ -5,10 +5,14 @@
 //  Created by James Eunson on 7/1/2023.
 //
 
+import Factory
 import SwiftUI
 
 struct StoriesListView: View {
     @Environment(\.scenePhase) var scenePhase
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    @Injected(\.appRemoteConfig) private var appRemoteConfig
+    
     @StateObject var interactor: StoriesListInteractor
     
     @State var isSettingsVisible: Bool = false
@@ -73,7 +77,7 @@ struct StoriesListView: View {
                         Image(systemName: "gear")
                     }
                 }
-                if AppRemoteConfig.instance.isSearchEnabled() {
+                if appRemoteConfig.isSearchEnabled() {
                     ToolbarItemGroup(placement: .navigationBarTrailing) {
                         Button {
                             isSearchVisible = true
@@ -162,7 +166,7 @@ struct StoriesListView: View {
                             }
                         }
                         .contextMenu {
-                            if SaturnKeychainWrapper.shared.isLoggedIn,
+                            if keychainWrapper.isLoggedIn,
                                let vote = story.vote {
                                 if vote.directions.contains(.upvote) {
                                     Button(action: {
@@ -188,7 +192,7 @@ struct StoriesListView: View {
                                 Label(story.author, systemImage: "person.circle")
                             })
                         }
-                        .padding(.bottom, SaturnKeychainWrapper.shared.isLoggedIn ? 0 : 25)
+                        .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 25)
                     }
                     .buttonStyle(StoriesListButtonStyle())
                 }

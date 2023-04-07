@@ -7,12 +7,15 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct SearchHistoryView: View {
+    @Injected(\.settingsManager) private var settingsManager
     @Binding var searchQuery: String
     
     @State var historyItemToDelete: SettingSearchHistoryItem?
     @State var showClearAllConfirmation = false
+    
     let onDeleteSearchHistoryItem: ((SettingSearchHistoryItem) -> Void)
     let onClearSearchHistory: (() -> Void)
     
@@ -37,7 +40,7 @@ struct SearchHistoryView: View {
                 .padding([.leading])
             
             List {
-                ForEach(SettingsManager.default.searchHistory().history, id: \.self) { item in
+                ForEach(settingsManager.searchHistory().history, id: \.self) { item in
                     HStack {
                         Image(systemName: "clock")
                             .foregroundColor(.gray)

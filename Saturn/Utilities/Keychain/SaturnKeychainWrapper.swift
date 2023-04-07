@@ -16,19 +16,23 @@ protocol SaturnKeychainWrapping: AnyObject {
     func hasCredential() -> Bool
     func retrieve(for key: KeychainItemKeys) -> String?
     var isLoggedIn: Bool { get }
+    var isLoggedInSubject: CurrentValueSubject<Bool, Never> { get }
 }
 
 final class SaturnKeychainWrapper: SaturnKeychainWrapping {
     private let keychain = KeychainItem(service: "au.jameseunson.Saturn")
-    static let shared = SaturnKeychainWrapper()
     
-    @Published public var isLoggedIn: Bool = false
+    public var isLoggedInSubject = CurrentValueSubject<Bool, Never>(false)
+    
+    public var isLoggedIn: Bool {
+        isLoggedInSubject.value
+    }
     
     init(loginOverride: Bool? = nil) {
         if let loginOverride {
-            isLoggedIn = loginOverride
+            isLoggedInSubject.send(loginOverride)
         } else {
-            isLoggedIn = hasCredential()
+            isLoggedInSubject.send(hasCredential())
         }
     }
     
@@ -42,7 +46,7 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
             try keychain.saveItem(account: KeychainItemKeys.username.rawValue, username)
             
             DispatchQueue.main.async { [weak self] in
-                self?.isLoggedIn = true
+                self?.isLoggedInSubject.send(true)
             }
             
             return true
@@ -55,7 +59,7 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
         try? keychain.deleteItem(account: KeychainItemKeys.cookie.rawValue)
         try? keychain.deleteItem(account: KeychainItemKeys.username.rawValue)
         
-        isLoggedIn = false
+        isLoggedInSubject.send(false)
     }
     
     func hasCredential() -> Bool {

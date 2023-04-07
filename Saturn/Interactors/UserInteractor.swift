@@ -10,6 +10,11 @@ import Foundation
 import Factory
 
 final class UserInteractor: Interactor, InfiniteScrollViewLoading {
+    @Injected(\.apiManager) private var apiManager
+    @Injected(\.htmlApiManager) private var htmlApiManager
+    @Injected(\.commentLoader) private var commentLoader
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     @Published var user: User?
     @Published var items: Array<UserItemViewModel> = []
     @Published var readyToLoadMore: Bool = false
@@ -24,10 +29,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
     @Published private var itemsLoaded = 0
-    
-    @Injected(\.apiManager) private var apiManager
-    @Injected(\.htmlApiManager) private var htmlApiManager
-    @Injected(\.commentLoader) private var commentLoader
     
     init(username: String) {
         self.username = username
@@ -228,8 +229,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     /// Comment scores should only be loaded if the user is logged in and the user in context is the logged in user
     /// as this is the only user we have the ability to retrieve comment scores for
     private func shouldLoadCommentScores() -> Bool {
-        return SaturnKeychainWrapper.shared.isLoggedIn &&
-           self.user?.id == SaturnKeychainWrapper.shared.retrieve(for: .username)
+        return keychainWrapper.isLoggedIn &&
+           self.user?.id == keychainWrapper.retrieve(for: .username)
     }
     
     /// Sets the score for every comment we have a score for

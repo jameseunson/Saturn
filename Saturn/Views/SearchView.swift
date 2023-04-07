@@ -7,8 +7,10 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct SearchView: View {
+    @Injected(\.settingsManager) private var settingsManager
     @ObservedObject var interactor = SearchInteractor()
     
     @State var searchQuery: String = ""
@@ -39,7 +41,7 @@ struct SearchView: View {
             }
             
             if case .notLoading = interactor.results,
-               SettingsManager.default.searchHistory().history.count > 0 {
+               settingsManager.searchHistory().history.count > 0 {
                 SearchHistoryView(searchQuery: $searchQuery) { item in
                     interactor.deleteSearchHistoryItem(item: item)
                     
