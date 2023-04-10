@@ -12,6 +12,7 @@ import Factory
 final class SearchInteractor: Interactor {
     @Injected(\.settingsManager) private var settingsManager
     @Injected(\.searchApiManager) private var apiManager
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     @Published var results: LoadableResource<[SearchResultItem]> = .notLoading
     private let querySubject = PassthroughSubject<String, Never>()
@@ -37,6 +38,7 @@ final class SearchInteractor: Interactor {
             .sink { completion in
                 if case let .failure(error) = completion {
                     print(error)
+                    self.globalErrorStream.addError(error)
                     self.results = .failed
                 }
                 

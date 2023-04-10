@@ -16,9 +16,10 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.apiManager) private var apiManager
     @Injected(\.htmlApiManager) private var htmlApiManager
     @Injected(\.voteManager) private var voteManager
-    @Injected(\.commentAvailableVoteLoader) private var commentAvailableVoteLoader
+    @Injected(\.availableVoteLoader) private var availableVoteLoader
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.commentLoader) private var commentLoader
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     // MARK: - Public
     @Published private(set) var readyToLoadMore: Bool = false
@@ -132,6 +133,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
                         print(error)
                     }
                 } receiveValue: { item in
@@ -155,10 +157,11 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         /// Load voting information about each comment, if the user is logged in (as the user can only vote
         /// if they are logged in)
         if keychainWrapper.isLoggedIn {
-            commentAvailableVoteLoader.availableVotes
+            availableVoteLoader.availableVotes
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
                         print(error)
                     }
                 } receiveValue: { scoreMap in
@@ -176,7 +179,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             Publishers.CombineLatest($story.compactMap { $0 },
                                      commentsDebounced.filter { !$0.isEmpty }.prefix(1)) /// Ensure only loads once comments are at least partially loaded, avoiding redundant requests
                 .sink { story, _ in
-                    self.commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(for: story)
+                    self.availableVoteLoader.setType(.comments(story: story))
+                    self.availableVoteLoader.evaluateShouldLoadNextCommentsPageAvailableVotes(for: story)
                 }
                 .store(in: &disposeBag)
         }
@@ -229,7 +233,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 loadedTopLevelComments.append(nextKidToLoad)
 
                 let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
-                commentAvailableVoteLoader.evaluateShouldLoadNextPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
+                availableVoteLoader.evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
             }
             
             if loadedTopLevelComments.count == kids.count {
@@ -315,6 +319,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .receive(on: DispatchQueue.global())
             .sink { completion in
                 if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
                     print(error)
                     DispatchQueue.main.async {
                         self.commentsLoaded.send(self.commentsLoaded.value + 1)

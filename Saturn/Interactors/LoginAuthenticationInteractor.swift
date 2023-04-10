@@ -10,9 +10,7 @@ import Factory
 
 final class LoginAuthenticationInteractor: Interactor {
     @Injected(\.keychainWrapper) private var keychainWrapper
-    
-    let delegate = LoginAuthenticationURLSessionDelegate()
-    lazy var urlSession = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+    @Injected(\.htmlApiManager) private var htmlApiManager
     
     @Published var isLoading: Bool = false
     
@@ -26,39 +24,13 @@ final class LoginAuthenticationInteractor: Interactor {
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
     }
     
-    // TODO: Move to HTMLAPIManager
     func login(with username: String, password: String) async throws -> Bool {
-        guard let url = URL(string: "https://news.ycombinator.com/login"),
-              !username.isEmpty,
-              !password.isEmpty else {
-            throw LoginError.generic
-        }
-        
-        DispatchQueue.main.async { [weak self] in self?.isLoading = true }
         defer {
             DispatchQueue.main.async { [weak self] in self?.isLoading = false }
         }
-        
-        var mutableRequest = URLRequest(url: url)
-        mutableRequest.httpMethod = "POST"
-        
-        let postBodyString = "goto=news&acct=\(username)&pw=\(password)"
-        mutableRequest.addFormHeaders(postBody: postBodyString)
-        mutableRequest.addDefaultHeaders()
-        
-        let (_, response) = try await urlSession.data(for: mutableRequest)
-        guard let httpResponse = response as? HTTPURLResponse,
-              let cookie = httpResponse.value(forHTTPHeaderField: "Set-Cookie") else {
-            throw LoginError.generic
-        }
-        
-        return keychainWrapper.store(cookie: cookie,
-                                     username: username)
+        DispatchQueue.main.async { [weak self] in self?.isLoading = true }
+        return try await htmlApiManager.login(with: username, password: password)
     }
-}
-
-enum LoginError: Error {
-    case generic
 }
 
 final class LoginAuthenticationURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDelegate {

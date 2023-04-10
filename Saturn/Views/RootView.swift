@@ -17,11 +17,12 @@ struct RootView: View {
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.appRemoteConfig) private var appRemoteConfig
     @Injected(\.persistenceManager) private var persistenceManager
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     @StateObject var interactor = RootInteractor()
     
     @State var titleForUser = "User"
-    @State var showConnectionAlert: Bool = false
+    @State var currentlyDisplayingError: Error?
     
     var body: some View {
         TabView {
@@ -80,11 +81,11 @@ struct RootView: View {
                 titleForUser = "User"
             }
         }
-        .onReceive(networkConnectivityManager.isConnectedPublisher) { output in
-            showConnectionAlert = !output
+        .onReceive(globalErrorStream.errorStream) { output in
+            currentlyDisplayingError = output
         }
-        .toast(isPresenting: $showConnectionAlert, duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
-            AlertToast(type: .regular, title: "No internet connection")
+        .toast(isPresenting: createBoolBinding(from: $currentlyDisplayingError), duration: 5.0, tapToDismiss: true, offsetY: (UIScreen.main.bounds.size.height / 2) - 120, alert: {
+            AlertToast(type: .regular, title: currentlyDisplayingError?.localizedDescription ?? "An unknown error has occurred")
             
         }, onTap: nil, completion: nil)
         .onChange(of: scenePhase) { _ in

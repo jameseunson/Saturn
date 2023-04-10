@@ -17,6 +17,8 @@ final class StoriesListInteractor: Interactor {
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     @Injected(\.settingsManager) private var settingsManager
     @Injected(\.keychainWrapper) private var keychainWrapper
+    @Injected(\.availableVoteLoader) private var availableVoteLoader
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     private let pageLength = 10
     private let type: StoryListType
@@ -50,6 +52,7 @@ final class StoriesListInteractor: Interactor {
         #endif
         super.init()
         
+        self.availableVoteLoader.setType(.stories)
         self.lastRefreshTimestamp = settingsManager.date(for: .lastRefreshTimestamp)
     }
     
@@ -74,8 +77,8 @@ final class StoriesListInteractor: Interactor {
                 }
                 .sink(receiveCompletion: { completion in
                     if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
                         print(error)
-                        // TODO:
                     }
                 }, receiveValue: { response in
                     guard response.source == .cache else {
@@ -87,9 +90,6 @@ final class StoriesListInteractor: Interactor {
         }
         
         /// Determine whether we can load the next page
-        /// If online (`loaded(source) == .network`), assumed we always can
-        /// If offline (`loaded(source) == .cache`), check whether the next 10 stories
-        /// live in the disk cache - if so, we can load
         Publishers.CombineLatest3($currentPage, $storyIds, $loadingState)
             .filter { _, _, loadingState in
                 if case .loaded = loadingState {
@@ -98,24 +98,10 @@ final class StoriesListInteractor: Interactor {
                 return false
             }
             .map { currentPage, storyIds, loadingState -> Bool in
-                guard case let .loaded(source) = loadingState else {
+                guard case .loaded(_) = loadingState else {
                     return false
                 }
-                switch source {
-                case .network:
-                    return true
-
-                case .cache:
-                    if storyIds.count == 0 { return false }
-
-                    let ids = self.idsForPage(.page(self.currentPage + 1), with: storyIds)
-                    var availableInCache = true
-                    for id in ids {
-                        if !self.apiManager.hasCachedResponse(for: id) { availableInCache = false; break }
-                    }
-
-                    return availableInCache
-                }
+                return self.networkConnectivityManager.isConnected()
             }
             .receive(on: RunLoop.main)
             .sink { _ in }
@@ -123,18 +109,36 @@ final class StoriesListInteractor: Interactor {
                 self.canLoadNextPage = canLoadNextPage
             }
             .store(in: &disposeBag)
+        
+        /// Load voting information about each comment, if the user is logged in (as the user can only vote
+        /// if they are logged in)
+        if keychainWrapper.isLoggedIn {
+            availableVoteLoader.availableVotes
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
+                        print(error)
+                    }
+                } receiveValue: { scoreMap in
+                    self.availableVotes = scoreMap
+
+                    for story in self.stories {
+                        if let vote = scoreMap[String(story.id)] {
+                            story.vote = vote
+                        }
+                    }
+                    self.objectWillChange.send()
+                }
+                .store(in: &disposeBag)
+        }
     }
     
     func loadNextPageFromSource() {
-        guard case let .loaded(source) = self.loadingState else {
+        guard case .loaded(_) = self.loadingState else {
             return
         }
-        switch source {
-        case .network:
-            loadNextPage(cacheBehavior: .ignore)
-        case .cache:
-            loadNextPage(cacheBehavior: .offlineOnly)
-        }
+        loadNextPage(cacheBehavior: .ignore)
     }
     
     @MainActor
@@ -145,23 +149,17 @@ final class StoriesListInteractor: Interactor {
             
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
+            self.availableVoteLoader.clearVotes()
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
-            let scoreMap: APIResponse<VoteHTMLParserResponse>
-            
-            if keychainWrapper.isLoggedIn {
-                scoreMap = try await htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: .ignore)
-            } else {
-                scoreMap = APIResponse(response: VoteHTMLParserResponse(scoreMap: [String: HTMLAPIVote](), hasNextPage: false), source: .network)
-            }
+            self.availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: stories.response.count)
             
             self.completeLoad(with: stories.response,
-                              scoreMap: scoreMap.response.scoreMap,
                               source: .network)
             
         } catch {
-            // TODO: Handle error
+            self.globalErrorStream.addError(StoriesListError.cannotRefresh)
             print(error)
         }
     }
@@ -215,32 +213,16 @@ final class StoriesListInteractor: Interactor {
                 .flatMap { ids -> AnyPublisher<[APIResponse<Story>], Error> in
                     return self.apiManager.loadStories(ids: self.idsForPage(.current, with: ids), cacheBehavior: cacheBehavior)
                 }
-                .flatMap { stories -> AnyPublisher<(APIResponse<VoteHTMLParserResponse>, [APIResponse<Story>]), Error> in
-                    if self.keychainWrapper.isLoggedIn {
-                        /// Load votes for the current page
-                        /// Because we cannot get this from the Firebase API, the HTML 'API' has to be used instead
-                        /// which involves scraping the html of news.ycombinator.com
-                        /// Firebase pages are 10 items, whereas HTML pages are 30 items, so every 3 Firebase pages a new HTML page is scraped
-                        return self.htmlApiManager.loadAvailableVotesForStoriesList(page: (self.currentPage / 3), cacheBehavior: cacheBehavior)
-                            .map { ($0, stories) }
-                            .eraseToAnyPublisher()
-                    } else {
-                        /// If not logged in, return an empty dictionary
-                        return Just(APIResponse(response: VoteHTMLParserResponse(scoreMap: [String: HTMLAPIVote](), hasNextPage: false), source: .network))
-                            .map { ($0, stories) }
-                            .setFailureType(to: Error.self)
-                            .eraseToAnyPublisher()
-                    }
-                }
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         print(error)
                         self.loadingState = .failed
+                        self.globalErrorStream.addError(error)
                         promise(.failure(error))
                     }
 
-                } receiveValue: { scoreMapResult, stories in
+                } receiveValue: { stories in
                     print("loadNextPage receiveValue")
                     
                     /// Handle loading stories
@@ -248,7 +230,7 @@ final class StoriesListInteractor: Interactor {
                     stories.forEach { if $0.source == .cache { source = .cache } }
                     
                     /// Complete load
-                    self.completeLoad(with: stories.map { $0.response }, scoreMap: scoreMapResult.response.scoreMap, source: source)
+                    self.completeLoad(with: stories.map { $0.response }, source: source)
                     promise(.success(APIResponse(response: stories.map { $0.response },
                                                  source: source)))
                 }
@@ -265,6 +247,7 @@ final class StoriesListInteractor: Interactor {
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
                         promise(.failure(error))
                     }
                 } receiveValue: { ids in
@@ -274,18 +257,6 @@ final class StoriesListInteractor: Interactor {
                 .store(in: &self.disposeBag)
             
         }.eraseToAnyPublisher()
-    }
-    
-    private func nextPageAvailableFromCache() -> Bool {
-        if storyIds.count == 0 {
-           return false
-        }
-        let ids = idsForPage(.page(self.currentPage + 1), with: storyIds)
-        var availableInCache = true
-        for id in ids {
-            if !apiManager.hasCachedResponse(for: id) { availableInCache = false; break }
-        }
-        return availableInCache
     }
     
     /// Calculate page offsets
@@ -305,7 +276,7 @@ final class StoriesListInteractor: Interactor {
         return idsPage
     }
     
-    private func completeLoad(with stories: [Story], scoreMap: [String: HTMLAPIVote], source: APIResponseLoadSource) {
+    private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
         /// Handle stories
         let viewModels = stories.map { StoryRowViewModel(story: $0) }
         self.stories.append(contentsOf: viewModels)
@@ -316,16 +287,16 @@ final class StoriesListInteractor: Interactor {
                 viewModel.vote = vote
             }
         }
+        availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: self.stories.count)
         
         /// Handle scoremap (if exists)
-        self.availableVotes = scoreMap
-        
         for story in self.stories {
-            if let vote = scoreMap[String(story.id)] {
+            if story.vote == nil,
+               let vote = self.availableVotes[String(story.id)] {
                 story.vote = vote
             }
         }
-        
+
         /// Housekeeping after update
         self.loadingState = .loaded(source)
         self.currentPage += 1
@@ -341,4 +312,18 @@ final class StoriesListInteractor: Interactor {
 enum IDPage: Equatable {
     case current
     case page(Int)
+}
+
+enum StoriesListError: Error {
+    case cannotRefresh
+    
+    var errorDescription: String? {
+        switch self {
+        case .cannotRefresh:
+            return NSLocalizedString(
+                "Could not refresh stories list. Please check your connection and try again later.",
+                comment: ""
+            )
+        }
+    }
 }

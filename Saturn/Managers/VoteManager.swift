@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Factory
 
 protocol VoteManaging: AnyObject {
     func vote(item: Votable, direction: HTMLAPIVoteDirection, shouldUpdate: @escaping (() -> ()))
@@ -13,10 +14,11 @@ protocol VoteManaging: AnyObject {
 
 final class VoteManager: VoteManaging {
     private let htmlApiManager = HTMLAPIManager()
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     func vote(item: Votable, direction: HTMLAPIVoteDirection, shouldUpdate: @escaping (() -> ())) {
         guard let info = item.vote else {
-            // TODO: Error
+            self.globalErrorStream.addError(HTMLAPIManagerError.cannotVote)
             return
         }
         Task { @MainActor in
@@ -40,7 +42,7 @@ final class VoteManager: VoteManaging {
                 item.vote?.state = stateBeforeVote
                 shouldUpdate()
                 
-                // TODO: Error
+                self.globalErrorStream.addError(HTMLAPIManagerError.cannotVote)
             }
         }
     }

@@ -76,8 +76,9 @@ final class APIDiskDatabaseResponseCache: APIDiskResponseCaching {
                 }
                 if let diskCacheExpiry,
                    creationDate < diskCacheExpiry {
-                    /// DELETE
+                    print("deleting \(String(describing: item.key))")
                     context.delete(item)
+                    try context.save()
                     continue
                 }
                 

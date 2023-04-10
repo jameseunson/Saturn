@@ -16,6 +16,8 @@ final class RootInteractor: Interactor {
     @Injected(\.appRemoteConfig) private var appRemoteConfig
 
     override func didBecomeActive() {
+        print(FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask))
+        
         networkConnectivityManager.start()
         
         /// Don't continue to increment launch counter if user has already seen review prompt

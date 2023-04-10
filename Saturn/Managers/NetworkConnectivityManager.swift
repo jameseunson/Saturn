@@ -8,6 +8,7 @@
 import Network
 import SwiftUI
 import Combine
+import Factory
 
 /// @mockable
 protocol NetworkConnectivityManaging: AnyObject {
@@ -19,7 +20,13 @@ protocol NetworkConnectivityManaging: AnyObject {
 }
 
 public final class NetworkConnectivityManager: NetworkConnectivityManaging {
+    @Injected(\.globalErrorStream) private var globalErrorStream
+    
     public var isConnectedPublisher: AnyPublisher<Bool, Never>
+    private var disposeBag = Set<AnyCancellable>()
+    deinit {
+        disposeBag.forEach { $0.cancel() }
+    }
     
     private var isConnectedSubject = CurrentValueSubject<Bool, Never>(true)
     private let nwMonitor = NWPathMonitor()
@@ -36,6 +43,14 @@ public final class NetworkConnectivityManager: NetworkConnectivityManaging {
                 self?.isConnectedSubject.send(path.status == .satisfied)
             }
         }
+        
+        isConnectedPublisher
+            .removeDuplicates()
+            .filter { !$0 }
+            .sink { isConnected in
+                self.globalErrorStream.addError(NetworkConnectivityManagerError.notConnected)
+            }
+            .store(in: &disposeBag)
     }
     
     public func stop() {
@@ -48,5 +63,19 @@ public final class NetworkConnectivityManager: NetworkConnectivityManaging {
     
     public func isConnected() -> Bool {
         self.isConnectedSubject.value
+    }
+}
+
+enum NetworkConnectivityManagerError: Error {
+    case notConnected
+    
+    var errorDescription: String? {
+        switch self {
+        case .notConnected:
+            return NSLocalizedString(
+                "No internet connection",
+                comment: ""
+            )
+        }
     }
 }

@@ -8,7 +8,12 @@
 import Foundation
 import Combine
 
-final class GlobalErrorStream {
+protocol GlobalErrorStreaming: AnyObject {
+    var errorStream: AnyPublisher<Error, Never> { get }
+    func addError(_ error: Error)
+}
+
+final class GlobalErrorStream: GlobalErrorStreaming {
     private let errorSubject = PassthroughSubject<Error, Never>()
     public let errorStream: AnyPublisher<Error, Never>
     

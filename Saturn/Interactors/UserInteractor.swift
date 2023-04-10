@@ -14,6 +14,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.htmlApiManager) private var htmlApiManager
     @Injected(\.commentLoader) private var commentLoader
     @Injected(\.keychainWrapper) private var keychainWrapper
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     @Published var user: User?
     @Published var items: Array<UserItemViewModel> = []
@@ -45,6 +46,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
                         print(error)
                     }
                     
@@ -83,8 +85,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
                 if case let .failure(error) = completion {
-                    print(error)
-                    // TODO: 
+                    self.globalErrorStream.addError(error)
+                    print(error) 
                 }
             }, receiveValue: { item in
                 var mutableContexts = self.commentContexts.value
@@ -140,6 +142,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
                     print(error)
                 }
 
@@ -167,16 +170,14 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     func refreshUser() async {
         Task {
-            guard let user else {
-                return
-            }
+            guard let user else { return }
             
             DispatchQueue.main.async {
                 self.items.removeAll()
+                self.itemsLoaded = 0
+                self.submittedIds.removeAll()
+                self.scoreMap.removeAll()
             }
-            self.itemsLoaded = 0
-            self.submittedIds.removeAll()
-            self.scoreMap.removeAll()
             
             self.currentPage = 0
             self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response

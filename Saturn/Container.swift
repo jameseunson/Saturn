@@ -31,8 +31,8 @@ extension Container {
         self { VoteManager() }
     }
     
-    var commentAvailableVoteLoader: Factory<CommentAvailableVoteLoading> {
-        self { CommentAvailableVoteLoader() }
+    var availableVoteLoader: Factory<AvailableVoteLoading> {
+        self { AvailableVoteLoader() }
     }
     
     var commentLoader: Factory<CommentLoading> {
@@ -69,6 +69,11 @@ extension Container {
     
     var persistenceManager: Factory<PersistenceManager> {
         self { PersistenceManager() }
+            .singleton
+    }
+    
+    var globalErrorStream: Factory<GlobalErrorStreaming> {
+        self { GlobalErrorStream() }
             .singleton
     }
 }

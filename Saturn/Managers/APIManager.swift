@@ -40,6 +40,7 @@ final class APIManager: APIManaging {
     @Injected(\.apiMemoryResponseCache) private var cache
     @Injected(\.apiDecoder) private var decoder
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    @Injected(\.globalErrorStream) private var globalErrorStream
     
     #if DEBUG
     let isDebugLoggingEnabled = true
@@ -183,6 +184,7 @@ final class APIManager: APIManaging {
                     
                 } else {
                     print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
+                    self.globalErrorStream.addError(APIManagerNetworkError.unrecognizedItemType)
                     // TODO: Handle other types
                     return Empty().eraseToAnyPublisher()
                 }
@@ -210,7 +212,7 @@ final class APIManager: APIManaging {
 
         } else {
             print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
-            throw APIManagerError.generic
+            throw APIManagerNetworkError.unrecognizedItemType
         }
     }
     
@@ -359,7 +361,7 @@ final class APIManager: APIManaging {
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(self.timeoutSeconds)) {
                 lock.lock {
                     if didComplete.pointee { return }; didComplete.pointee = true
-                    continuation.resume(throwing: TimeoutError())
+                    continuation.resume(throwing: APIManagerNetworkError.timeout)
                 }
             }
             
@@ -411,8 +413,24 @@ enum APIResponseLoadSource: Codable {
     case cache
 }
 
-public struct TimeoutError: LocalizedError {
-    public var errorDescription: String? = "Task timed out before completion"
+enum APIManagerNetworkError: Error {
+    case timeout
+    case unrecognizedItemType
+    
+    var errorDescription: String? {
+        switch self {
+        case .timeout:
+            return NSLocalizedString(
+                "Loading failed because your internet connection is experiencing issues.",
+                comment: ""
+            )
+        case .unrecognizedItemType:
+            return NSLocalizedString(
+                "Could not load specified type of story.",
+                comment: ""
+            )
+        }
+    }
 }
 
 /// @mockable

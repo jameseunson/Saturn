@@ -14,13 +14,14 @@ import Factory
 protocol HTMLAPIManaging: AnyObject {
     func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [String: Int]
     func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[String: Int], Error>
-    func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> VoteHTMLParserResponse
-    func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error>
+    func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> APIResponse<VoteHTMLParserResponse>
+    func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
     func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws
     func unvote(info: HTMLAPIVote) async throws
     func flag(info: HTMLAPIVote) async throws
+    func login(with username: String, password: String) async throws -> Bool
 }
 
 /// The HN API is read-only and does not support authenticated accounts, so when we want to login as a specific user
@@ -30,6 +31,9 @@ final class HTMLAPIManager: HTMLAPIManaging {
     @Injected(\.apiMemoryResponseCache) private var cache
     @Injected(\.apiDecoder) private var decoder
     @Injected(\.keychainWrapper) private var keychainWrapper
+    
+    lazy var loginUrlSession = URLSession(configuration: .default, delegate: loginDelegate, delegateQueue: nil)
+    let loginDelegate = LoginAuthenticationURLSessionDelegate()
     
     init() {}
     
@@ -57,7 +61,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
     
     /// Loads whether we can upvote or downvote certain comments in a story thread
-    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> VoteHTMLParserResponse {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> APIResponse<VoteHTMLParserResponse> {
         guard var urlComponents = URLComponents(string: "https://news.ycombinator.com/item") else {
             throw HTMLAPIManagerError.cannotLoad
         }
@@ -71,10 +75,12 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         
         let htmlString = try await loadHTML(for: url)
-        return try VoteHTMLParser().parseCommentHTML(htmlString, storyId: storyId)
+        let result = try VoteHTMLParser().parseCommentHTML(htmlString, storyId: storyId)
+        
+        return APIResponse(response: result, source: .network)
     }
     
-    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         return publisherForAsync {
             try await self.loadAvailableVotesForComments(page: page, storyId: storyId)
         }
@@ -124,9 +130,9 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         
         let htmlString = try await loadHTML(for: url)
-        print(htmlString)
-        
-        // TODO: Error handling
+        if htmlString != "Unknown." {
+            throw HTMLAPIManagerError.cannotVote
+        }
     }
     
     func unvote(info: HTMLAPIVote) async throws {
@@ -143,6 +149,30 @@ final class HTMLAPIManager: HTMLAPIManaging {
         print(htmlString)
         
         // TODO: Error handling
+    }
+    
+    func login(with username: String, password: String) async throws -> Bool {
+        guard let url = URL(string: "https://news.ycombinator.com/login"),
+              !username.isEmpty,
+              !password.isEmpty else {
+            throw HTMLAPIManagerError.cannotLogin
+        }
+        
+        var mutableRequest = URLRequest(url: url)
+        mutableRequest.httpMethod = "POST"
+        
+        let postBodyString = "goto=news&acct=\(username)&pw=\(password)"
+        mutableRequest.addFormHeaders(postBody: postBodyString)
+        mutableRequest.addDefaultHeaders()
+        
+        let (_, response) = try await loginUrlSession.data(for: mutableRequest)
+        guard let httpResponse = response as? HTTPURLResponse,
+              let cookie = httpResponse.value(forHTTPHeaderField: "Set-Cookie") else {
+            throw HTMLAPIManagerError.cannotLogin
+        }
+        
+        return keychainWrapper.store(cookie: cookie,
+                                     username: username)
     }
     
     // MARK: -
@@ -185,6 +215,32 @@ enum HTMLAPIManagerError: Error {
     case cannotFindElements
     case cannotVote
     case cannotFlag
+    case cannotLogin
+    
+    var errorDescription: String? {
+        switch self {
+        case .cannotLoad, .invalidHTML, .invalidScore, .cannotFindElements:
+            return NSLocalizedString(
+                "Could not load vote information for this story.",
+                comment: ""
+            )
+        case .cannotVote:
+            return NSLocalizedString(
+                "An error was encountered when voting on this item.",
+                comment: ""
+            )
+        case .cannotFlag:
+            return NSLocalizedString(
+                "An error was encountered when flagging this item.",
+                comment: ""
+            )
+        case .cannotLogin:
+            return NSLocalizedString(
+                "Could not login with the credentials provided.",
+                comment: ""
+            )
+        }
+    }
 }
 
 extension URLComponents {
@@ -199,12 +255,12 @@ extension URLComponents {
     }
 }
 
-/// Add `page` defaults to `HTMLAPIManaging` protocol
+/// Add `page` and `cacheBehavior` defaults to `HTMLAPIManaging` protocol
 extension HTMLAPIManaging {
-    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> VoteHTMLParserResponse {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) async throws -> APIResponse<VoteHTMLParserResponse> {
         try await loadAvailableVotesForComments(page: page, storyId: storyId)
     }
-    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<VoteHTMLParserResponse, Error> {
+    func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         loadAvailableVotesForComments(page: page, storyId: storyId)
     }
     func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [String: Int] {
@@ -212,5 +268,11 @@ extension HTMLAPIManaging {
     }
     func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<[String: Int], Error> {
         loadScoresForLoggedInUserComments(startFrom: startFrom)
+    }
+    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
+        try await loadAvailableVotesForStoriesList(page: page, cacheBehavior: cacheBehavior)
+    }
+    func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
+        loadAvailableVotesForStoriesList(page: page, cacheBehavior: cacheBehavior)
     }
 }
