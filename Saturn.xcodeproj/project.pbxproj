@@ -102,7 +102,7 @@
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
-		1A9870FF29CD865A0022BA2B /* DragVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */; };
+		1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */; };
 		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
 		1AA05D7029D3D22700D3013C /* HTMLAPIVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */; };
@@ -242,7 +242,7 @@
 		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
-		1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragVoteGestureModifier.swift; sourceTree = "<group>"; };
+		1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeVoteGestureModifier.swift; sourceTree = "<group>"; };
 		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
 		1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIVote.swift; sourceTree = "<group>"; };
 		1AA05D7129D3FD3100D3013C /* URL+CacheKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+CacheKey.swift"; sourceTree = "<group>"; };
@@ -374,7 +374,7 @@
 				1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */,
 				1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */,
 				1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */,
-				1A9870FE29CD865A0022BA2B /* DragVoteGestureModifier.swift */,
+				1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */,
 				1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */,
 			);
 			path = Modifiers;
@@ -922,7 +922,7 @@
 				1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */,
 				1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
-				1A9870FF29CD865A0022BA2B /* DragVoteGestureModifier.swift in Sources */,
+				1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
@@ -1104,7 +1104,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1142,7 +1142,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;

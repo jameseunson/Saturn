@@ -120,6 +120,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     func loadMoreItems() {
         getSubmittedIds()
             .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
+                if ids.isEmpty { return Just(([UserItem](), ids)).setFailureType(to: Error.self).eraseToAnyPublisher() }
+                
                 let ids = self.idsForCurrentPage(with: ids)
                 return self.apiManager.loadUserItems(ids: ids)
                     .map { userItems in
@@ -157,7 +159,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     func getSubmittedIds() -> AnyPublisher<[Int], Never> {
         if self.submittedIds.isEmpty {
-            return $user.compactMap { $0?.submitted }
+            return $user.map { $0?.submitted ?? [] }
                 .handleEvents(receiveOutput: { submitted in
                     self.submittedIds.append(contentsOf: submitted)
                 })
@@ -181,7 +183,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             
             self.currentPage = 0
             self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
-            let ids = idsForCurrentPage(with: user.submitted)
+            let ids = idsForCurrentPage(with: user.submitted ?? [])
             let items = try await self.apiManager.loadUserItems(ids: ids)
             
             if self.shouldLoadCommentScores() {
@@ -256,5 +258,14 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             startFrom = max(last.id-1, 0)
         }
         return startFrom
+    }
+    
+    private func isLoadingLoggedInUser(_ username: String) -> Bool {
+        if keychainWrapper.isLoggedIn,
+           let loggedInUsername = keychainWrapper.retrieve(for: .username),
+           loggedInUsername == username {
+            return true
+        }
+        return false
     }
 }

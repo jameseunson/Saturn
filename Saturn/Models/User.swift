@@ -12,7 +12,7 @@ struct User: Identifiable, Hashable, Codable {
     let created: Date
     let about: AttributedString?
     let karma: Int
-    let submitted: [Int]
+    let submitted: [Int]?
     
     init(id: String, created: Date, about: AttributedString?, karma: Int, submitted: [Int]) {
         self.id = id
@@ -41,7 +41,7 @@ struct User: Identifiable, Hashable, Codable {
         }
         
         self.karma = try container.decode(Int.self, forKey: .karma)
-        self.submitted = try container.decode([Int].self, forKey: .submitted)
+        self.submitted = try container.decodeIfPresent([Int].self, forKey: .submitted)
     }
 }
 

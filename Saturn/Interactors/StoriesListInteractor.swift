@@ -147,13 +147,13 @@ final class StoriesListInteractor: Interactor {
             self.loadingState = .refreshing(source)
             self.currentPage = 0
             
-            self.storyIds.removeAll(keepingCapacity: true)
-            self.stories.removeAll(keepingCapacity: true)
-            self.availableVoteLoader.clearVotes()
-            
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
             self.availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: stories.response.count)
+            
+            self.storyIds.removeAll(keepingCapacity: true)
+            self.stories.removeAll(keepingCapacity: true)
+            self.availableVoteLoader.clearVotes()
             
             self.completeLoad(with: stories.response,
                               source: .network)

@@ -27,6 +27,7 @@ struct CommentView: View {
     let onTapStoryId: ((Int) -> Void)?
     let onTapURL: ((URL) -> Void)?
     let onTapVote: ((HTMLAPIVoteDirection) -> Void)?
+    let onTapShare: ((CommentViewModel) -> Void)?
     
     let displaysStory: Bool
     let isHighlighted: Bool
@@ -46,7 +47,8 @@ struct CommentView: View {
          onToggleExpanded: OnToggleExpandedCompletion? = nil,
          onTapStoryId: ((Int) -> Void)? = nil,
          onTapURL: ((URL) -> Void)? = nil,
-         onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil) {
+         onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
+         onTapShare: ((CommentViewModel) -> Void)? = nil) {
         _expanded = expanded
         self.comment = comment
         self.displaysStory = displaysStory
@@ -57,6 +59,7 @@ struct CommentView: View {
         self.onTapStoryId = onTapStoryId
         self.onTapURL = onTapURL
         self.onTapVote = onTapVote
+        self.onTapShare = onTapShare
     }
     
     var body: some View {
@@ -127,6 +130,7 @@ struct CommentView: View {
             }
             Button(action: {
                 // TODO:
+                onTapShare?(comment)
             }, label: {
                 Label("Share", systemImage: "square.and.arrow.up")
             })
@@ -139,7 +143,7 @@ struct CommentView: View {
             })
         })
         .if(keychainWrapper.isLoggedIn, transform: { view in
-            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
+            view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: comment.vote?.directions ?? []))
         })

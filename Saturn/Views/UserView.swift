@@ -50,63 +50,75 @@ struct UserView: View {
                     
                     Divider()
                     
-                    ForEach(items) { item in
-                        switch item {
-                        case let .comment(comment):
-                            CommentView(expanded: .constant(.expanded),
-                                        comment: comment,
-                                        displaysStory: true) { comment in
-                                selectedCommentToShare = comment
-                                
-                            } onTapUser: { _ in
-                                withAnimation {
-                                    reader.scrollTo("top")
-                                }
-                                
-                            } onToggleExpanded: { comment, expanded, commentOnScreen in
-                                selectedCommentToView = comment
-                                
-                            } onTapStoryId: { storyId in
-                                displayingInternalStoryId = storyId
-                                
-                            } onTapURL: { url in
-                                self.displayingSafariURL = url
-                            }
-                            VStack(alignment: .leading) {
-                                if let context = contexts[comment.id],
-                                   let story = context.story {
-                                    StoryRowView(story: StoryRowViewModel(story: story),
-                                                 onTapArticleLink: { url in self.displayingSafariURL = url },
-                                                 context: .user)
-                                        .padding([.top, .bottom], 10)
-                                        .onTapGesture {
-                                            selectedStoryToView = StoryRowViewModel(story: story)
-                                        }
-                                } else {
-                                    ProgressView()
-                                        .padding()
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .background {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .foregroundColor( Color(UIColor.systemGray6) )
-                            }
-                            .padding(10)
-                            .padding(.bottom, 20)
-
-                        case let .story(story):
-                            StoryRowView(story: story,
-                                         onTapArticleLink: { url in self.displayingSafariURL = url })
-                                .onTapGesture {
-                                    selectedStoryToView = story
-                                }
-                                .padding([.top, .bottom], 10)
+                    if items.count == 0 {
+                        HStack {
+                            Spacer()
+                            Text("No submissions yet...")
+                                .foregroundColor(.gray)
+                            Spacer()
                         }
-                        Divider()
-                    }
-                    if itemsRemainingToLoad {
-                        ListLoadingView()
+                        .frame(height: UIScreen.main.bounds.height - 250)
+                        .listRowSeparator(.hidden)
+                        
+                    } else {
+                        ForEach(items) { item in
+                            switch item {
+                            case let .comment(comment):
+                                CommentView(expanded: .constant(.expanded),
+                                            comment: comment,
+                                            displaysStory: true) { comment in
+                                    selectedCommentToShare = comment
+                                    
+                                } onTapUser: { _ in
+                                    withAnimation {
+                                        reader.scrollTo("top")
+                                    }
+                                    
+                                } onToggleExpanded: { comment, expanded, commentOnScreen in
+                                    selectedCommentToView = comment
+                                    
+                                } onTapStoryId: { storyId in
+                                    displayingInternalStoryId = storyId
+                                    
+                                } onTapURL: { url in
+                                    self.displayingSafariURL = url
+                                }
+                                VStack(alignment: .leading) {
+                                    if let context = contexts[comment.id],
+                                       let story = context.story {
+                                        StoryRowView(story: StoryRowViewModel(story: story),
+                                                     onTapArticleLink: { url in self.displayingSafariURL = url },
+                                                     context: .user)
+                                            .padding([.top, .bottom], 10)
+                                            .onTapGesture {
+                                                selectedStoryToView = StoryRowViewModel(story: story)
+                                            }
+                                    } else {
+                                        ProgressView()
+                                            .padding()
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .background {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .foregroundColor( Color(UIColor.systemGray6) )
+                                }
+                                .padding(10)
+                                .padding(.bottom, 20)
+
+                            case let .story(story):
+                                StoryRowView(story: story,
+                                             onTapArticleLink: { url in self.displayingSafariURL = url })
+                                    .onTapGesture {
+                                        selectedStoryToView = story
+                                    }
+                                    .padding([.top, .bottom], 10)
+                            }
+                            Divider()
+                        }
+                        if itemsRemainingToLoad {
+                            ListLoadingView()
+                        }
                     }
                 }
             }

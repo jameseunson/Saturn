@@ -19,10 +19,14 @@ struct UserViewModel: Codable, Hashable, Identifiable {
         self.about = user.about
         self.created = "Created \(RelativeDateTimeFormatter().localizedString(for: user.created, relativeTo: Date()))"
         
-        if user.submitted.count >= 1000 {
-            self.submissions = String(format: "%.1f", Double(user.submitted.count) / 1000) + "k"
+        if let submitted = user.submitted {
+            if submitted.count >= 1000 {
+                self.submissions = String(format: "%.1f", Double(submitted.count) / 1000) + "k"
+            } else {
+                self.submissions = String(submitted.count)
+            }
         } else {
-            self.submissions = String(user.submitted.count)
+            self.submissions = "0"
         }
         
         if user.karma >= 1000 {

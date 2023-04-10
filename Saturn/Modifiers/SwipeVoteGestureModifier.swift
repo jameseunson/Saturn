@@ -1,5 +1,5 @@
 //
-//  DragVoteGestureModifier.swift
+//  SwipeVoteGestureModifier.swift
 //  Saturn
 //
 //  Created by James Eunson on 24/3/2023.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct DragVoteGestureModifier: ViewModifier {
+struct SwipeVoteGestureModifier: ViewModifier {
     @State var gestureComplete: Bool = false
     @Binding var dragOffset: CGFloat
     
@@ -39,10 +39,14 @@ struct DragVoteGestureModifier: ViewModifier {
                         /// If not, do not register haptic feedback or perform callback
                         if width > 0,
                            !directionsEnabled.contains(.upvote) {
+                            let errorFeedback = UINotificationFeedbackGenerator()
+                            errorFeedback.notificationOccurred(.error)
                             return
                         }
                         if width < 0,
                            !directionsEnabled.contains(.downvote) {
+                            let errorFeedback = UINotificationFeedbackGenerator()
+                            errorFeedback.notificationOccurred(.error)
                             return
                         }
                         

@@ -171,7 +171,7 @@ struct StoryRowView: View {
             .padding([.leading, .trailing], 15)
         }
         .if(isLoggedIn, transform: { view in
-            view.modifier(DragVoteGestureModifier(dragOffset: $dragOffset,
+            view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: story.vote?.directions ?? []))
         })

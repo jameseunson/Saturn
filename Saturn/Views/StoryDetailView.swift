@@ -204,6 +204,9 @@ struct StoryDetailView: View {
 
                                 } onTapVote: { direction in
                                     self.interactor.didTapVote(item: comment, direction: direction)
+                                    
+                                } onTapShare: { comment in
+                                    selectedShareItem = .comment(comment)
                                 }
                                 .id(comment.id)
                                 .onAppear {
