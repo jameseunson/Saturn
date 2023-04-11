@@ -16,10 +16,10 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.globalErrorStream) private var globalErrorStream
     
-    @Published var user: User?
-    @Published var items: Array<UserItemViewModel> = []
-    @Published var readyToLoadMore: Bool = false
-    @Published var itemsRemainingToLoad: Bool = true
+    @Published private(set) var user: User?
+    @Published private(set) var items: LoadableResource<[UserItemViewModel]> = .notLoading
+    @Published private(set) var readyToLoadMore: Bool = false
+    @Published private(set) var itemsRemainingToLoad: Bool = true
     
     private let username: String
     private let pageLength = 10
@@ -27,6 +27,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     private var currentPage: Int = 0
     private var submittedIds = [Int]()
     private var scoreMap = [String: Int]()
+    private var itemsAccumulator = [UserItemViewModel]()
+    private var lastRefreshTimestamp: Date?
     
     var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
     @Published private var itemsLoaded = 0
@@ -41,6 +43,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     override func didBecomeActive() {
+        self.items = .loading
+        
         if user == nil {
             apiManager.loadUser(id: username)
                 .receive(on: RunLoop.main)
@@ -52,12 +56,19 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     
                 } receiveValue: { user in
                     self.user = user.response
+                    self.loadMoreItems()
                 }
                 .store(in: &disposeBag)
         }
         
         /// Retrieve context object `CommentLoaderContainer` for each comment
         $items
+            .map { models -> Array<UserItemViewModel> in
+                guard case .loaded(let response) = models else {
+                    return []
+                }
+                return response
+            }
             .filter { $0.count > 0 }
             .setFailureType(to: Error.self)
             .flatMap { models in
@@ -73,7 +84,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     }
                 }
                 .map { self.loadCommentChain(from: $0) }
-                
+
                 if publishers.count > 0 {
                     return Publishers.MergeMany(publishers)
                         .eraseToAnyPublisher()
@@ -86,19 +97,17 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .sink(receiveCompletion: { completion in
                 if case let .failure(error) = completion {
                     self.globalErrorStream.addError(error)
-                    print(error) 
+                    print(error)
                 }
             }, receiveValue: { item in
                 var mutableContexts = self.commentContexts.value
-                
+
                 let (commentViewModel, container) = item
                 mutableContexts[commentViewModel.id] = container
-                
+
                 self.commentContexts.send(mutableContexts)
             })
             .store(in: &disposeBag)
-        
-        loadMoreItems()
     }
     
     func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
@@ -174,8 +183,16 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         Task {
             guard let user else { return }
             
+            /// Abort refresh if last refresh occurred within 60 seconds of most recent load
+            /// Avoids the app potentially placing too much load on HN
+            if let lastRefreshTimestamp,
+               lastRefreshTimestamp > Date().addingTimeInterval(-60) {
+                    return
+            }
+            
             DispatchQueue.main.async {
-                self.items.removeAll()
+                self.items = .notLoading
+                self.itemsAccumulator.removeAll()
                 self.itemsLoaded = 0
                 self.submittedIds.removeAll()
                 self.scoreMap.removeAll()
@@ -209,7 +226,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             }
         }
         
-        self.items.append(contentsOf: viewModels)
+        self.itemsAccumulator.append(contentsOf: viewModels)
+        self.items = .loaded(response: itemsAccumulator)
         self.currentPage += 1
         self.itemsLoaded += idsForPage.count
         self.readyToLoadMore = true
@@ -217,6 +235,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         if self.itemsLoaded == self.submittedIds.count {
             self.itemsRemainingToLoad = false
         }
+        self.lastRefreshTimestamp = Date()
     }
     
     // MARK: -
@@ -253,8 +272,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     /// We can calculate the correct `next` value by looking at the last comment and subtracting 1 from the id
     private func scoreMapStartFrom() -> Int? {
         var startFrom: Int? = nil
-        if !self.items.isEmpty,
-           let last = self.items.last {
+        if !self.itemsAccumulator.isEmpty,
+           let last = self.itemsAccumulator.last {
             startFrom = max(last.id-1, 0)
         }
         return startFrom

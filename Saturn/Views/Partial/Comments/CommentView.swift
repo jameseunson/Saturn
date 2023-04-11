@@ -37,6 +37,7 @@ struct CommentView: View {
     @State private var navBarHeight: CGFloat = 0
     @State private var commentOnScreen: Bool = true
     @State private var dragOffset: CGFloat = 0
+    @State private var isLoggedIn: Bool = false
     
     init(expanded: Binding<CommentExpandedState>,
          comment: CommentViewModel,
@@ -60,16 +61,16 @@ struct CommentView: View {
         self.onTapURL = onTapURL
         self.onTapVote = onTapVote
         self.onTapShare = onTapShare
+        _isLoggedIn = .init(initialValue: keychainWrapper.isLoggedIn)
     }
     
     var body: some View {
         ZStack {
-            if keychainWrapper.isLoggedIn,
-               let vote = comment.vote,
+            if isLoggedIn,
                frameHeight > 0,
                abs(dragOffset) > 0 {
                 VoteBackdropView(dragOffset: $dragOffset,
-                                 vote: vote)
+                                 vote: comment.vote)
                     .transition(.identity)
             }
             HStack {
@@ -116,7 +117,7 @@ struct CommentView: View {
             }
         }
         .contextMenu(menuItems: {
-            if keychainWrapper.isLoggedIn {
+            if isLoggedIn {
                 Button(action: {
                     onTapVote?(.upvote)
                 }, label: {
@@ -142,7 +143,7 @@ struct CommentView: View {
                 Label(comment.by, systemImage: "person.circle")
             })
         })
-        .if(keychainWrapper.isLoggedIn, transform: { view in
+        .if(isLoggedIn, transform: { view in
             view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: comment.vote?.directions ?? []))
@@ -179,6 +180,9 @@ struct CommentView: View {
                                         onToggleExpanded: onToggleExpanded,
                                         expanded: $expanded,
                                         commentOnScreen: $commentOnScreen))
+        .onReceive(keychainWrapper.isLoggedInSubject) { output in
+            isLoggedIn = output
+        }
     }
     
     func heightForExpandedState() -> CGFloat {

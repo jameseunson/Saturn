@@ -123,6 +123,7 @@
 		1ACB6C1429BB0437000A94E0 /* SearchHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */; };
 		1ACB6C1829BB061A000A94E0 /* SettingSearchHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */; };
 		1ACB6C1A29BB0F83000A94E0 /* StoriesListRefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */; };
+		1ACF31CA29E54EB100C99B93 /* LoginLinkHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF31C929E54EB100C99B93 /* LoginLinkHTMLParser.swift */; };
 		1AD1286929C2E70F00096DE7 /* RootInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */; };
 		1AD1286C29C4298A00096DE7 /* LoginAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */; };
 		1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */; };
@@ -262,6 +263,7 @@
 		1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryView.swift; sourceTree = "<group>"; };
 		1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSearchHistory.swift; sourceTree = "<group>"; };
 		1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListRefreshView.swift; sourceTree = "<group>"; };
+		1ACF31C929E54EB100C99B93 /* LoginLinkHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginLinkHTMLParser.swift; sourceTree = "<group>"; };
 		1AD1286829C2E70F00096DE7 /* RootInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootInteractorTests.swift; sourceTree = "<group>"; };
 		1AD1286B29C4298A00096DE7 /* LoginAuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationView.swift; sourceTree = "<group>"; };
 		1AD1286F29C447B300096DE7 /* LoginAuthenticationInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationInteractor.swift; sourceTree = "<group>"; };
@@ -587,6 +589,7 @@
 				1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */,
 				1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */,
 				1AAED96029CAE97A0093CED7 /* VoteHTMLParser.swift */,
+				1ACF31C929E54EB100C99B93 /* LoginLinkHTMLParser.swift */,
 			);
 			path = HTML;
 			sourceTree = "<group>";
@@ -939,6 +942,7 @@
 				1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */,
 				1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */,
 				1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */,
+				1ACF31CA29E54EB100C99B93 /* LoginLinkHTMLParser.swift in Sources */,
 				1A7E5B452982697C00C6BBC0 /* SettingsNavigationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

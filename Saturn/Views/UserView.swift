@@ -12,7 +12,6 @@ struct UserView: View {
     @StateObject var interactor: UserInteractor
     @State var user: UserViewModel?
     
-    @State var items: [UserItemViewModel] = []
     @State var contexts: [Int: CommentLoaderContainer] = [:]
     
     /// Infinite scroll
@@ -27,15 +26,15 @@ struct UserView: View {
     @State var displayingInternalStoryId: Int?
     
     /// NSUserActivity - handoff
-    static let userActivity = "com.JEON.Saturn.view-user"
+    static let userActivity = "au.jameseunson.Saturn.view-user"
     
     var body: some View {
-        if let user {
-            ScrollViewReader { reader in
-                InfiniteScrollView(loader: interactor,
-                                   readyToLoadMore: $readyToLoadMore,
-                                   itemsRemainingToLoad: $itemsRemainingToLoad) {
-                    
+        ScrollViewReader { reader in
+            InfiniteScrollView(loader: interactor,
+                               readyToLoadMore: $readyToLoadMore,
+                               itemsRemainingToLoad: $itemsRemainingToLoad) {
+                
+                if let user {
                     UserHeaderView(user: user, displayingSafariURL: $displayingSafariURL) { user in
                         // TODO:
                         
@@ -49,7 +48,12 @@ struct UserView: View {
                     .padding()
                     
                     Divider()
+                }
+
+                if case .loading = interactor.items {
+                    ListLoadingView()
                     
+                } else if case let .loaded(items) = interactor.items {
                     if items.count == 0 {
                         HStack {
                             Spacer()
@@ -122,79 +126,70 @@ struct UserView: View {
                     }
                 }
             }
-            .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
-                if let displayingSafariURL {
-                    SafariView(url: displayingSafariURL)
-                        .ignoresSafeArea()
-                }
+        }
+        .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
+            if let displayingSafariURL {
+                SafariView(url: displayingSafariURL)
+                    .ignoresSafeArea()
             }
-            .sheet(isPresented: createBoolBinding(from: $selectedCommentToShare), content: {
-                if let url = selectedCommentToShare?.comment.url {
-                    let sheet = ActivityViewController(itemsToShare: [url])
-                        .ignoresSafeArea()
-                    sheet.presentationDetents([.medium])
-                }
-            })
-            .onReceive(interactor.$items) { output in
-                items = output
+        }
+        .sheet(isPresented: createBoolBinding(from: $selectedCommentToShare), content: {
+            if let url = selectedCommentToShare?.comment.url {
+                let sheet = ActivityViewController(itemsToShare: [url])
+                    .ignoresSafeArea()
+                sheet.presentationDetents([.medium])
             }
-            .onReceive(interactor.$readyToLoadMore, perform: { output in
-                readyToLoadMore = output
-            })
-            .onReceive(interactor.$itemsRemainingToLoad, perform: { output in
-                itemsRemainingToLoad = output
-            })
-            .onReceive(interactor.commentContexts, perform: { output in
-                withAnimation {
-                    contexts = output
-                }
-            })
-            .refreshable {
-                await interactor.refreshUser()
+        })
+        .onReceive(interactor.$readyToLoadMore, perform: { output in
+            readyToLoadMore = output
+        })
+        .onReceive(interactor.$itemsRemainingToLoad, perform: { output in
+            itemsRemainingToLoad = output
+        })
+        .onReceive(interactor.commentContexts, perform: { output in
+            withAnimation {
+                contexts = output
             }
-            .navigationDestination(isPresented: createBoolBinding(from: $selectedStoryToView)) {
-                if let selectedStoryToView {
-                    StoryDetailView(interactor: StoryDetailInteractor(itemId: selectedStoryToView.id))
-                        .navigationTitle(selectedStoryToView.title)
-                } else {
-                    EmptyView()
-                }
+        })
+        .refreshable {
+            await interactor.refreshUser()
+        }
+        .navigationDestination(isPresented: createBoolBinding(from: $selectedStoryToView)) {
+            if let selectedStoryToView {
+                StoryDetailView(interactor: StoryDetailInteractor(itemId: selectedStoryToView.id))
+                    .navigationTitle(selectedStoryToView.title)
+            } else {
+                EmptyView()
             }
-            .navigationDestination(isPresented: createBoolBinding(from: $selectedCommentToView)) {
-                if let selectedCommentToView,
-                   let thread = contexts[selectedCommentToView.id] {
-                    StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
-                } else {
-                    EmptyView()
-                }
+        }
+        .navigationDestination(isPresented: createBoolBinding(from: $selectedCommentToView)) {
+            if let selectedCommentToView,
+               let thread = contexts[selectedCommentToView.id] {
+                StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
+            } else {
+                EmptyView()
             }
-            .navigationDestination(isPresented: createBoolBinding(from: $displayingInternalStoryId)) {
-                if let displayingInternalStoryId {
-                    StoryDetailView(interactor: StoryDetailInteractor(itemId: displayingInternalStoryId))
-                } else {
-                    EmptyView()
-                }
+        }
+        .navigationDestination(isPresented: createBoolBinding(from: $displayingInternalStoryId)) {
+            if let displayingInternalStoryId {
+                StoryDetailView(interactor: StoryDetailInteractor(itemId: displayingInternalStoryId))
+            } else {
+                EmptyView()
             }
-            .userActivity(UserView.userActivity) { activity in
-                if let user = interactor.user,
-                   let url = URL(string: "https://news.ycombinator.com/user?id=\(user.id)") {
-                    activity.webpageURL = url
-                    activity.becomeCurrent()
-                }
+        }
+        .userActivity(UserView.userActivity) { activity in
+            if let user = interactor.user,
+               let url = URL(string: "https://news.ycombinator.com/user?id=\(user.id)") {
+                activity.webpageURL = url
+                activity.becomeCurrent()
             }
-
-        } else {
-            LoadingView()
-            .onAppear {
-                interactor.activate()
-            }
-            .onReceive(interactor.$user) { output in
-                if let output {
-                    self.user = UserViewModel(user: output)
-                }
-            }
-            .onReceive(interactor.$items) { output in
-                self.items = output
+        }
+        .onAppear {
+            interactor.activate()
+        }
+        .onReceive(interactor.$user) { output in
+            if let output {
+                self.user = UserViewModel(user: output)
             }
         }
     }

@@ -264,7 +264,7 @@ struct StoryDetailView: View {
     }
     
     /// NSUserActivity - handoff
-    static let userActivity = "com.JEON.Saturn.read-story"
+    static let userActivity = "au.jameseunson.Saturn.read-story"
 }
 
 struct StoryDetailView_Previews: PreviewProvider {

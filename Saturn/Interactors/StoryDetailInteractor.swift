@@ -319,8 +319,12 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .receive(on: DispatchQueue.global())
             .sink { completion in
                 if case let .failure(error) = completion {
-                    self.globalErrorStream.addError(error)
-                    print(error)
+                    if case APIManagerError.deleted = error {
+                        // noop
+                    } else {
+                        print(error)
+                        self.globalErrorStream.addError(error)
+                    }
                     DispatchQueue.main.async {
                         self.commentsLoaded.send(self.commentsLoaded.value + 1)
                     }

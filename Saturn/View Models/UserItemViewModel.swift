@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum UserItemViewModel: Identifiable, Equatable {
+enum UserItemViewModel: Identifiable, Equatable, Codable {
     var id: Int {
         switch self {
         case let .comment(comment):

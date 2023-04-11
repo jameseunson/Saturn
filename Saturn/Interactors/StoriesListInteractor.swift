@@ -64,78 +64,12 @@ final class StoriesListInteractor: Interactor {
         }
         #endif
         
-        if case .initialLoad = loadingState {
-            /// Start by loading the offline cache version of the response
-            loadNextPage(cacheBehavior: .offlineOnly)
-                .flatMap { stories in
-                    /// If there is no existing offline cache of the response, hit the network
-                    if stories.response.isEmpty {
-                        return self.loadNextPage()
-                    } else {
-                        return Just(stories).setFailureType(to: Error.self).eraseToAnyPublisher()
-                    }
-                }
-                .sink(receiveCompletion: { completion in
-                    if case let .failure(error) = completion {
-                        self.globalErrorStream.addError(error)
-                        print(error)
-                    }
-                }, receiveValue: { response in
-                    guard response.source == .cache else {
-                        return
-                    }
-                    self.evaluateRefreshContent()
-                })
-                .store(in: &disposeBag)
-        }
-        
-        /// Determine whether we can load the next page
-        Publishers.CombineLatest3($currentPage, $storyIds, $loadingState)
-            .filter { _, _, loadingState in
-                if case .loaded = loadingState {
-                    return true
-                }
-                return false
-            }
-            .map { currentPage, storyIds, loadingState -> Bool in
-                guard case .loaded(_) = loadingState else {
-                    return false
-                }
-                return self.networkConnectivityManager.isConnected()
-            }
-            .receive(on: RunLoop.main)
-            .sink { _ in }
-            receiveValue: { canLoadNextPage in
-                self.canLoadNextPage = canLoadNextPage
-            }
-            .store(in: &disposeBag)
-        
-        /// Load voting information about each comment, if the user is logged in (as the user can only vote
-        /// if they are logged in)
-        if keychainWrapper.isLoggedIn {
-            availableVoteLoader.availableVotes
-                .receive(on: RunLoop.main)
-                .sink { completion in
-                    if case let .failure(error) = completion {
-                        self.globalErrorStream.addError(error)
-                        print(error)
-                    }
-                } receiveValue: { scoreMap in
-                    self.availableVotes = scoreMap
-
-                    for story in self.stories {
-                        if let vote = scoreMap[String(story.id)] {
-                            story.vote = vote
-                        }
-                    }
-                    self.objectWillChange.send()
-                }
-                .store(in: &disposeBag)
-        }
+        subscribeToLoadContentStreams()
+        subscribeToLoggedInStreams()
     }
     
     func loadNextPageFromSource() {
-        guard case .loaded(_) = self.loadingState else {
+        guard isLoaded() else {
             return
         }
         loadNextPage(cacheBehavior: .ignore)
@@ -144,6 +78,14 @@ final class StoriesListInteractor: Interactor {
     @MainActor
     func refreshStories(source: APIRefreshingSource) async {
         do {
+            /// Abort refresh if last refresh occurred within 60 seconds of most recent load
+            /// Avoids the app potentially placing too much load on HN
+            if source == .pullToRefresh,
+               let lastRefreshTimestamp,
+               lastRefreshTimestamp > Date().addingTimeInterval(-60) {
+                    return
+            }
+            
             self.loadingState = .refreshing(source)
             self.currentPage = 0
             
@@ -306,6 +248,108 @@ final class StoriesListInteractor: Interactor {
             settingsManager.set(value: .date(timestamp), for: .lastRefreshTimestamp)
             self.lastRefreshTimestamp = timestamp
         }
+    }
+    
+    private func isLoaded() -> Bool {
+        guard case .loaded(_) = self.loadingState else {
+            return false
+        }
+        return true
+    }
+    
+    private func subscribeToLoadContentStreams() {
+        if case .initialLoad = loadingState {
+            /// Start by loading the offline cache version of the response
+            loadNextPage(cacheBehavior: .offlineOnly)
+                .flatMap { stories in
+                    /// If there is no existing offline cache of the response, hit the network
+                    if stories.response.isEmpty {
+                        return self.loadNextPage()
+                    } else {
+                        return Just(stories).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    }
+                }
+                .sink(receiveCompletion: { completion in
+                    if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
+                        print(error)
+                    }
+                }, receiveValue: { response in
+                    guard response.source == .cache else {
+                        return
+                    }
+                    self.evaluateRefreshContent()
+                })
+                .store(in: &disposeBag)
+        }
+        
+        /// Determine whether we can load the next page
+        Publishers.CombineLatest3($currentPage, $storyIds, $loadingState)
+            .filter { _, _, loadingState in
+                if case .loaded = loadingState {
+                    return true
+                }
+                return false
+            }
+            .map { currentPage, storyIds, loadingState -> Bool in
+                guard case .loaded(_) = loadingState else {
+                    return false
+                }
+                return self.networkConnectivityManager.isConnected()
+            }
+            .receive(on: RunLoop.main)
+            .sink { _ in }
+            receiveValue: { canLoadNextPage in
+                self.canLoadNextPage = canLoadNextPage
+            }
+            .store(in: &disposeBag)
+    }
+    
+    private func subscribeToLoggedInStreams() {
+        /// Load voting information about each comment, if the user is logged in (as the user can only vote
+        /// if they are logged in)
+        Publishers.CombineLatest(keychainWrapper.isLoggedInSubject.setFailureType(to: Error.self).removeDuplicates(),
+                                 availableVoteLoader.availableVotes)
+            .filter({ isLoggedIn, _ in
+                return isLoggedIn
+            })
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
+                    print(error)
+                }
+            } receiveValue: { _, scoreMap in
+                self.availableVotes = scoreMap
+
+                for story in self.stories {
+                    if let vote = scoreMap[String(story.id)] {
+                        story.vote = vote
+                    }
+                }
+                self.objectWillChange.send()
+            }
+            .store(in: &disposeBag)
+        
+        /// When user logs in from a previously logged out state, and some state content is loaded, force a refresh of content
+        keychainWrapper.isLoggedInSubject.removeDuplicates()
+            .filter { !$0 }
+            .flatMap({ _ in
+                return self.keychainWrapper.isLoggedInSubject
+                    .removeDuplicates()
+                    .filter { $0 }
+                    .prefix(1)
+            })
+            .filter { _ in
+                return self.isLoaded()
+            }
+            .sink { _ in
+                Task {
+                    await self.refreshStories(source: .autoRefresh)
+                    print("StoriesList, USER DID LOGIN, refreshing")
+                }
+            }
+            .store(in: &disposeBag)
     }
 }
 

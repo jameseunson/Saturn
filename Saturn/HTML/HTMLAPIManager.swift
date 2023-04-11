@@ -172,7 +172,8 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
         
         return keychainWrapper.store(cookie: cookie,
-                                     username: username)
+                                     username: username,
+                                     password: password)
     }
     
     // MARK: -
@@ -190,7 +191,34 @@ final class HTMLAPIManager: HTMLAPIManaging {
         guard let htmlString = String(data: data, encoding: .utf8) else {
             throw HTMLAPIManagerError.invalidHTML
         }
-        return htmlString
+        
+        /// Check if user has been logged out
+        if !checkIfAuthenticated(htmlString) {
+            print("User session is invalid, user is LOGGED OUT, restarting session")
+            guard let username = keychainWrapper.retrieve(for: .username),
+                  let password = keychainWrapper.retrieve(for: .password),
+                  try await login(with: username, password: password) else {
+                throw HTMLAPIManagerError.cannotLoad
+            }
+            
+            let (data, _) = try await URLSession.shared.data(for: mutableRequest)
+            guard let htmlString = String(data: data, encoding: .utf8) else {
+                throw HTMLAPIManagerError.invalidHTML
+            }
+            return htmlString
+            
+        } else {
+            return htmlString
+        }
+    }
+    
+    /// Search for the login link, which indicates the session has expired
+    private func checkIfAuthenticated(_ htmlString: String) -> Bool {
+        do {
+            return try LoginLinkHTMLParser().checkUserAuthenticated(htmlString)
+        } catch {
+            return false
+        }
     }
     
     private func publisherForAsync<T>(action: @escaping () async throws -> T) -> AnyPublisher<T, Error> {

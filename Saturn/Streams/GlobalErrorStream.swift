@@ -22,6 +22,8 @@ final class GlobalErrorStream: GlobalErrorStreaming {
     }
     
     func addError(_ error: Error) {
-        errorSubject.send(error)
+        DispatchQueue.main.async { [weak self] in
+            self?.errorSubject.send(error)
+        }
     }
 }

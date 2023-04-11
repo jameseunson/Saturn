@@ -43,10 +43,9 @@ struct StoryRowView: View {
     var body: some View {
         ZStack {
             if isLoggedIn,
-               let vote = story.vote,
             abs(dragOffset) > 0 {
                 VoteBackdropView(dragOffset: $dragOffset,
-                                 vote: vote)
+                                 vote: story.vote)
                 .transition(.identity)
             }
             VStack(alignment: .leading) {
@@ -182,6 +181,9 @@ struct StoryRowView: View {
                     image = storyImage
                 }
             }
+        }
+        .onReceive(keychainWrapper.isLoggedInSubject) { output in
+            isLoggedIn = output
         }
     }
 }

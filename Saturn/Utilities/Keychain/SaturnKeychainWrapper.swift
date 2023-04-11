@@ -11,7 +11,7 @@ import Foundation
 
 /// @mockable
 protocol SaturnKeychainWrapping: AnyObject {
-    @discardableResult func store(cookie: String, username: String) -> Bool
+    @discardableResult func store(cookie: String, username: String, password: String) -> Bool
     func clearCredential()
     func hasCredential() -> Bool
     func retrieve(for key: KeychainItemKeys) -> String?
@@ -37,13 +37,15 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
     }
     
     @discardableResult
-    func store(cookie: String, username: String) -> Bool {
+    func store(cookie: String, username: String, password: String) -> Bool {
         do {
             try keychain.deleteItem(account: KeychainItemKeys.cookie.rawValue)
             try keychain.deleteItem(account: KeychainItemKeys.username.rawValue)
+            try keychain.deleteItem(account: KeychainItemKeys.password.rawValue)
             
             try keychain.saveItem(account: KeychainItemKeys.cookie.rawValue, cookie)
             try keychain.saveItem(account: KeychainItemKeys.username.rawValue, username)
+            try keychain.saveItem(account: KeychainItemKeys.password.rawValue, password)
             
             DispatchQueue.main.async { [weak self] in
                 self?.isLoggedInSubject.send(true)
@@ -58,6 +60,7 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
     func clearCredential() {
         try? keychain.deleteItem(account: KeychainItemKeys.cookie.rawValue)
         try? keychain.deleteItem(account: KeychainItemKeys.username.rawValue)
+        try? keychain.deleteItem(account: KeychainItemKeys.password.rawValue)
         
         isLoggedInSubject.send(false)
     }
@@ -73,5 +76,6 @@ final class SaturnKeychainWrapper: SaturnKeychainWrapping {
 
 enum KeychainItemKeys: String, CodingKey {
     case username
+    case password
     case cookie
 }
