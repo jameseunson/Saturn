@@ -95,7 +95,7 @@ final class StoriesListInteractor: Interactor {
             
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
-            self.availableVoteLoader.clearVotes()
+            self.availableVoteLoader.clearVotes(for: .stories)
             
             self.completeLoad(with: stories.response,
                               source: .network)

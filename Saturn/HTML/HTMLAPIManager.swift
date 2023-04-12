@@ -10,10 +10,12 @@ import Combine
 import SwiftSoup
 import Factory
 
+typealias ScoreMap = [String: Int]
+
 /// @mockable
 protocol HTMLAPIManaging: AnyObject {
-    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> [String: Int]
-    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<[String: Int], Error>
+    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> APIResponse<ScoreMap>
+    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<APIResponse<ScoreMap>, Error>
     func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> APIResponse<VoteHTMLParserResponse>
     func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
@@ -38,7 +40,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     init() {}
     
     /// Load score for each user comment, used on the User page
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [String: Int] {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<ScoreMap> {
         guard let username = keychainWrapper.retrieve(for: .username) else { throw HTMLAPIManagerError.cannotLoad }
         
         let commentURL: URL?
@@ -51,11 +53,13 @@ final class HTMLAPIManager: HTMLAPIManaging {
         guard let url = commentURL else { throw HTMLAPIManagerError.cannotLoad }
         let htmlString = try await loadHTML(for: url)
         
-        return try CommentScoreHTMLParser().parseHTML(htmlString, for: username)
+        let scoreMap = try CommentScoreHTMLParser().parseHTML(htmlString, for: username)
+        
+        return APIResponse(response: scoreMap, source: .network)
     }
     
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<[String: Int], Error> {
-        return publisherForAsync {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<ScoreMap>, Error> {
+        return AsyncTools.publisherForAsync {
             try await self.loadScoresForLoggedInUserComments(startFrom: startFrom)
         }
     }
@@ -81,7 +85,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
     
     func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
-        return publisherForAsync {
+        return AsyncTools.publisherForAsync {
             try await self.loadAvailableVotesForComments(page: page, storyId: storyId)
         }
     }
@@ -116,7 +120,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
     
     func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
-        return publisherForAsync {
+        return AsyncTools.publisherForAsync {
             try await self.loadAvailableVotesForStoriesList(page: page)
         }
     }
@@ -178,16 +182,9 @@ final class HTMLAPIManager: HTMLAPIManaging {
     
     // MARK: -
     private func loadHTML(for url: URL) async throws -> String {
-        guard let cookie = keychainWrapper.retrieve(for: .cookie) else {
-            throw HTMLAPIManagerError.cannotLoad
-        }
-              
-        var mutableRequest = URLRequest(url: url)
-        mutableRequest.addDefaultHeaders()
-        mutableRequest.addValue(cookie, forHTTPHeaderField: "Cookie")
-        print("loadHTML: \(url)")
+        let request = try createAuthenticatedRequest(for: url)
         
-        let (data, _) = try await URLSession.shared.data(for: mutableRequest)
+        let (data, _) = try await URLSession.shared.data(for: request)
         guard let htmlString = String(data: data, encoding: .utf8) else {
             throw HTMLAPIManagerError.invalidHTML
         }
@@ -201,15 +198,37 @@ final class HTMLAPIManager: HTMLAPIManaging {
                 throw HTMLAPIManagerError.cannotLoad
             }
             
-            let (data, _) = try await URLSession.shared.data(for: mutableRequest)
-            guard let htmlString = String(data: data, encoding: .utf8) else {
+            /// Recreate request with updated cookie
+            let updatedRequest = try createAuthenticatedRequest(for: url)
+            
+            let (data, _) = try await URLSession.shared.data(for: updatedRequest)
+            guard let updatedHtmlString = String(data: data, encoding: .utf8) else {
                 throw HTMLAPIManagerError.invalidHTML
             }
-            return htmlString
+            /// Check if second attempt after login was successful, if not, log user out and throw exception
+            if !checkIfAuthenticated(updatedHtmlString) {
+                keychainWrapper.clearCredential()
+                throw HTMLAPIManagerError.userLoggedOut
+            }
+            return updatedHtmlString
             
         } else {
             return htmlString
         }
+    }
+    
+    private func createAuthenticatedRequest(for url: URL) throws -> URLRequest {
+        /// Recreate request with updated cookie
+        guard let cookie = keychainWrapper.retrieve(for: .cookie) else {
+            throw HTMLAPIManagerError.cannotLoad
+        }
+              
+        var mutableRequest = URLRequest(url: url)
+        mutableRequest.addDefaultHeaders()
+        mutableRequest.addValue(cookie, forHTTPHeaderField: "Cookie")
+        print("loadHTML: \(url)")
+        
+        return mutableRequest
     }
     
     /// Search for the login link, which indicates the session has expired
@@ -219,20 +238,6 @@ final class HTMLAPIManager: HTMLAPIManaging {
         } catch {
             return false
         }
-    }
-    
-    private func publisherForAsync<T>(action: @escaping () async throws -> T) -> AnyPublisher<T, Error> {
-        return Future { promise in
-            Task {
-                do {
-                    let output = try await action()
-                    promise(.success(output))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }
-        .eraseToAnyPublisher()
     }
 }
 
@@ -244,6 +249,7 @@ enum HTMLAPIManagerError: Error {
     case cannotVote
     case cannotFlag
     case cannotLogin
+    case userLoggedOut
     
     var errorDescription: String? {
         switch self {
@@ -265,6 +271,11 @@ enum HTMLAPIManagerError: Error {
         case .cannotLogin:
             return NSLocalizedString(
                 "Could not login with the credentials provided.",
+                comment: ""
+            )
+        case .userLoggedOut:
+            return NSLocalizedString(
+                "You have been logged out of your account. Please login again to use authenticated features.",
                 comment: ""
             )
         }
@@ -291,10 +302,10 @@ extension HTMLAPIManaging {
     func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         loadAvailableVotesForComments(page: page, storyId: storyId)
     }
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> [String: Int] {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<ScoreMap> {
         try await loadScoresForLoggedInUserComments(startFrom: startFrom)
     }
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<[String: Int], Error> {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<ScoreMap>, Error> {
         loadScoresForLoggedInUserComments(startFrom: startFrom)
     }
     func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {

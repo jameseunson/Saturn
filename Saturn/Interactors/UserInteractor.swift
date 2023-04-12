@@ -15,6 +15,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.commentLoader) private var commentLoader
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.globalErrorStream) private var globalErrorStream
+    @Injected(\.networkConnectivityManager) private var networkConnectivityManager
+    @Injected(\.availableVoteLoader) private var availableVoteLoader
     
     @Published private(set) var user: User?
     @Published private(set) var items: LoadableResource<[UserItemViewModel]> = .notLoading
@@ -46,16 +48,30 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         self.items = .loading
         
         if user == nil {
-            apiManager.loadUser(id: username)
+            apiManager.loadUser(id: username, cacheBehavior: .offlineOnly)
+                .catch { _ in
+                    return Empty().eraseToAnyPublisher()
+                }
+                .handleEvents(receiveOutput: { user in
+                    DispatchQueue.main.async {
+                        self.user = user.response
+                    }
+                })
+                .flatMap { user -> AnyPublisher<APIResponse<User>, Error> in
+                    if self.networkConnectivityManager.isConnected() {
+                        return self.apiManager.loadUser(id: self.username, cacheBehavior: .ignore)
+                    } else {
+                        return Just(user).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    }
+                }
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
                         self.globalErrorStream.addError(error)
                         print(error)
                     }
-                    
-                } receiveValue: { user in
-                    self.user = user.response
+                } receiveValue: { output in
+                    self.user = output.response
                     self.loadMoreItems()
                 }
                 .store(in: &disposeBag)
@@ -144,7 +160,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [String: Int]), Error> in
                 if self.shouldLoadCommentScores() {
                     return self.htmlApiManager.loadScoresForLoggedInUserComments(startFrom: self.scoreMapStartFrom())
-                        .map { (items, ids, $0) }
+                        .map { (items, ids, $0.response) }
                         .eraseToAnyPublisher()
                 } else {
                     return Just((items, ids, [String:Int]())).setFailureType(to: Error.self).eraseToAnyPublisher()
@@ -201,11 +217,11 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             self.currentPage = 0
             self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
             let ids = idsForCurrentPage(with: user.submitted ?? [])
-            let items = try await self.apiManager.loadUserItems(ids: ids)
+            let items = try await self.apiManager.loadUserItems(ids: ids, cacheBehavior: .ignore)
             
             if self.shouldLoadCommentScores() {
                 let scoreMap = try await self.htmlApiManager.loadScoresForLoggedInUserComments()
-                applyScoreMap(scoreMap: scoreMap, items: items)
+                applyScoreMap(scoreMap: scoreMap.response, items: items)
             }
             
             DispatchQueue.main.async {
@@ -223,6 +239,8 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 viewModels.append(UserItemViewModel.comment(CommentViewModel(comment: comment, indendation: 0, parent: nil)))
             case let .story(story):
                 viewModels.append(UserItemViewModel.story(StoryRowViewModel(story: story)))
+            case .deleted:
+                break
             }
         }
         

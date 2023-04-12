@@ -146,6 +146,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                     case let .comment(comment):
                         self.commentChain = [comment]
                         self.traverse(comment)
+                        
+                    case .deleted:
+                        break
                     }
                 }
                 .store(in: &disposeBag)
@@ -253,9 +256,11 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             
             topLevelComments.removeAll()
             loadedTopLevelComments.removeAll()
+            availableVoteLoader.clearVotes(for: .comments(story: story))
             
             let storyModel = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore).response
             self.story = StoryRowViewModel(story: storyModel)
+            
             loadComments()
         }
     }

@@ -157,6 +157,9 @@
 		1AE4A9D929792B5A00D0B0D3 /* APIMemoryResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9D829792B5A00D0B0D3 /* APIMemoryResponseCache.swift */; };
 		1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */; };
 		1AE4A9DD29792ECA00D0B0D3 /* RootInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9DC29792ECA00D0B0D3 /* RootInteractor.swift */; };
+		1AFD951D29E689AB00E7C086 /* AsyncTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD951C29E689AB00E7C086 /* AsyncTools.swift */; };
+		1AFD951F29E68F4000E7C086 /* APIManager+Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD951E29E68F4000E7C086 /* APIManager+Defaults.swift */; };
+		1AFD952129E68F6700E7C086 /* APIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD952029E68F6700E7C086 /* APIResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -287,6 +290,9 @@
 		1AE4A9D829792B5A00D0B0D3 /* APIMemoryResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIMemoryResponseCache.swift; sourceTree = "<group>"; };
 		1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnectivityManager.swift; sourceTree = "<group>"; };
 		1AE4A9DC29792ECA00D0B0D3 /* RootInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootInteractor.swift; sourceTree = "<group>"; };
+		1AFD951C29E689AB00E7C086 /* AsyncTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTools.swift; sourceTree = "<group>"; };
+		1AFD951E29E68F4000E7C086 /* APIManager+Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIManager+Defaults.swift"; sourceTree = "<group>"; };
+		1AFD952029E68F6700E7C086 /* APIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -496,6 +502,7 @@
 				1A050D8229820E2000C26F12 /* SearchResultItem.swift */,
 				1ACB6C1729BB061A000A94E0 /* SettingSearchHistory.swift */,
 				1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */,
+				1AFD952029E68F6700E7C086 /* APIResponse.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -519,6 +526,7 @@
 			children = (
 				1ACB6C0929B9C45C000A94E0 /* Settings */,
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
+				1AFD951E29E68F4000E7C086 /* APIManager+Defaults.swift */,
 				1A873ACA296FCD4800870A50 /* TextProcessor.swift */,
 				1AE4A99A2977938F00D0B0D3 /* SearchAPIManager.swift */,
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
@@ -527,6 +535,7 @@
 				1A32040B29D5317E00CFB4C2 /* VoteManager.swift */,
 				1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */,
 				1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */,
+				1AFD951C29E689AB00E7C086 /* AsyncTools.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -870,6 +879,7 @@
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
 				1ACB6C1229BB042B000A94E0 /* SearchResultsView.swift in Sources */,
 				1ACB6C1429BB0437000A94E0 /* SearchHistoryView.swift in Sources */,
+				1AFD951D29E689AB00E7C086 /* AsyncTools.swift in Sources */,
 				1A57586C29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift in Sources */,
 				1A5DBC042969548E00D4D86E /* APIManager.swift in Sources */,
 				1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */,
@@ -925,11 +935,13 @@
 				1AAED95F29CAE0E70093CED7 /* CommentScoreHTMLParser.swift in Sources */,
 				1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
+				1AFD952129E68F6700E7C086 /* APIResponse.swift in Sources */,
 				1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1AA05D7029D3D22700D3013C /* HTMLAPIVote.swift in Sources */,
+				1AFD951F29E68F4000E7C086 /* APIManager+Defaults.swift in Sources */,
 				1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */,
 				1A888FBF2992351900490A74 /* SettingsIndentationSelectColorView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,
@@ -1108,7 +1120,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1146,7 +1158,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;

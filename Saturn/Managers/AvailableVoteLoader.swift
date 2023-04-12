@@ -12,7 +12,7 @@ import Combine
 protocol AvailableVoteLoading: AnyObject {
     func evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: Int, for story: StoryRowViewModel)
     func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int)
-    func clearVotes()
+    func clearVotes(for voteType: VoteType)
     func setType(_ voteType: VoteType)
     
     var availableVotes: AnyPublisher<[String: HTMLAPIVote], Error> { get }
@@ -44,7 +44,7 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     
     func setType(_ voteType: VoteType) {
         switch voteType {
-        case .stories:
+        case .stories, .user:
             currentVotePage = 0
         case .comments(_):
             currentVotePage = 1
@@ -62,8 +62,9 @@ final class AvailableVoteLoader: AvailableVoteLoading {
         evaluate(for: .stories, numberOfItemsLoaded: numberOfStoriesLoaded)
     }
     
-    func clearVotes() {
+    func clearVotes(for voteType: VoteType) {
         availableVotesSubject.send([:])
+        setType(voteType)
     }
     
     // MARK: - Private
@@ -103,6 +104,8 @@ final class AvailableVoteLoader: AvailableVoteLoading {
             return self.htmlApiManager.loadAvailableVotesForStoriesList(page: currentVotePage)
         case .comments(let story):
             return self.htmlApiManager.loadAvailableVotesForComments(page: currentVotePage, storyId: story.id)
+        case .user:
+            return self.htmlApiManager.loadAvailableVotesForStoriesList(page: currentVotePage) // TODO: !!
         }
     }
     
@@ -133,6 +136,7 @@ extension AvailableVoteLoading {
 enum VoteType {
     case stories
     case comments(story: StoryRowViewModel)
+    case user
     
     var description: String {
         switch self {
@@ -140,6 +144,8 @@ enum VoteType {
             return "Stories"
         case .comments(_):
             return "Comments"
+        case .user:
+            return "User"
         }
     }
 }

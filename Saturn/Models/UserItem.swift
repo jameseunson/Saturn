@@ -10,6 +10,7 @@ import Foundation
 enum UserItem {
     case comment(Comment)
     case story(Story)
+    case deleted
     
     var time: Date {
         switch self {
@@ -18,6 +19,9 @@ enum UserItem {
             
         case let .comment(comment):
             return comment.time
+            
+        case .deleted:
+            return Date.distantPast
         }
     }
 }

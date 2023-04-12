@@ -31,6 +31,9 @@ actor CommentLoader: CommentLoading {
             case let .story(story):
                 loaderContainer.story = story
                 loaderContainer.commentViewModels = self.processComments(commentChain: loaderContainer.commentChain)
+                
+            case .deleted:
+                continue
             }
         }
         

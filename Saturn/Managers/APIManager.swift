@@ -23,10 +23,10 @@ protocol APIManaging: AnyObject {
     func loadStory(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Story>
     func loadComment(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<Saturn.Comment>, Error>
     func loadComment(id: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<Saturn.Comment>
-    func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error>
-    func loadUserItem(id: Int) async throws -> UserItem
-    func loadUserItems(ids: [Int]) -> AnyPublisher<[UserItem], Error>
-    func loadUserItems(ids: [Int]) async throws -> [UserItem]
+    func loadUserItem(id: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<UserItem, Error>
+    func loadUserItem(id: Int, cacheBehavior: CacheBehavior) async throws -> UserItem
+    func loadUserItems(ids: [Int], cacheBehavior: CacheBehavior) -> AnyPublisher<[UserItem], Error>
+    func loadUserItems(ids: [Int], cacheBehavior: CacheBehavior) async throws -> [UserItem]
     func loadUser(id: String, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<User>, Error>
     func loadUser(id: String, cacheBehavior: CacheBehavior) async throws -> APIResponse<User>
     func getImage(for story: StoryRowViewModel) async throws -> Image
@@ -83,42 +83,17 @@ final class APIManager: APIManaging {
     }
     
     func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
-        if cacheBehavior == .offlineOnly,
-           cache.get(for: type.cacheKey) == nil {
-            return Just(APIResponse(response: [], source: .cache))
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        }
-        
-        if let response = cache.get(for: type.cacheKey),
-           response.isValid(cacheBehavior: cacheBehavior) {
-            return Just(response)
-                .tryMap { response in
-                    guard case let .json(value) = response.value,
-                        let ids = value as? Array<Int> else {
-                        throw APIManagerError.generic
-                    }
-                    return APIResponse(response: ids, source: .cache)
-                }
-                .eraseToAnyPublisher()
-            
-        } else {
-            return retrieve(from: type.path)
-                .tryMap { response in
-                    guard let ids = response as? Array<Int> else {
-                        throw APIManagerError.generic
-                    }
-                    return APIResponse(response: ids, source: .network)
-                }
-                .handleEvents(receiveOutput: { ids in
-                    self.cache.set(value: .json(ids.response),
-                                                       for: type.cacheKey)
-                })
-                .eraseToAnyPublisher()
+        AsyncTools.publisherForAsync {
+            try await self.loadStoryIds(type: type, cacheBehavior: cacheBehavior)
         }
     }
     
     func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Array<Int>> {
+        if cacheBehavior == .offlineOnly,
+           cache.get(for: type.cacheKey) == nil {
+            return APIResponse(response: [], source: .cache)
+        }
+        
         if let response = cache.get(for: type.cacheKey),
            response.isValid(cacheBehavior: cacheBehavior),
            case let .json(value) = response.value,
@@ -152,82 +127,85 @@ final class APIManager: APIManaging {
         return try await retrieveObject("v0/item/\(id)", cacheBehavior: cacheBehavior)
     }
     
-    func loadUserItem(id: Int) -> AnyPublisher<UserItem, Error> {
-        retrieve(from: "v0/item/\(id)")
-            .tryMap { response -> (Int, String) in
-                guard let dict = response as? Dictionary<String, Any>,
-                      let type = dict["type"] as? String,
-                      let id = dict["id"] as? Int else {
-                    throw APIManagerError.generic
-                }
-                return (id, type)
-            }
-            .flatMap { id, type -> AnyPublisher<UserItem, Error> in
-                if type == "story" || type == "poll" {
-                    return self.loadStory(id: id)
-                        .catch { _ in
-                            return Empty().eraseToAnyPublisher()
-                        }
-                        .map { UserItem.story($0.response) }
-                        .eraseToAnyPublisher()
-                    
-                } else if type == "comment" {
-                    return self.loadComment(id: id)
-                        .flatMap { comment in
-                            comment.response.loadMarkdown()
-                        }
-                        .catch { _ in
-                            return Empty().eraseToAnyPublisher()
-                        }
-                        .map { UserItem.comment($0) }
-                        .eraseToAnyPublisher()
-                    
-                } else {
-                    print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
-                    self.globalErrorStream.addError(APIManagerNetworkError.unrecognizedItemType)
-                    // TODO: Handle other types
-                    return Empty().eraseToAnyPublisher()
-                }
-            }
-            .eraseToAnyPublisher()
+    func loadUserItem(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<UserItem, Error> {
+        AsyncTools.publisherForAsync {
+            try await self.loadUserItem(id: id, cacheBehavior: cacheBehavior)
+        }
     }
     
-    func loadUserItem(id: Int) async throws -> UserItem {
-        let response = try await retrieve(from: "v0/item/\(id)")
-        
-        guard let dict = response as? Dictionary<String, Any>,
-              let type = dict["type"] as? String,
-              let id = dict["id"] as? Int else {
-            throw APIManagerError.generic
-        }
-        if type == "story" {
-            let story = try await self.loadStory(id: id)
-            return UserItem.story(story.response)
+    func loadUserItem(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> UserItem {
+        let urlString = "v0/item/\(id)"
+        if let response = cache.get(for: urlString.cacheKey),
+           response.isValid(cacheBehavior: cacheBehavior),
+           case let .json(value) = response.value,
+           let (type, _) = try? extractUserItemKeys(response: value) {
             
-        } else if type == "comment" {
-            let comment = try await self.loadComment(id: id)
-            await comment.response.loadMarkdown()
+            if type == "story" || type == "poll" {
+                do {
+                    let decodedResponse: Story = try self.decoder.decodeResponse(value)
+                    return UserItem.story(decodedResponse)
+                    
+                } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                }
+                
+            } else if type == "comment" {
+                do {
+                    let decodedResponse: Comment = try self.decoder.decodeResponse(value)
+                    await decodedResponse.loadMarkdown()
+                    return UserItem.comment(decodedResponse)
+                    
+                } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                }
+                
+            } else {
+                print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
+                throw APIManagerNetworkError.unrecognizedItemType
+            }
             
-            return UserItem.comment(comment.response)
-
         } else {
-            print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
-            throw APIManagerNetworkError.unrecognizedItemType
+            let response = try await retrieve(from: urlString)
+            let (type, id) = try extractUserItemKeys(response: response)
+            
+            if type == "story" || type == "poll" {
+                do {
+                    let story = try await self.loadStory(id: id)
+                    return UserItem.story(story.response)
+                    
+                } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                }
+                
+            } else if type == "comment" {
+                do {
+                    let comment = try await self.loadComment(id: id)
+                    await comment.response.loadMarkdown()
+                    
+                    return UserItem.comment(comment.response)
+                    
+                } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                }
+
+            } else {
+                print("APIManager, loadUserItem. ERROR: Unhandled type '\(type)'")
+                throw APIManagerNetworkError.unrecognizedItemType
+            }
         }
     }
     
-    func loadUserItems(ids: [Int]) -> AnyPublisher<[UserItem], Error> {
-        let userItems = ids.map { return self.loadUserItem(id: $0) }
-        return Publishers.MergeMany(userItems)
-            .collect()
-            .eraseToAnyPublisher()
+    func loadUserItems(ids: [Int], cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[UserItem], Error> {
+        AsyncTools.publisherForAsync {
+            try await self.loadUserItems(ids: ids, cacheBehavior: cacheBehavior)
+        }
     }
     
-    func loadUserItems(ids: [Int]) async throws -> [UserItem] {
+    func loadUserItems(ids: [Int], cacheBehavior: CacheBehavior = .default) async throws -> [UserItem] {
         return try await withThrowingTaskGroup(of: UserItem.self, body: { group in
             for id in ids {
                 group.addTask {
-                    return try await self.loadUserItem(id: id)
+                    return try await self.loadUserItem(id: id, cacheBehavior: cacheBehavior)
                 }
             }
             var userItems = [UserItem]()
@@ -285,56 +263,16 @@ final class APIManager: APIManaging {
     }
     
     private func retrieveObject<T: Codable>(_ url: String, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<T>, Error> {
+        AsyncTools.publisherForAsync {
+            try await self.retrieveObject(url, cacheBehavior: cacheBehavior)
+        }
+    }
+    
+    private func retrieveObject<T: Codable>(_ url: String, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<T> {
         let cacheBehaviorForConnectivity = networkConnectivityManager.isConnected() ? cacheBehavior : .offlineOnly
         
         if let response = cache.get(for: url.cacheKey),
            response.isValid(cacheBehavior: cacheBehaviorForConnectivity),
-           case let .json(value) = response.value {
-            return Just(response)
-                .handleEvents(receiveOutput: { _ in
-                    if self.isDebugLoggingEnabled { print("cache hit: \(url)") }
-                })
-                .flatMap { response in
-                    return self.decoder.decodeResponse(value)
-                }
-                .compactMap { APIResponse<T>(response: $0, source: .cache) }
-                .eraseToAnyPublisher()
-            
-        } else {
-            if isDebugLoggingEnabled { print("cache miss: \(url)") }
-            return retrieve(from: url)
-                .handleEvents(receiveOutput: { response in
-                    self.cache.set(value: .json(response), for: url.cacheKey)
-                })
-                .flatMap { response in
-                    self.decoder.decodeResponse(response)
-                }
-                .compactMap { $0 }
-                .map { APIResponse<T>(response: $0, source: .network) }
-                .eraseToAnyPublisher()
-        }
-    }
-    
-    private func retrieve(from url: String) -> AnyPublisher<Any, Error> {
-        return Future { [weak self] promise in
-            guard let self else { return }
-            
-            Task {
-                do {
-                    let output = try await self.retrieve(from: url)
-                    self.networkConnectivityManager.updateConnected(with: true)
-                    promise(.success(output))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }
-        .eraseToAnyPublisher()
-    }
-    
-    private func retrieveObject<T: Codable>(_ url: String, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<T> {
-        if let response = cache.get(for: url.cacheKey),
-           response.isValid(cacheBehavior: cacheBehavior),
            case let .json(value) = response.value {
             if isDebugLoggingEnabled { print("cache hit (async): \(url)") }
             
@@ -348,6 +286,12 @@ final class APIManager: APIManaging {
             
             let decodedResponse: T = try self.decoder.decodeResponse(response)
             return APIResponse<T>(response: decodedResponse, source: .network)
+        }
+    }
+    
+    private func retrieve(from url: String) -> AnyPublisher<Any, Error> {
+        AsyncTools.publisherForAsync {
+            try await self.retrieve(from: url)
         }
     }
     
@@ -391,45 +335,21 @@ final class APIManager: APIManaging {
                 lock.lock {
                     if didComplete.pointee { return }; didComplete.pointee = true
                     continuation.resume(with: .success(value))
+                    if !self.networkConnectivityManager.isConnected() {
+                        self.networkConnectivityManager.updateConnected(with: true)
+                    }
                 }
             }
         }
     }
-}
-
-enum APIManagerError: Error {
-    case generic
-    case deleted
-    case noData
-}
-
-struct APIResponse<T>: Codable where T: Codable {
-    let response: T
-    let source: APIResponseLoadSource
-}
-
-enum APIResponseLoadSource: Codable {
-    case network
-    case cache
-}
-
-enum APIManagerNetworkError: Error {
-    case timeout
-    case unrecognizedItemType
     
-    var errorDescription: String? {
-        switch self {
-        case .timeout:
-            return NSLocalizedString(
-                "Loading failed because your internet connection is experiencing issues.",
-                comment: ""
-            )
-        case .unrecognizedItemType:
-            return NSLocalizedString(
-                "Could not load specified type of story.",
-                comment: ""
-            )
+    private func extractUserItemKeys(response: Any) throws -> (String, Int) {
+        guard let dict = response as? Dictionary<String, Any>,
+              let type = dict["type"] as? String,
+              let id = dict["id"] as? Int else {
+            throw APIManagerError.generic
         }
+        return (type, id)
     }
 }
 
@@ -453,39 +373,5 @@ extension DatabaseReference: DatabaseReferencing {
     
     func getChildData(completion block: @escaping (Error?, DataShapshotting?) -> Void) {
         getData(completion: block)
-    }
-}
-
-/// Add `cacheBehavior` defaults to `APIManaging` protocol
-extension APIManaging {
-    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) -> AnyPublisher<[APIResponse<Story>], Error> {
-        loadStories(ids: ids, cacheBehavior: cacheBehavior)
-    }
-    func loadStories(ids: [Int], cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<[Story]> {
-        try await loadStories(ids: ids, cacheBehavior: cacheBehavior)
-    }
-    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Array<Int>>, Error> {
-        loadStoryIds(type: type, cacheBehavior: cacheBehavior)
-    }
-    func loadStoryIds(type: StoryListType, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Array<Int>> {
-        try await loadStoryIds(type: type, cacheBehavior: cacheBehavior)
-    }
-    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Story>, Error> {
-        loadStory(id: id, cacheBehavior: cacheBehavior)
-    }
-    func loadStory(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Story> {
-        try await loadStory(id: id, cacheBehavior: cacheBehavior)
-    }
-    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<Saturn.Comment>, Error> {
-        loadComment(id: id, cacheBehavior: cacheBehavior)
-    }
-    func loadComment(id: Int, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<Saturn.Comment> {
-        try await loadComment(id: id, cacheBehavior: cacheBehavior)
-    }
-    func loadUser(id: String, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<User>, Error> {
-        loadUser(id: id, cacheBehavior: cacheBehavior)
-    }
-    func loadUser(id: String, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<User> {
-        try await loadUser(id: id, cacheBehavior: cacheBehavior)
     }
 }
