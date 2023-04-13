@@ -102,6 +102,7 @@
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
+		1A91BBF729E7D55E001553D9 /* UserCommentsScoreLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */; };
 		1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */; };
 		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
@@ -246,6 +247,7 @@
 		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
+		1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCommentsScoreLoader.swift; sourceTree = "<group>"; };
 		1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeVoteGestureModifier.swift; sourceTree = "<group>"; };
 		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
 		1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIVote.swift; sourceTree = "<group>"; };
@@ -536,6 +538,7 @@
 				1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */,
 				1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */,
 				1AFD951C29E689AB00E7C086 /* AsyncTools.swift */,
+				1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -942,6 +945,7 @@
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
 				1AA05D7029D3D22700D3013C /* HTMLAPIVote.swift in Sources */,
 				1AFD951F29E68F4000E7C086 /* APIManager+Defaults.swift in Sources */,
+				1A91BBF729E7D55E001553D9 /* UserCommentsScoreLoader.swift in Sources */,
 				1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */,
 				1A888FBF2992351900490A74 /* SettingsIndentationSelectColorView.swift in Sources */,
 				1A5DBC11296BD44D00D4D86E /* BaseUtils.swift in Sources */,

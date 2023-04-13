@@ -14,8 +14,8 @@ typealias ScoreMap = [String: Int]
 
 /// @mockable
 protocol HTMLAPIManaging: AnyObject {
-    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> APIResponse<ScoreMap>
-    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<APIResponse<ScoreMap>, Error>
+    func loadScoresForLoggedInUserComments(startFrom: Int?) async throws -> APIResponse<CommentScoreHTMLParserResponse>
+    func loadScoresForLoggedInUserComments(startFrom: Int?) -> AnyPublisher<APIResponse<CommentScoreHTMLParserResponse>, Error>
     func loadAvailableVotesForComments(page: Int, storyId: Int) async throws -> APIResponse<VoteHTMLParserResponse>
     func loadAvailableVotesForComments(page: Int, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func loadAvailableVotesForStoriesList(page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
@@ -40,7 +40,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     init() {}
     
     /// Load score for each user comment, used on the User page
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<ScoreMap> {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<CommentScoreHTMLParserResponse> {
         guard let username = keychainWrapper.retrieve(for: .username) else { throw HTMLAPIManagerError.cannotLoad }
         
         let commentURL: URL?
@@ -58,7 +58,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
         return APIResponse(response: scoreMap, source: .network)
     }
     
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<ScoreMap>, Error> {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<CommentScoreHTMLParserResponse>, Error> {
         return AsyncTools.publisherForAsync {
             try await self.loadScoresForLoggedInUserComments(startFrom: startFrom)
         }
@@ -302,10 +302,10 @@ extension HTMLAPIManaging {
     func loadAvailableVotesForComments(page: Int = 1, storyId: Int) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         loadAvailableVotesForComments(page: page, storyId: storyId)
     }
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<ScoreMap> {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) async throws -> APIResponse<CommentScoreHTMLParserResponse> {
         try await loadScoresForLoggedInUserComments(startFrom: startFrom)
     }
-    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<ScoreMap>, Error> {
+    func loadScoresForLoggedInUserComments(startFrom: Int? = nil) -> AnyPublisher<APIResponse<CommentScoreHTMLParserResponse>, Error> {
         loadScoresForLoggedInUserComments(startFrom: startFrom)
     }
     func loadAvailableVotesForStoriesList(page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {

@@ -12,11 +12,11 @@ import SwiftSoup
 /// This information is only available to the current user about their own comments,
 /// so we do not attempt to extract scores for comments by other users
 final class CommentScoreHTMLParser {
-    func parseHTML(_ htmlString: String, for username: String) throws -> [String: Int] {
+    func parseHTML(_ htmlString: String, for username: String) throws -> CommentScoreHTMLParserResponse {
         let doc: Document = try SwiftSoup.parse(htmlString)
         let elements = try doc.select("tr.athing.comtr")
         
-        var map: [String: Int] = [:]
+        var map: ScoreMap = [:]
         
         for element in elements {
             guard let elementId = Int(element.id()),
@@ -41,6 +41,45 @@ final class CommentScoreHTMLParser {
             map[String(elementId)] = scoreInt
         }
         
-        return map
+        if let moreLink = try? doc.select("a.morelink").first(),
+           let id = extractNextPageItemId(element: moreLink) {
+            return CommentScoreHTMLParserResponse(scoreMap: map, nextPageItemId: id)
+            
+        } else {
+            return CommentScoreHTMLParserResponse(scoreMap: map, nextPageItemId: nil)
+        }
+    }
+    
+    func extractNextPageItemId(element: Element) -> Int? {
+        guard let hrefString = try? element.attr("href") else {
+            return nil
+        }
+        guard let url = URL(string: "https://news.ycombinator.com/" + hrefString),
+              let components = URLComponents(string: url.absoluteString),
+              let queryItems = components.queryItems else {
+            return nil
+        }
+        var id: Int?
+        for item in queryItems {
+            if item.name == "next",
+               let value = item.value,
+               let valueInt = Int(value) {
+                id = valueInt
+            }
+        }
+        return id
+    }
+}
+
+struct CommentScoreHTMLParserResponse: Codable {
+    let scoreMap: ScoreMap
+    let nextPageItemId: Int?
+    
+    var dict: [String: Any] {
+        var dict: [String: Any] = ["scoreMap": scoreMap]
+        if let nextPageItemId {
+            dict["nextPageItemId"] = nextPageItemId
+        }
+        return dict
     }
 }

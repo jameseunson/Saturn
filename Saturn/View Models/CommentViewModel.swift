@@ -16,12 +16,12 @@ final class CommentViewModel: Codable, Hashable, Identifiable, Votable {
     let parent: CommentViewModel?
     let by: String
     let relativeTimeString: String
-    let score: Int?
     
     var expanded: Bool = true
     var children: [CommentViewModel] = []
     var totalChildCount = 0
     var vote: HTMLAPIVote?
+    var score: Int?
     
     var isAnimating: CommentAnimatingState = .none
     

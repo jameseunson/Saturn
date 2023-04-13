@@ -16,7 +16,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.globalErrorStream) private var globalErrorStream
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
-    @Injected(\.availableVoteLoader) private var availableVoteLoader
+    @Injected(\.commentScoreLoader) private var commentScoreLoader
     
     @Published private(set) var user: User?
     @Published private(set) var items: LoadableResource<[UserItemViewModel]> = .notLoading
@@ -124,6 +124,23 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 self.commentContexts.send(mutableContexts)
             })
             .store(in: &disposeBag)
+        
+        if shouldLoadCommentScores() {
+            commentScoreLoader.scoreMap
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
+                        print(error)
+                    }
+                } receiveValue: { scoreMap in
+                    self.scoreMap = scoreMap
+
+                    self.applyScoreMap(scoreMap: scoreMap, items: self.itemsAccumulator)
+                    self.objectWillChange.send()
+                }
+                .store(in: &disposeBag)
+        }
     }
     
     func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
@@ -157,15 +174,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     }
                     .eraseToAnyPublisher()
             }
-            .flatMap { items, ids -> AnyPublisher<([UserItem], [Int], [String: Int]), Error> in
-                if self.shouldLoadCommentScores() {
-                    return self.htmlApiManager.loadScoresForLoggedInUserComments(startFrom: self.scoreMapStartFrom())
-                        .map { (items, ids, $0.response) }
-                        .eraseToAnyPublisher()
-                } else {
-                    return Just((items, ids, [String:Int]())).setFailureType(to: Error.self).eraseToAnyPublisher()
-                }
-            }
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
@@ -173,10 +181,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     print(error)
                 }
 
-            } receiveValue: { items, ids, scoreMap in
-                if self.shouldLoadCommentScores() {
-                    self.applyScoreMap(scoreMap: scoreMap, items: items)
-                }
+            } receiveValue: { items, ids in // scoreMap
                 self.completeLoad(with: items, idsForPage: ids)
             }
             .store(in: &disposeBag)
@@ -212,6 +217,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 self.itemsLoaded = 0
                 self.submittedIds.removeAll()
                 self.scoreMap.removeAll()
+                self.commentScoreLoader.clearScores()
             }
             
             self.currentPage = 0
@@ -220,8 +226,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             let items = try await self.apiManager.loadUserItems(ids: ids, cacheBehavior: .ignore)
             
             if self.shouldLoadCommentScores() {
-                let scoreMap = try await self.htmlApiManager.loadScoresForLoggedInUserComments()
-                applyScoreMap(scoreMap: scoreMap.response, items: items)
+                self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments()
             }
             
             DispatchQueue.main.async {
@@ -253,6 +258,10 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         if self.itemsLoaded == self.submittedIds.count {
             self.itemsRemainingToLoad = false
         }
+        if self.shouldLoadCommentScores() {
+            self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments(numberOfCommentsLoaded: itemsAccumulator.count)
+        }
+        
         self.lastRefreshTimestamp = Date()
     }
     
@@ -270,11 +279,11 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     /// as this is the only user we have the ability to retrieve comment scores for
     private func shouldLoadCommentScores() -> Bool {
         return keychainWrapper.isLoggedIn &&
-           self.user?.id == keychainWrapper.retrieve(for: .username)
+           self.username == keychainWrapper.retrieve(for: .username)
     }
     
     /// Sets the score for every comment we have a score for
-    private func applyScoreMap(scoreMap: [String: Int], items: [UserItem]) {
+    private func applyScoreMap(scoreMap: [String: Int], items: [UserItemViewModel]) {
         scoreMap.forEach { (key, value) in self.scoreMap[key] = value }
         
         for item in items {
@@ -284,17 +293,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             }
             model.score = score
         }
-    }
-    
-    /// The HN URL for comments requires setting an offset passed via the `next` url parameter
-    /// We can calculate the correct `next` value by looking at the last comment and subtracting 1 from the id
-    private func scoreMapStartFrom() -> Int? {
-        var startFrom: Int? = nil
-        if !self.itemsAccumulator.isEmpty,
-           let last = self.itemsAccumulator.last {
-            startFrom = max(last.id-1, 0)
-        }
-        return startFrom
     }
     
     private func isLoadingLoggedInUser(_ username: String) -> Bool {

@@ -39,6 +39,10 @@ extension Container {
         self { CommentLoader() }
     }
     
+    var commentScoreLoader: Factory<UserCommentsScoreLoading> {
+        self { UserCommentsScoreLoader() }
+    }
+    
     var settingsManager: Factory<SettingsManaging> {
         self { SettingsManager() }
             .singleton

@@ -44,7 +44,7 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     
     func setType(_ voteType: VoteType) {
         switch voteType {
-        case .stories, .user:
+        case .stories:
             currentVotePage = 0
         case .comments(_):
             currentVotePage = 1
@@ -104,8 +104,6 @@ final class AvailableVoteLoader: AvailableVoteLoading {
             return self.htmlApiManager.loadAvailableVotesForStoriesList(page: currentVotePage)
         case .comments(let story):
             return self.htmlApiManager.loadAvailableVotesForComments(page: currentVotePage, storyId: story.id)
-        case .user:
-            return self.htmlApiManager.loadAvailableVotesForStoriesList(page: currentVotePage) // TODO: !!
         }
     }
     
@@ -136,7 +134,6 @@ extension AvailableVoteLoading {
 enum VoteType {
     case stories
     case comments(story: StoryRowViewModel)
-    case user
     
     var description: String {
         switch self {
@@ -144,8 +141,6 @@ enum VoteType {
             return "Stories"
         case .comments(_):
             return "Comments"
-        case .user:
-            return "User"
         }
     }
 }
