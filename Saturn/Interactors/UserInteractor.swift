@@ -59,7 +59,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 })
                 .flatMap { user -> AnyPublisher<APIResponse<User>, Error> in
                     if self.networkConnectivityManager.isConnected() {
-                        return self.apiManager.loadUser(id: self.username, cacheBehavior: .ignore)
+                        return self.apiManager.loadUser(id: self.username, cacheBehavior: .default)
                     } else {
                         return Just(user).setFailureType(to: Error.self).eraseToAnyPublisher()
                     }
@@ -76,54 +76,6 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
         }
-        
-        /// Retrieve context object `CommentLoaderContainer` for each comment
-        $items
-            .map { models -> Array<UserItemViewModel> in
-                guard case .loaded(let response) = models else {
-                    return []
-                }
-                return response
-            }
-            .filter { $0.count > 0 }
-            .setFailureType(to: Error.self)
-            .flatMap { models in
-                let publishers = models.compactMap {
-                    /// If we already have a chain object for this comment, don't retrieve it
-                    if self.commentContexts.value.keys.contains($0.id) {
-                        return nil
-                    }
-                    if case let .comment(comment) = $0 {
-                        return comment
-                    } else {
-                        return nil
-                    }
-                }
-                .map { self.loadCommentChain(from: $0) }
-
-                if publishers.count > 0 {
-                    return Publishers.MergeMany(publishers)
-                        .eraseToAnyPublisher()
-                } else {
-                    return Empty()
-                        .eraseToAnyPublisher()
-                }
-            }
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { completion in
-                if case let .failure(error) = completion {
-                    self.globalErrorStream.addError(error)
-                    print(error)
-                }
-            }, receiveValue: { item in
-                var mutableContexts = self.commentContexts.value
-
-                let (commentViewModel, container) = item
-                mutableContexts[commentViewModel.id] = container
-
-                self.commentContexts.send(mutableContexts)
-            })
-            .store(in: &disposeBag)
         
         if shouldLoadCommentScores() {
             commentScoreLoader.scoreMap
@@ -143,37 +95,26 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         }
     }
     
-    func loadCommentChain(from comment: CommentViewModel) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
-        return Future { [weak self] promise in
-            guard let self else { return }
-            
-            Task {
-                do {
-                    let output = try await self.commentLoader.traverse(comment.comment)
-                    promise(.success((comment, output)))
-                } catch let error {
-                    promise(.failure(error))
-                }
-            }
+    func loadCommentChain(from comment: CommentViewModel, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
+        AsyncTools.publisherForAsync {
+            return (comment, try await self.commentLoader.traverse(comment.comment, cacheBehavior: cacheBehavior))
         }
-        .eraseToAnyPublisher()
     }
     
     func loadMoreItems() {
-        getSubmittedIds()
-            .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
-                if ids.isEmpty { return Just(([UserItem](), ids)).setFailureType(to: Error.self).eraseToAnyPublisher() }
-                
-                let ids = self.idsForCurrentPage(with: ids)
-                return self.apiManager.loadUserItems(ids: ids)
-                    .map { userItems in
-                        let sortedUserItems = userItems.sorted { lhs, rhs in
-                            return lhs.time > rhs.time
-                        }
-                        return (sortedUserItems, ids)
-                    }
-                    .eraseToAnyPublisher()
-            }
+        loadItems(cacheBehavior: .offlineOnly)
+            .handleEvents(receiveOutput: { (items: [UserItem], ids: [Int]) in
+                DispatchQueue.main.async { [weak self] in
+                    self?.completeLoad(with: items, idsForPage: ids)
+                }
+            })
+            .flatMap({ (result: ([UserItem], [Int])) in
+                if self.networkConnectivityManager.isConnected() {
+                    return self.loadItems(cacheBehavior: .default)
+                } else {
+                    return Just(result).setFailureType(to: Error.self).eraseToAnyPublisher()
+                }
+            })
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
@@ -181,7 +122,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                     print(error)
                 }
 
-            } receiveValue: { items, ids in // scoreMap
+            } receiveValue: { items, ids in
                 self.completeLoad(with: items, idsForPage: ids)
             }
             .store(in: &disposeBag)
@@ -210,6 +151,12 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                lastRefreshTimestamp > Date().addingTimeInterval(-60) {
                     return
             }
+            self.readyToLoadMore = false
+            
+            self.currentPage = 0
+            self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
+            let ids = idsForCurrentPage(with: user.submitted ?? [])
+            let items = try await self.apiManager.loadUserItems(ids: ids, cacheBehavior: .ignore)
             
             DispatchQueue.main.async {
                 self.items = .notLoading
@@ -217,26 +164,22 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 self.itemsLoaded = 0
                 self.submittedIds.removeAll()
                 self.scoreMap.removeAll()
+                self.commentContexts.send([:])
                 self.commentScoreLoader.clearScores()
             }
-            
-            self.currentPage = 0
-            self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
-            let ids = idsForCurrentPage(with: user.submitted ?? [])
-            let items = try await self.apiManager.loadUserItems(ids: ids, cacheBehavior: .ignore)
             
             if self.shouldLoadCommentScores() {
                 self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments()
             }
             
             DispatchQueue.main.async {
-                self.completeLoad(with: items, idsForPage: ids)
+                self.completeLoad(with: items, idsForPage: ids, ignoreCache: true)
             }
         }
     }
     
     
-    func completeLoad(with items: [UserItem], idsForPage: [Int]) {
+    func completeLoad(with items: [UserItem], idsForPage: [Int], ignoreCache: Bool = false) {
         var viewModels = [UserItemViewModel]()
         for item in items {
             switch item {
@@ -261,11 +204,92 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         if self.shouldLoadCommentScores() {
             self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments(numberOfCommentsLoaded: itemsAccumulator.count)
         }
+        self.loadContexts(items: viewModels, ignoreCache: ignoreCache)
         
         self.lastRefreshTimestamp = Date()
     }
     
     // MARK: -
+    private func loadItems(cacheBehavior: CacheBehavior = .default) -> AnyPublisher<([UserItem], [Int]), Error> {
+        return getSubmittedIds()
+            .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
+                if ids.isEmpty { return Just(([UserItem](), ids)).setFailureType(to: Error.self).eraseToAnyPublisher() }
+                
+                let ids = self.idsForCurrentPage(with: ids)
+                return self.apiManager.loadUserItems(ids: ids)
+                    .map { userItems in
+                        let sortedUserItems = userItems.sorted { lhs, rhs in
+                            return lhs.time > rhs.time
+                        }
+                        return (sortedUserItems, ids)
+                    }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    private func publishers(for models: [UserItemViewModel], cacheBehavior: CacheBehavior = .default) -> [AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error>] {
+        return models.compactMap {
+            /// If we already have a chain object for this comment, don't retrieve it
+            if self.commentContexts.value.keys.contains($0.id) {
+                return nil
+            }
+            if case let .comment(comment) = $0 {
+                return comment
+            } else {
+                return nil
+            }
+        }
+        .map { self.loadCommentChain(from: $0, cacheBehavior: cacheBehavior) }
+    }
+    
+    private func handleCommentContextLoad(_ item: (CommentViewModel, CommentLoaderContainer)) {
+        var mutableContexts = self.commentContexts.value
+
+        let (commentViewModel, container) = item
+        mutableContexts[commentViewModel.id] = container
+
+        self.commentContexts.send(mutableContexts)
+    }
+    
+    /// Retrieve context object `CommentLoaderContainer` for each comment
+    private func loadContexts(items: [UserItemViewModel], ignoreCache: Bool = false) {
+        Just(items)
+            .filter { $0.count > 0 }
+            .setFailureType(to: Error.self)
+            .flatMap { models in
+                let publishers = self.publishers(for: models, cacheBehavior: ignoreCache ? .ignore : .offlineOnly)
+                if publishers.count > 0 {
+                    return Publishers.MergeMany(publishers).eraseToAnyPublisher()
+                } else {
+                    return Empty().eraseToAnyPublisher()
+                }
+            }
+            .handleEvents(receiveOutput: { item in
+                if ignoreCache { return }
+                DispatchQueue.main.async { [weak self] in
+                    self?.handleCommentContextLoad(item)
+                }
+            })
+            .flatMap { (item: (CommentViewModel, CommentLoaderContainer)) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> in
+                if ignoreCache {
+                    return Just(item).setFailureType(to: Error.self).eraseToAnyPublisher()
+                } else {
+                    return self.loadCommentChain(from: item.0)
+                }
+            }
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
+                    print(error)
+                }
+            }, receiveValue: { item in
+                self.handleCommentContextLoad(item)
+            })
+            .store(in: &disposeBag)
+    }
+    
     /// Calculate page offsets
     private func idsForCurrentPage(with ids: [Int]) -> [Int] {
         let pageStart = self.currentPage * self.pageLength

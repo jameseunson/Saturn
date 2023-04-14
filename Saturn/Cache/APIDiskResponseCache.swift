@@ -13,7 +13,8 @@ protocol APIDiskResponseCaching: AnyObject {
     func clearCache() throws
 }
 
-final class APIDiskResponseCache: APIDiskResponseCaching {
+/// !! DEPRECATED
+final class APIDiskResponseCache_DEPRECATED: APIDiskResponseCaching {
     let fm: FileManaging
     
     #if DEBUG

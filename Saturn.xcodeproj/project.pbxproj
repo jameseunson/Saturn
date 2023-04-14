@@ -22,7 +22,6 @@
 		1A32040C29D5317E00CFB4C2 /* VoteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A32040B29D5317E00CFB4C2 /* VoteManager.swift */; };
 		1A32040E29D573A600CFB4C2 /* StoryContextSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */; };
 		1A37EDB329B5B58100D77A29 /* SaturnMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A37EDB229B5B58100D77A29 /* SaturnMocks.swift */; };
-		1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A3911D4297E62980045D14F /* SwiftyMarkdown */; };
 		1A4890F729E0235A00BB7022 /* DiskCache.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1A4890F529E0235A00BB7022 /* DiskCache.xcdatamodeld */; };
 		1A4890FE29E0252A00BB7022 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */; };
 		1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586429D164B50014FD88 /* StoryRowURLView.swift */; };
@@ -97,12 +96,13 @@
 		1A888FF42993719A00490A74 /* FirebaseRemoteConfigSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF32993719A00490A74 /* FirebaseRemoteConfigSwift */; };
 		1A888FF62993719A00490A74 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF52993719A00490A74 /* FirebaseStorage */; };
 		1A888FF82993719A00490A74 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF72993719A00490A74 /* FirebaseStorageCombine-Community */; };
-		1A888FFA2993719A00490A74 /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF92993719A00490A74 /* SwiftyMarkdown */; };
 		1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */; };
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
 		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
 		1A91BBF729E7D55E001553D9 /* UserCommentsScoreLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */; };
+		1A91BBFA29E8E933001553D9 /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = 1A91BBF929E8E933001553D9 /* SwipeActions */; };
+		1A91BBFD29E91BAE001553D9 /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A91BBFC29E91BAE001553D9 /* SwiftyMarkdown */; };
 		1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */; };
 		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
@@ -303,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1AE4A9C32977D92900D0B0D3 /* FirebaseRemoteConfig in Frameworks */,
+				1A91BBFA29E8E933001553D9 /* SwipeActions in Frameworks */,
 				1AE4A9BB2977D92900D0B0D3 /* FirebaseDatabaseSwift in Frameworks */,
 				1AE4A9B72977D92900D0B0D3 /* FirebaseCrashlytics in Frameworks */,
 				1AE4A9B32977D92900D0B0D3 /* FirebaseAnalyticsSwift in Frameworks */,
@@ -313,9 +314,9 @@
 				1AE4A9BF2977D92900D0B0D3 /* FirebaseFirestoreCombine-Community in Frameworks */,
 				1A57586829D165380014FD88 /* Factory in Frameworks */,
 				1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */,
-				1A3911D5297E62980045D14F /* SwiftyMarkdown in Frameworks */,
 				1AE4A9C12977D92900D0B0D3 /* FirebaseFirestoreSwift in Frameworks */,
 				1A7E151029C83CFD008DAB22 /* SwiftSoup in Frameworks */,
+				1A91BBFD29E91BAE001553D9 /* SwiftyMarkdown in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +343,6 @@
 				1A888FF82993719A00490A74 /* FirebaseStorageCombine-Community in Frameworks */,
 				1A888FF22993719A00490A74 /* FirebaseRemoteConfig in Frameworks */,
 				1A888FE22993719A00490A74 /* FirebaseFunctions in Frameworks */,
-				1A888FFA2993719A00490A74 /* SwiftyMarkdown in Frameworks */,
 				1A888FCE2993719A00490A74 /* FirebaseAppDistribution-Beta in Frameworks */,
 				1A888FF02993719A00490A74 /* FirebasePerformance in Frameworks */,
 				1A888FD22993719A00490A74 /* FirebaseAuthCombine-Community in Frameworks */,
@@ -703,10 +703,11 @@
 				1AE4A9C02977D92900D0B0D3 /* FirebaseFirestoreSwift */,
 				1AE4A9C22977D92900D0B0D3 /* FirebaseRemoteConfig */,
 				1AE4A9C42977D92900D0B0D3 /* FirebaseRemoteConfigSwift */,
-				1A3911D4297E62980045D14F /* SwiftyMarkdown */,
 				1A9C75AF29A4981900DE94C6 /* AlertToast */,
 				1A7E150F29C83CFD008DAB22 /* SwiftSoup */,
 				1A57586729D165380014FD88 /* Factory */,
+				1A91BBF929E8E933001553D9 /* SwipeActions */,
+				1A91BBFC29E91BAE001553D9 /* SwiftyMarkdown */,
 			);
 			productName = "SimpleHN-SwiftUI";
 			productReference = 1A5DBBB1296933BA00D4D86E /* Saturn.app */;
@@ -754,7 +755,6 @@
 				1A888FF32993719A00490A74 /* FirebaseRemoteConfigSwift */,
 				1A888FF52993719A00490A74 /* FirebaseStorage */,
 				1A888FF72993719A00490A74 /* FirebaseStorageCombine-Community */,
-				1A888FF92993719A00490A74 /* SwiftyMarkdown */,
 			);
 			productName = "SimpleHN-SwiftUITests";
 			productReference = 1A5DBBC1296933BB00D4D86E /* SaturnTests.xctest */;
@@ -812,10 +812,11 @@
 			mainGroup = 1A5DBBA8296933BA00D4D86E;
 			packageReferences = (
 				1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 				1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */,
 				1A7E150E29C83CFD008DAB22 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */,
+				1A91BBF829E8E933001553D9 /* XCRemoteSwiftPackageReference "SwipeActions" */,
+				1A91BBFB29E91BAE001553D9 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */,
 			);
 			productRefGroup = 1A5DBBB2296933BA00D4D86E /* Products */;
 			projectDirPath = "";
@@ -1312,14 +1313,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SimonFairbairn/SwiftyMarkdown";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/hmlongco/Factory";
@@ -1334,6 +1327,22 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
+			};
+		};
+		1A91BBF829E8E933001553D9 /* XCRemoteSwiftPackageReference "SwipeActions" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aheze/SwipeActions";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		1A91BBFB29E91BAE001553D9 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jameseunson/SwiftyMarkdown";
+			requirement = {
+				branch = "performance-logging";
+				kind = branch;
 			};
 		};
 		1A9C75AE29A4981900DE94C6 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
@@ -1355,11 +1364,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		1A3911D4297E62980045D14F /* SwiftyMarkdown */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
-			productName = SwiftyMarkdown;
-		};
 		1A57586729D165380014FD88 /* Factory */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1A57586629D165380014FD88 /* XCRemoteSwiftPackageReference "Factory" */;
@@ -1505,9 +1509,14 @@
 			package = 1AE4A9B12977D92900D0B0D3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseStorageCombine-Community";
 		};
-		1A888FF92993719A00490A74 /* SwiftyMarkdown */ = {
+		1A91BBF929E8E933001553D9 /* SwipeActions */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 1A3911D3297E62980045D14F /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
+			package = 1A91BBF829E8E933001553D9 /* XCRemoteSwiftPackageReference "SwipeActions" */;
+			productName = SwipeActions;
+		};
+		1A91BBFC29E91BAE001553D9 /* SwiftyMarkdown */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A91BBFB29E91BAE001553D9 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
 			productName = SwiftyMarkdown;
 		};
 		1A9C75AF29A4981900DE94C6 /* AlertToast */ = {

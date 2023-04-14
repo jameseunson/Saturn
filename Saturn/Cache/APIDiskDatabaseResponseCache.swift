@@ -8,6 +8,7 @@
 import Foundation
 import Factory
 import CoreData
+import FirebaseCrashlytics
 
 final class APIDiskDatabaseResponseCache: APIDiskResponseCaching {
     @Injected(\.persistenceManager) private var persistenceManager
@@ -31,7 +32,16 @@ final class APIDiskDatabaseResponseCache: APIDiskResponseCaching {
         
         switch value {
         case let .json(value):
-            item.value = try JSONSerialization.data(withJSONObject: value)
+            if JSONSerialization.isValidJSONObject(value) {
+                item.value = try JSONSerialization.data(withJSONObject: value)
+            } else {
+                if let valueDict = value as? Dictionary<String, Any> {
+                    Crashlytics.crashlytics().log("APIDiskDatabaseResponseCache, invalid cache attempted: \(valueDict)")
+                } else {
+                    Crashlytics.crashlytics().log("APIDiskDatabaseResponseCache, invalid cache attempted, unknown type")
+                }
+                throw APIDiskDatabaseResponseCacheError.invalidDataProvidedToStore
+            }
             item.type = APIDiskResponseCacheType.json.rawValue
             
         case let .data(value):
@@ -132,4 +142,8 @@ extension DiskCacheItem {
         fetchRequest.fetchLimit = 1
         return fetchRequest
     }
+}
+
+enum APIDiskDatabaseResponseCacheError: Error {
+    case invalidDataProvidedToStore
 }

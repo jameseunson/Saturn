@@ -9,19 +9,19 @@ import Foundation
 import Combine
 
 protocol CommentLoading: AnyObject {
-    func traverse(_ comment: Comment) async throws -> CommentLoaderContainer
+    func traverse(_ comment: Comment, cacheBehavior: CacheBehavior) async throws -> CommentLoaderContainer
 }
 
 actor CommentLoader: CommentLoading {
     let apiManager = APIManager()
     private var activeTasks = [Int: Task<UserItem, Error>]()
     
-    func traverse(_ comment: Comment) async throws -> CommentLoaderContainer {
+    func traverse(_ comment: Comment, cacheBehavior: CacheBehavior) async throws -> CommentLoaderContainer {
         var currentComment = comment
         var loaderContainer = CommentLoaderContainer()
         
         while(loaderContainer.story == nil) {
-            let item = try await traverseAux(currentComment)
+            let item = try await traverseAux(currentComment, cacheBehavior: cacheBehavior)
             
             switch item {
             case let .comment(comment):
@@ -41,12 +41,12 @@ actor CommentLoader: CommentLoading {
     }
     
     // MARK: -
-    private func traverseAux(_ comment: Comment) async throws -> UserItem {
+    private func traverseAux(_ comment: Comment, cacheBehavior: CacheBehavior) async throws -> UserItem {
         if let existingTask = activeTasks[comment.parent] {
             return try await existingTask.value
         }
         let task = Task<UserItem, Error> {
-            let userItem = try await apiManager.loadUserItem(id: comment.parent)
+            let userItem = try await apiManager.loadUserItem(id: comment.parent, cacheBehavior: cacheBehavior)
             activeTasks[comment.parent] = nil
             
             return userItem
@@ -71,4 +71,10 @@ struct CommentLoaderContainer {
     var commentChain: [Comment] = []
     var commentViewModels: [CommentViewModel] = []
     var story: Story?
+}
+
+extension CommentLoading {
+    func traverse(_ comment: Comment, cacheBehavior: CacheBehavior = .default) async throws -> CommentLoaderContainer {
+        try await traverse(comment, cacheBehavior: cacheBehavior)
+    }
 }

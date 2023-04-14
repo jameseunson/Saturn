@@ -16,7 +16,6 @@ protocol APIMemoryResponseCaching: AnyObject {
 
 final class APIMemoryResponseCache: APIMemoryResponseCaching {
     var cache = [String: APIMemoryResponseCacheItem]()
-//    let diskCache = APIDiskResponseCache()
     let diskCache = APIDiskDatabaseResponseCache()
     
     #if DEBUG

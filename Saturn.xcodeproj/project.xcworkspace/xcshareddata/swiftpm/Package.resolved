@@ -138,10 +138,19 @@
     {
       "identity" : "swiftymarkdown",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/SimonFairbairn/SwiftyMarkdown",
+      "location" : "https://github.com/jameseunson/SwiftyMarkdown",
       "state" : {
-        "revision" : "dde451ab4ed9b77b328e21baa471fdfa0cf61369",
-        "version" : "1.2.4"
+        "branch" : "performance-logging",
+        "revision" : "542491a7fedb012d23c90c3440221c253405cafd"
+      }
+    },
+    {
+      "identity" : "swipeactions",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/aheze/SwipeActions",
+      "state" : {
+        "revision" : "41e6f6dce02d8cfa164f8c5461a41340850ca3ab",
+        "version" : "1.1.0"
       }
     }
   ],
