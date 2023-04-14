@@ -165,7 +165,6 @@ final class StoriesListInteractor: Interactor {
                     }
 
                 } receiveValue: { stories in
-                    print("loadNextPage receiveValue")
                     
                     /// Handle loading stories
                     var source: APIResponseLoadSource = .network

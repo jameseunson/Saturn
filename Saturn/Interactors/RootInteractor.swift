@@ -31,7 +31,8 @@ final class RootInteractor: Interactor {
         let numberOfLaunches = settingsManager.int(for: .numberOfLaunches)
         settingsManager.set(value: .int(numberOfLaunches + 1), for: .numberOfLaunches)
         
-        if numberOfLaunches == appRemoteConfig.numberOfLaunchesToRequestReview() {
+        if appRemoteConfig.isAutoPromptForReviewEnabled(),
+           numberOfLaunches >= appRemoteConfig.numberOfLaunchesToRequestReview() {
             if let windowScene = UIApplication.shared.connectedScenes.first,
                let scene = windowScene as? UIWindowScene {
                 SKStoreReviewController.requestReview(in: scene)

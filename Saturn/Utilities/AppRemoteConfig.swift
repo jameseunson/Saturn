@@ -13,6 +13,7 @@ protocol AppRemoteConfig: AnyObject {
     func isSearchEnabled() -> Bool
     func isLoggedInEnabled() -> Bool
     func numberOfLaunchesToRequestReview() -> Int
+    func isAutoPromptForReviewEnabled() -> Bool
 }
 
 final class AppRemoteConfigImpl: AppRemoteConfig {
@@ -37,11 +38,16 @@ final class AppRemoteConfigImpl: AppRemoteConfig {
     func numberOfLaunchesToRequestReview() -> Int {
         return remoteConfig.configValue(forKey: RemoteConfigKeys.numberOfLaunchesToRequestReview.rawValue).numberValue.intValue
     }
+    
+    func isAutoPromptForReviewEnabled() -> Bool {
+        return remoteConfig.configValue(forKey: RemoteConfigKeys.autoPromptForReview.rawValue).boolValue
+    }
 }
 
 enum RemoteConfigKeys: String {
     case searchEnabled
     case loggedInEnabled
     case numberOfLaunchesToRequestReview
+    case autoPromptForReview
 }
 

@@ -32,7 +32,7 @@ final class Comment: Identifiable, Hashable, Codable {
     var url: URL? {
         return URL(string: "https://news.ycombinator.com/item?id=\(id)")
     }
-    
+
     init(id: Int, by: String, kids: [Int]?, parent: Int, text: String, time: Date, score: Int? = nil) {
         self.id = id
         self.by = by
@@ -56,23 +56,17 @@ final class Comment: Identifiable, Hashable, Codable {
     }
 
     func loadMarkdown() -> AnyPublisher<Comment, Error> {
-        Future { promise in
-            Task.detached {
-                await self.processText()
-                promise(.success(self))
-            }
+        AsyncTools.publisherForAsync {
+            await self.processText()
         }
-        .setFailureType(to: Error.self)
-        .eraseToAnyPublisher()
     }
     
     @discardableResult
     func loadMarkdown() async -> Comment {
         await processText()
-        return self
     }
     
-    private func processText() async {
+    private func processText() async -> Comment {
         return await withCheckedContinuation { [weak self] continuation in
             guard let self else { return }
             if let result = try? TextProcessor.processCommentText(self.text) {
@@ -82,7 +76,7 @@ final class Comment: Identifiable, Hashable, Codable {
                 self.processedText = AttributedString(self.text)
                 // TODO: Height for failure case
             }
-            continuation.resume(with: .success(()))
+            continuation.resume(with: .success((self)))
         }
     }
     

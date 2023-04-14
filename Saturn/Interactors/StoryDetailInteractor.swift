@@ -38,6 +38,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
     private var currentlyLoadingComment = CurrentValueSubject<CommentViewModel?, Never>(nil)
+    private var rawComments = [Comment]()
     
     private var itemId: Int?
     private var topLevelComments = [CommentViewModel]()
@@ -319,9 +320,9 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private func traverse(_ rootCommentId: Int, parent: CommentViewModel? = nil, indentation: Int = 0) {
         apiManager.loadComment(id: rootCommentId)
             .flatMap { comment in
-                comment.response.loadMarkdown()
+                return comment.response.loadMarkdown()
             }
-            .receive(on: DispatchQueue.global())
+            .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
                     if case APIManagerError.deleted = error {
