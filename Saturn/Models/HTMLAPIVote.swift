@@ -14,10 +14,6 @@ struct HTMLAPIVote: Codable, Hashable {
     let storyId: Int
     var state: HTMLAPIVoteDirection?
     
-    static func fakeVote() -> HTMLAPIVote {
-        HTMLAPIVote(id: 1, directions: [.upvote, .downvote], auth: "asdf", storyId: 1234)
-    }
-    
     var dict: [String: Any] {
         var map: [String : Any] = ["id": id,
                                    "directions": directions.map { $0.rawValue },
@@ -28,6 +24,12 @@ struct HTMLAPIVote: Codable, Hashable {
             map["state"] = state.rawValue
         }
         return map
+    }
+}
+
+extension HTMLAPIVote {
+    static func fakeVote() -> HTMLAPIVote {
+        HTMLAPIVote(id: 1, directions: [.upvote, .downvote], auth: "asdf", storyId: 1234)
     }
 }
 

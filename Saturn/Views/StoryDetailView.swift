@@ -124,6 +124,7 @@ struct StoryDetailView: View {
             if displayFullComments {
                 if let story = interactor.story {
                     StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
+                        .navigationTitle(story.title)
                 } else {
                     EmptyView()
                 }
@@ -220,14 +221,12 @@ struct StoryDetailView: View {
                                         }
                                     }
                                 }
-
-                                Divider()
-                                    .padding(.leading, CGFloat(comment.indendation) * 20)
                             }
                         }
 
                         if interactor.commentsRemainingToLoad {
                             ListLoadingView()
+                                .transition(.identity)
                         }
 
                         if interactor.focusedCommentViewModel != nil {

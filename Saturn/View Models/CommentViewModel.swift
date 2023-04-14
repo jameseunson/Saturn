@@ -64,7 +64,10 @@ extension CommentViewModel {
 
         comment.processedText = dummyText
         comment.processedTextHeight = 200
-        return CommentViewModel(comment: comment, indendation: 0, parent: nil)
+        let viewModel = CommentViewModel(comment: comment, indendation: 0, parent: nil)
+        viewModel.vote = HTMLAPIVote.fakeVote()
+        
+        return viewModel
     }
 }
 

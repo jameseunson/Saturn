@@ -43,7 +43,8 @@ struct StoryRowView: View {
     var body: some View {
         ZStack {
             if isLoggedIn,
-            abs(dragOffset) > 0 {
+            abs(dragOffset) > 0,
+               context != .user {
                 VoteBackdropView(dragOffset: $dragOffset,
                                  vote: story.vote)
                 .transition(.identity)
@@ -169,7 +170,7 @@ struct StoryRowView: View {
             }
             .padding([.leading, .trailing], 15)
         }
-        .if(isLoggedIn, transform: { view in
+        .if(isLoggedIn && context != .user, transform: { view in
             view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
                                                   onTapVote: onTapVote,
                                                   directionsEnabled: story.vote?.directions ?? []))

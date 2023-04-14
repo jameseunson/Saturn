@@ -70,7 +70,8 @@ struct UserView: View {
                             case let .comment(comment):
                                 CommentView(expanded: .constant(.expanded),
                                             comment: comment,
-                                            displaysStory: true) { comment in
+                                            displaysStory: true,
+                                            context: .user) { comment in
                                     selectedCommentToShare = comment
                                     
                                 } onTapUser: { _ in
@@ -166,6 +167,7 @@ struct UserView: View {
             if let selectedCommentToView,
                let thread = contexts[selectedCommentToView.id] {
                 StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
+                    .navigationTitle(thread.story?.title ?? "")
             } else {
                 EmptyView()
             }
