@@ -33,7 +33,7 @@ struct CommentView: View {
     let isHighlighted: Bool
     let context: CommentViewContext
     
-    static let collapsedHeight: CGFloat = 40
+    static let collapsedHeight: CGFloat = 30
     
     @State private var navBarHeight: CGFloat = 0
     @State private var commentOnScreen: Bool = true
@@ -56,6 +56,7 @@ struct CommentView: View {
         self.comment = comment
         self.displaysStory = displaysStory
         self.isHighlighted = isHighlighted
+        self.context = context
         self.onTapOptions = onTapOptions
         self.onTapUser = onTapUser
         self.onToggleExpanded = onToggleExpanded
@@ -63,67 +64,60 @@ struct CommentView: View {
         self.onTapURL = onTapURL
         self.onTapVote = onTapVote
         self.onTapShare = onTapShare
-        self.context = context
         _isLoggedIn = .init(initialValue: keychainWrapper.isLoggedIn)
     }
     
     var body: some View {
-        VStack {
-            ZStack {
-                if isLoggedIn,
-                   frameHeight > 0,
-                   abs(dragOffset) > 0,
-                   context != .user {
-                    VoteBackdropView(dragOffset: $dragOffset,
-                                     vote: comment.vote)
-                        .transition(.identity)
-                }
-                HStack {
-                    if expanded == .hidden && comment.isAnimating == .none {
-                        EmptyView()
-                    } else {
-                        CommentIndentationView(comment: comment)
-                            .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
-                        VStack(alignment: .leading) {
-                            CommentHeaderView(comment: comment,
-                                              onTapOptions: onTapOptions,
-                                              onTapUser: onTapUser,
-                                              onToggleExpanded: onToggleExpanded,
-                                              onTapVote: onTapVote,
-                                              expanded: $expanded,
-                                              commentOnScreen: $commentOnScreen)
-                            Divider()
-                            if expanded == .expanded {
-                                Text(comment.comment.processedText ?? AttributedString())
-                                    .font(.body)
-                                    .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
-                                                                      onTapStoryId: onTapStoryId,
-                                                                      onTapURL: onTapURL))
-                                    .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
-                            }
+        ZStack {
+            if isLoggedIn,
+               frameHeight > 0,
+               abs(dragOffset) > 0,
+               context != .user {
+                VoteBackdropView(dragOffset: $dragOffset,
+                                 vote: comment.vote)
+                    .transition(.identity)
+            }
+            HStack {
+                if expanded == .hidden && comment.isAnimating == .none {
+                    EmptyView()
+                } else {
+                    CommentIndentationView(comment: comment)
+                        .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
+                    VStack(alignment: .leading) {
+                        CommentHeaderView(comment: comment,
+                                          onTapOptions: onTapOptions,
+                                          onTapUser: onTapUser,
+                                          onToggleExpanded: onToggleExpanded,
+                                          onTapVote: onTapVote,
+                                          expanded: $expanded,
+                                          commentOnScreen: $commentOnScreen)
+                        Divider()
+                        if expanded == .expanded {
+                            Text(comment.comment.processedText ?? AttributedString())
+                                .font(.body)
+                                .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                                  onTapStoryId: onTapStoryId,
+                                                                  onTapURL: onTapURL))
+                                .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
                         }
                     }
                 }
-                .transition(.identity)
-                .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
-                .offset(.init(width: dragOffset, height: 0))
-                .background {
-                    if isHighlighted {
-                        Color.indentationColor()
-                            .opacity(0.3)
-                            .edgesIgnoringSafeArea(.all)
-                            .offset(.init(width: dragOffset, height: 0))
-                            .padding(.leading, CGFloat(comment.indendation) * 20)
-                    } else {
-                        Color(UIColor.systemBackground)
-                            .edgesIgnoringSafeArea(.all)
-                            .offset(.init(width: dragOffset, height: 0))
-                    }
-                }
             }
-            if expanded == .expanded {
-                Divider()
-                    .padding(.leading, CGFloat(comment.indendation + 1) * 20)
+            .transition(.identity)
+            .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
+            .offset(.init(width: dragOffset, height: 0))
+            .background {
+                if isHighlighted {
+                    Color.indentationColor()
+                        .opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                        .padding(.leading, CGFloat(comment.indendation) * 20)
+                } else {
+                    Color(UIColor.systemBackground)
+                        .edgesIgnoringSafeArea(.all)
+                        .offset(.init(width: dragOffset, height: 0))
+                }
             }
         }
         .contextMenu(menuItems: {
@@ -185,7 +179,7 @@ struct CommentView: View {
             view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
         })
         .clipped()
-        .padding(.top, expanded == .hidden ? 0 : 10)
+        .padding([.top, .bottom], expanded == .hidden ? 0 : 10)
         .modifier(CommentExpandModifier(comment: comment,
                                         onToggleExpanded: onToggleExpanded,
                                         expanded: $expanded,

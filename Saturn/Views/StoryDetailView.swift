@@ -221,12 +221,18 @@ struct StoryDetailView: View {
                                         }
                                     }
                                 }
+                                
+                                Divider()
+                                    .padding(.leading, CGFloat(comment.indendation) * 20)
                             }
                         }
 
                         if interactor.commentsRemainingToLoad {
                             ListLoadingView()
                                 .transition(.identity)
+                                .transaction { transaction in
+                                    transaction.animation = nil
+                                }
                         }
 
                         if interactor.focusedCommentViewModel != nil {

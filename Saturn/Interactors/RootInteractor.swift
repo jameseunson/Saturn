@@ -17,6 +17,7 @@ final class RootInteractor: Interactor {
 
     override func didBecomeActive() {
         print(FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask))
+        print(UIScreen.main.maximumFramesPerSecond)
         
         networkConnectivityManager.start()
         
