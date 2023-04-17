@@ -241,7 +241,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
     }
 }
 
-enum HTMLAPIManagerError: Error {
+enum HTMLAPIManagerError: LocalizedError {
     case cannotLoad
     case invalidHTML
     case invalidScore

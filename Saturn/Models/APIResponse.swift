@@ -23,7 +23,7 @@ enum APIResponseLoadSource: Codable {
     case cache
 }
 
-enum APIManagerNetworkError: Error {
+enum APIManagerNetworkError: LocalizedError {
     case timeout
     case unrecognizedItemType
     
@@ -31,7 +31,7 @@ enum APIManagerNetworkError: Error {
         switch self {
         case .timeout:
             return NSLocalizedString(
-                "Loading failed because your internet connection is experiencing issues.",
+                "Loading took too long to complete. Your connection may be experiencing issues.",
                 comment: ""
             )
         case .unrecognizedItemType:

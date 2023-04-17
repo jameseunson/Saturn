@@ -66,7 +66,7 @@ public final class NetworkConnectivityManager: NetworkConnectivityManaging {
     }
 }
 
-enum NetworkConnectivityManagerError: Error {
+enum NetworkConnectivityManagerError: LocalizedError {
     case notConnected
     
     var errorDescription: String? {

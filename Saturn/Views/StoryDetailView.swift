@@ -52,6 +52,7 @@ struct StoryDetailView: View {
             readyToLoadMore = output
         })
         .onReceive(interactor.$commentsRemainingToLoad, perform: { output in
+            print("commentsRemainingToLoad: \(output)")
             commentsRemainingToLoad = output
         })
         .onReceive(interactor.commentsDebounced) { output in

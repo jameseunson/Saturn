@@ -42,11 +42,12 @@ final class APIManager: APIManaging {
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     @Injected(\.globalErrorStream) private var globalErrorStream
     
-    #if DEBUG
-    let isDebugLoggingEnabled = true
-    #else
+//    #if DEBUG
+//    let isDebugLoggingEnabled = true
+//    #else
+//    let isDebugLoggingEnabled = false
+//    #endif
     let isDebugLoggingEnabled = false
-    #endif
     
     init(ref: DatabaseReferencing = Database.database(url: "https://hacker-news.firebaseio.com").reference(),
          timeoutSeconds: Int = 15) {

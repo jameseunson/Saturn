@@ -72,7 +72,7 @@ struct CommentHeaderView: View {
                             } label: {
                                 Text(Image(systemName: "arrow.down"))
                                     .font(.callout)
-                                    .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
+                                    .foregroundColor(vote.state == .downvote ? .blue : .gray)
                             }
                         }
                     }

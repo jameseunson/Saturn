@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Factory
+import SwipeActions
 
 struct StoryRowView: View {
     @Injected(\.keychainWrapper) private var keychainWrapper
@@ -41,14 +42,7 @@ struct StoryRowView: View {
     }
     
     var body: some View {
-        ZStack {
-            if isLoggedIn,
-            abs(dragOffset) > 0,
-               context != .user {
-                VoteBackdropView(dragOffset: $dragOffset,
-                                 vote: story.vote)
-                .transition(.identity)
-            }
+        SwipeView {
             VStack(alignment: .leading) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -115,48 +109,11 @@ struct StoryRowView: View {
                 }
                 if isLoggedIn,
                    context != .user {
-                    HStack(alignment: .top) {
-                        Image(systemName: "ellipsis")
-                            .contentShape(Rectangle())
-                            .font(.body)
-                            .foregroundColor(.gray)
-                            .frame(width: 30, height: 30)
-                            .onTapGesture {
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                                
-                                onTapSheet?(story)
-                            }
-                        Spacer()
-                        if let vote = story.vote {
-                            if vote.directions.contains(.upvote) {
-                                Button {
-                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                    impactMed.impactOccurred()
-                                    onTapVote?(.upvote)
-                                } label: {
-                                    Text(Image(systemName: "arrow.up"))
-                                        .font(.body)
-                                        .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
-                                }
-                            }
-                            if vote.directions.contains(.downvote) {
-                                Button {
-                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                    impactMed.impactOccurred()
-                                    onTapVote?(.downvote)
-                                } label: {
-                                    Text(Image(systemName: "arrow.down"))
-                                        .font(.body)
-                                        .foregroundColor(vote.state == .downvote ? .accentColor : .gray)
-                                }
-                            }
-                        }
-                    }
-                    .frame(minHeight: 33)
+                    StoryLoggedInOptionsView(story: story,
+                                             onTapVote: onTapVote,
+                                             onTapSheet: onTapSheet)
                 }
             }
-            .offset(.init(width: dragOffset, height: 0))
             .background {
                 if context == .user {
                     Color(UIColor.systemGray6)
@@ -169,12 +126,40 @@ struct StoryRowView: View {
                 }
             }
             .padding([.leading, .trailing], 15)
+        } leadingActions: { context in
+            if isLoggedIn,
+               self.context != .user,
+               let vote = story.vote,
+               vote.directions.contains(.upvote) {
+                SwipeAction(
+                    systemImage: "arrow.up.square.fill",
+                    backgroundColor: .accentColor
+                ) {
+                    onTapVote?(.upvote)
+                    context.state.wrappedValue = .closed
+                }
+                .allowSwipeToTrigger()
+                .font(.title.weight(.bold))
+                .foregroundColor(.white)
+            }
+        } trailingActions: { context in
+            if isLoggedIn,
+               self.context != .user,
+               let vote = story.vote,
+               vote.directions.contains(.downvote) {
+                SwipeAction(
+                    systemImage: "arrow.down.square.fill",
+                    backgroundColor: .blue
+                ) {
+                    onTapVote?(.downvote)
+                    context.state.wrappedValue = .closed
+                }
+                .allowSwipeToTrigger()
+                .font(.title.weight(.bold))
+                .foregroundColor(.white)
+            }
         }
-        .if(isLoggedIn && context != .user, transform: { view in
-            view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
-                                                  onTapVote: onTapVote,
-                                                  directionsEnabled: story.vote?.directions ?? []))
-        })
+        .swipeDefaults()
         .onAppear {
             Task { @MainActor in
                 let storyImage = try? await apiManager.getImage(for: story)

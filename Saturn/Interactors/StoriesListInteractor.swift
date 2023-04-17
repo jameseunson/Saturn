@@ -43,8 +43,6 @@ final class StoriesListInteractor: Interactor {
         self.type = type
         self.stories = stories
         
-//        try? APIMemoryResponseCache.default.diskCache.clearCache()
-        
         #if DEBUG
         if stories.count > 0 {
             self.displayingSwiftUIPreview = true
@@ -218,8 +216,8 @@ final class StoriesListInteractor: Interactor {
     }
     
     private func completeLoad(with stories: [Story], source: APIResponseLoadSource) {
-        /// Handle stories
-        let viewModels = stories.map { StoryRowViewModel(story: $0) }
+        /// Create view models, ensure no duplicates (can occur when story moves from one page to another, and is loaded on both pages)
+        let viewModels = stories.map { StoryRowViewModel(story: $0) }.filter { !self.stories.contains($0) }
         self.stories.append(contentsOf: viewModels)
         
         for viewModel in viewModels {
@@ -357,7 +355,7 @@ enum IDPage: Equatable {
     case page(Int)
 }
 
-enum StoriesListError: Error {
+enum StoriesListError: LocalizedError {
     case cannotRefresh
     
     var errorDescription: String? {

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Factory
+import SwipeActions
 
 typealias OnToggleExpandedCompletion = (CommentViewModel, CommentExpandedState, Bool) -> Void
 
@@ -37,7 +38,6 @@ struct CommentView: View {
     
     @State private var navBarHeight: CGFloat = 0
     @State private var commentOnScreen: Bool = true
-    @State private var dragOffset: CGFloat = 0
     @State private var isLoggedIn: Bool = false
     
     init(expanded: Binding<CommentExpandedState>,
@@ -68,15 +68,7 @@ struct CommentView: View {
     }
     
     var body: some View {
-        ZStack {
-            if isLoggedIn,
-               frameHeight > 0,
-               abs(dragOffset) > 0,
-               context != .user {
-                VoteBackdropView(dragOffset: $dragOffset,
-                                 vote: comment.vote)
-                    .transition(.identity)
-            }
+        SwipeView {
             HStack {
                 if expanded == .hidden && comment.isAnimating == .none {
                     EmptyView()
@@ -103,21 +95,49 @@ struct CommentView: View {
                     }
                 }
             }
-            .transition(.identity)
             .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
-            .offset(.init(width: dragOffset, height: 0))
-            .background {
-                if isHighlighted {
-                    Color.indentationColor()
-                        .opacity(0.3)
-                        .edgesIgnoringSafeArea(.all)
-                        .offset(.init(width: dragOffset, height: 0))
-                        .padding(.leading, CGFloat(comment.indendation) * 20)
-                } else {
-                    Color(UIColor.systemBackground)
-                        .edgesIgnoringSafeArea(.all)
-                        .offset(.init(width: dragOffset, height: 0))
+            
+        } leadingActions: { context in
+            if isLoggedIn,
+               self.context != .user,
+               let vote = comment.vote,
+               vote.directions.contains(.upvote) {
+                SwipeAction(
+                    systemImage: "arrow.up.square.fill",
+                    backgroundColor: .accentColor
+                ) {
+                    onTapVote?(.upvote)
+                    context.state.wrappedValue = .closed
                 }
+                .allowSwipeToTrigger()
+                .font(.title.weight(.bold))
+                .foregroundColor(.white)
+            }
+        } trailingActions: { context in
+            if isLoggedIn,
+               self.context != .user,
+               let vote = comment.vote,
+               vote.directions.contains(.downvote) {
+                SwipeAction(
+                    systemImage: "arrow.down.square.fill",
+                    backgroundColor: .blue
+                ) {
+                    onTapVote?(.downvote)
+                    context.state.wrappedValue = .closed
+                }
+                .allowSwipeToTrigger()
+                .font(.title.weight(.bold))
+                .foregroundColor(.white)
+            }
+        }
+        .swipeDefaults()
+        .transition(.identity)
+        .background {
+            if isHighlighted {
+                Color.indentationColor()
+                    .opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                    .padding(.leading, CGFloat(comment.indendation) * 20)
             }
         }
         .contextMenu(menuItems: {
@@ -146,11 +166,6 @@ struct CommentView: View {
             }, label: {
                 Label(comment.by, systemImage: "person.circle")
             })
-        })
-        .if(isLoggedIn && context != .user, transform: { view in
-            view.modifier(SwipeVoteGestureModifier(dragOffset: $dragOffset,
-                                                  onTapVote: onTapVote,
-                                                  directionsEnabled: comment.vote?.directions ?? []))
         })
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in

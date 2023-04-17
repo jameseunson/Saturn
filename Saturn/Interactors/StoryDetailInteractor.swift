@@ -38,7 +38,6 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     private var comments = CurrentValueSubject<Array<CommentViewModel>, Never>([])
     private var commentsLoaded = CurrentValueSubject<Int, Never>(0)
     private var currentlyLoadingComment = CurrentValueSubject<CommentViewModel?, Never>(nil)
-    private var rawComments = [Comment]()
     
     private var itemId: Int?
     private var topLevelComments = [CommentViewModel]()
@@ -46,6 +45,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     // MARK: - Comment Focused View
     private var commentChain = [Comment]()
+    private var loadedFocusedCommentChildComments = [Int]()
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -208,41 +208,53 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     func loadMoreItems() {
         guard commentsRemainingToLoad,
               let story else { return }
-                    
+        
+        let kids: [Int]?
+        var loadedComments: [Int]
         if let focusedCommentViewModel { /// Comment-focused mode
-            guard let kids = focusedCommentViewModel.comment.kids else {
-                commentsRemainingToLoad = false
-                return
-            }
-            for kid in kids {
-                traverse(kid, parent: focusedCommentViewModel, indentation: focusedCommentViewModel.indendation + 1)
-            }
-            commentsRemainingToLoad = false
+            kids = focusedCommentViewModel.comment.kids
+            loadedComments = loadedFocusedCommentChildComments
             
         } else {
-            guard let kids = story.story.kids else { return }
-            
-            var nextKidToLoad: Int?
-            for kid in kids {
-                if loadedTopLevelComments.contains(kid) {
-                    continue
-                } else {
-                    nextKidToLoad = kid
-                    break
-                }
+            kids = story.story.kids
+            loadedComments = loadedTopLevelComments
+        }
+        guard let kids else {
+            commentsRemainingToLoad = false
+            return
+        }
+  
+        var nextKidToLoad: Int?
+        for kid in kids {
+            if loadedComments.contains(kid) {
+                continue
+            } else {
+                nextKidToLoad = kid
+                break
             }
-            
-            if let nextKidToLoad {
+        }
+        
+        if let nextKidToLoad {
+            if let focusedCommentViewModel { /// Comment-focused mode
+                traverse(nextKidToLoad, parent: focusedCommentViewModel, indentation: focusedCommentViewModel.indendation + 1)
+            } else {
                 traverse(nextKidToLoad)
-                loadedTopLevelComments.append(nextKidToLoad)
-
-                let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
-                availableVoteLoader.evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
             }
             
-            if loadedTopLevelComments.count == kids.count {
-                commentsRemainingToLoad = false
-            }
+            loadedComments.append(nextKidToLoad)
+
+            let commentsLoaded = topLevelComments.reduce(0) { $0 + ($1.totalChildCount + 1) } /// Self (1) + number of children
+            availableVoteLoader.evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: commentsLoaded, for: story)
+        }
+        
+        if loadedComments.count == kids.count {
+            commentsRemainingToLoad = false
+        }
+        
+        if focusedCommentViewModel != nil { /// Comment-focused mode
+            loadedFocusedCommentChildComments = loadedComments
+        } else {
+            loadedTopLevelComments = loadedComments
         }
     }
     
@@ -257,6 +269,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             
             topLevelComments.removeAll()
             loadedTopLevelComments.removeAll()
+            loadedFocusedCommentChildComments.removeAll()
+            
             availableVoteLoader.clearVotes(for: .comments(story: story))
             
             let storyModel = try await apiManager.loadStory(id: story.id, cacheBehavior: .ignore).response
@@ -451,7 +465,6 @@ extension StoryDetailInteractor {
             if i == 0 {
                 self.topLevelComments.append(model)
                 self.loadedTopLevelComments.append(model.id)
-                
             }
             if i == self.commentChain.count-1 {
                 self.focusedCommentViewModel = model

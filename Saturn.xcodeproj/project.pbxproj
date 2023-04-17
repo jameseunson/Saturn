@@ -103,7 +103,6 @@
 		1A91BBF729E7D55E001553D9 /* UserCommentsScoreLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */; };
 		1A91BBFA29E8E933001553D9 /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = 1A91BBF929E8E933001553D9 /* SwipeActions */; };
 		1A91BBFD29E91BAE001553D9 /* SwiftyMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1A91BBFC29E91BAE001553D9 /* SwiftyMarkdown */; };
-		1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */; };
 		1A98710129CD86DB0022BA2B /* VoteBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */; };
 		1A9C75B029A4981900DE94C6 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 1A9C75AF29A4981900DE94C6 /* AlertToast */; };
 		1AA05D7029D3D22700D3013C /* HTMLAPIVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */; };
@@ -132,6 +131,9 @@
 		1AD1287429C45C7A00096DE7 /* KeychainItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD1287329C45C7A00096DE7 /* KeychainItem.swift */; };
 		1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADE889C29C010CF00492114 /* UnfairLock.swift */; };
 		1AE288FF29DAC97400E041AA /* AvailableVoteLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */; };
+		1AE43E8E29ED3FA600080117 /* StoryLoggedInOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE43E8D29ED3FA600080117 /* StoryLoggedInOptionsView.swift */; };
+		1AE43E9029ED408F00080117 /* SwipeView+StandardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE43E8F29ED408F00080117 /* SwipeView+StandardConfig.swift */; };
+		1AE43E9229ED418A00080117 /* StoryCommentSwipeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE43E9129ED418A00080117 /* StoryCommentSwipeAction.swift */; };
 		1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9912975250F00D0B0D3 /* RootView.swift */; };
 		1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */; };
 		1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */; };
@@ -248,7 +250,6 @@
 		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
 		1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCommentsScoreLoader.swift; sourceTree = "<group>"; };
-		1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeVoteGestureModifier.swift; sourceTree = "<group>"; };
 		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
 		1AA05D6F29D3D22700D3013C /* HTMLAPIVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIVote.swift; sourceTree = "<group>"; };
 		1AA05D7129D3FD3100D3013C /* URL+CacheKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+CacheKey.swift"; sourceTree = "<group>"; };
@@ -276,6 +277,9 @@
 		1AD1287329C45C7A00096DE7 /* KeychainItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeychainItem.swift; sourceTree = "<group>"; };
 		1ADE889C29C010CF00492114 /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
 		1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableVoteLoader.swift; sourceTree = "<group>"; };
+		1AE43E8D29ED3FA600080117 /* StoryLoggedInOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryLoggedInOptionsView.swift; sourceTree = "<group>"; };
+		1AE43E8F29ED408F00080117 /* SwipeView+StandardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwipeView+StandardConfig.swift"; sourceTree = "<group>"; };
+		1AE43E9129ED418A00080117 /* StoryCommentSwipeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryCommentSwipeAction.swift; sourceTree = "<group>"; };
 		1AE4A9912975250F00D0B0D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1AE4A993297526AB00D0B0D3 /* SettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		1AE4A9952975356200D0B0D3 /* SettingsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsInteractor.swift; sourceTree = "<group>"; };
@@ -374,6 +378,7 @@
 				1A888FBB299227F600490A74 /* Color+Codable.swift */,
 				1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */,
 				1AA05D7129D3FD3100D3013C /* URL+CacheKey.swift */,
+				1AE43E8F29ED408F00080117 /* SwipeView+StandardConfig.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -384,7 +389,6 @@
 				1A2F380C297A86B500F35844 /* CommentNavigationModifier.swift */,
 				1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */,
 				1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */,
-				1A9870FE29CD865A0022BA2B /* SwipeVoteGestureModifier.swift */,
 				1A32040D29D573A600CFB4C2 /* StoryContextSheetModifier.swift */,
 			);
 			path = Modifiers;
@@ -656,14 +660,24 @@
 			path = Keychain;
 			sourceTree = "<group>";
 		};
+		1AE43E8C29ED3F8900080117 /* Story */ = {
+			isa = PBXGroup;
+			children = (
+				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
+				1A57586429D164B50014FD88 /* StoryRowURLView.swift */,
+				1AE43E8D29ED3FA600080117 /* StoryLoggedInOptionsView.swift */,
+			);
+			path = Story;
+			sourceTree = "<group>";
+		};
 		1AE4A99929778F1900D0B0D3 /* Partial */ = {
 			isa = PBXGroup;
 			children = (
+				1AE43E8C29ED3F8900080117 /* Story */,
 				1ACB6C1529BB05CA000A94E0 /* Comments */,
 				1ACB6C1029BAF918000A94E0 /* Search */,
 				1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */,
 				1A5DBC07296AA67300D4D86E /* LoadingView.swift */,
-				1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */,
 				1A873AD62971461A00870A50 /* UserHeaderView.swift */,
 				1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */,
 				1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */,
@@ -671,7 +685,7 @@
 				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
 				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
 				1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */,
-				1A57586429D164B50014FD88 /* StoryRowURLView.swift */,
+				1AE43E9129ED418A00080117 /* StoryCommentSwipeAction.swift */,
 			);
 			path = Partial;
 			sourceTree = "<group>";
@@ -864,6 +878,7 @@
 			files = (
 				1A111DFB29889C44005B29B6 /* UserItemViewModel.swift in Sources */,
 				1A873ACD296FCD5B00870A50 /* SearchView.swift in Sources */,
+				1AE43E8E29ED3FA600080117 /* StoryLoggedInOptionsView.swift in Sources */,
 				1AE4A99B2977938F00D0B0D3 /* SearchAPIManager.swift in Sources */,
 				1A7E150D29C83671008DAB22 /* LoginAuthenticationButton.swift in Sources */,
 				1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */,
@@ -895,8 +910,10 @@
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
+				1AE43E9029ED408F00080117 /* SwipeView+StandardConfig.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1A4890FE29E0252A00BB7022 /* PersistenceManager.swift in Sources */,
+				1AE43E9229ED418A00080117 /* StoryCommentSwipeAction.swift in Sources */,
 				1AE4A9DB29792E5E00D0B0D3 /* NetworkConnectivityManager.swift in Sources */,
 				1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */,
 				1ACB6C0F29B9C4A2000A94E0 /* SettingKey.swift in Sources */,
@@ -940,7 +957,6 @@
 				1A57586529D164B50014FD88 /* StoryRowURLView.swift in Sources */,
 				1A5DBC0A296AAF6300D4D86E /* StoryDetailView.swift in Sources */,
 				1AFD952129E68F6700E7C086 /* APIResponse.swift in Sources */,
-				1A9870FF29CD865A0022BA2B /* SwipeVoteGestureModifier.swift in Sources */,
 				1A5DBC17296BDAC200D4D86E /* Comment.swift in Sources */,
 				1A873ABF296E76B200870A50 /* CommentView.swift in Sources */,
 				1A5DBC08296AA67300D4D86E /* LoadingView.swift in Sources */,
