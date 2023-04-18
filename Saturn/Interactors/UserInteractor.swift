@@ -164,6 +164,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 self.itemsLoaded = 0
                 self.submittedIds.removeAll()
                 self.scoreMap.removeAll()
+                
                 self.commentContexts.send([:])
                 self.commentScoreLoader.clearScores()
             }

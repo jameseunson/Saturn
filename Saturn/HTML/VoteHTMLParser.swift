@@ -43,8 +43,19 @@ final class VoteHTMLParser {
         if let _ = try? doc.select("a.morelink").first() {
             hasNextPage = true
         }
+        
+        /// Retrieve the vote for the overall story, useful in case we don't already have it,
+        /// for example, when viewing a story from UserView
+        var storyVote: HTMLAPIVote?
+        if case .comments(_) = mode,
+           let storyVoteElement = try? doc.select("tr.athing").first(),
+           let vote = try extractVote(from: storyVoteElement, mode: .storyList) {
+            storyVote = vote
+        }
 
-        return VoteHTMLParserResponse(scoreMap: map, hasNextPage: hasNextPage)
+        return VoteHTMLParserResponse(scoreMap: map,
+                                      hasNextPage: hasNextPage,
+                                      storyVote: storyVote)
     }
     
     private func extractVote(from element: Element, mode: VoteHTMLParserMode) throws -> HTMLAPIVote? {
@@ -179,16 +190,21 @@ final class VoteHTMLParser {
 }
 
 enum VoteHTMLParserMode: Equatable {
-    case comments(Int)
+    case comments(Int) /// storyId
     case storyList
 }
 
 struct VoteHTMLParserResponse: Codable {
     let scoreMap: [String: HTMLAPIVote]
     let hasNextPage: Bool
+    let storyVote: HTMLAPIVote?
     
     var dict: [String: Any] {
-        ["scoreMap": scoreMap.mapValues { $0.dict },
-        "hasNextPage": hasNextPage]
+        var dict: [String: Any] = ["scoreMap": scoreMap.mapValues { $0.dict },
+                                   "hasNextPage": hasNextPage]
+        if let storyVote {
+            dict["storyVote"] = storyVote.dict
+        }
+        return dict
     }
 }

@@ -131,32 +131,14 @@ struct StoryRowView: View {
                self.context != .user,
                let vote = story.vote,
                vote.directions.contains(.upvote) {
-                SwipeAction(
-                    systemImage: "arrow.up.square.fill",
-                    backgroundColor: .accentColor
-                ) {
-                    onTapVote?(.upvote)
-                    context.state.wrappedValue = .closed
-                }
-                .allowSwipeToTrigger()
-                .font(.title.weight(.bold))
-                .foregroundColor(.white)
+                SwipeAction.action(direction: .upvote, onTapVote: onTapVote, context: context)
             }
         } trailingActions: { context in
             if isLoggedIn,
                self.context != .user,
                let vote = story.vote,
                vote.directions.contains(.downvote) {
-                SwipeAction(
-                    systemImage: "arrow.down.square.fill",
-                    backgroundColor: .blue
-                ) {
-                    onTapVote?(.downvote)
-                    context.state.wrappedValue = .closed
-                }
-                .allowSwipeToTrigger()
-                .font(.title.weight(.bold))
-                .foregroundColor(.white)
+                SwipeAction.action(direction: .downvote, onTapVote: onTapVote, context: context)
             }
         }
         .swipeDefaults()

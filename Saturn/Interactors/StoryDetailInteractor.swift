@@ -180,6 +180,17 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
             
+            availableVoteLoader.availableStoryVote
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
+                    print(error)
+                }
+            } receiveValue: { vote in
+                self.story?.vote = vote
+            }
+            .store(in: &disposeBag)
+            
             Publishers.CombineLatest($story.compactMap { $0 },
                                      commentsDebounced.filter { !$0.isEmpty }.prefix(1)) /// Ensure only loads once comments are at least partially loaded, avoiding redundant requests
                 .sink { story, _ in

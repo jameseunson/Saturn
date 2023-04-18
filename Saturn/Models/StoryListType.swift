@@ -26,6 +26,19 @@ enum StoryListType {
         }
     }
     
+    var httpPath: String {
+        switch self {
+        case .top:
+            return "news"
+        case .new:
+            return "newest"
+        case .show:
+            return "show"
+        case .ask:
+            return "ask"
+        }
+    }
+    
     var cacheKey: String {
         switch self {
         case .top:

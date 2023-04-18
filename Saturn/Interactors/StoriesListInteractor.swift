@@ -50,7 +50,7 @@ final class StoriesListInteractor: Interactor {
         #endif
         super.init()
         
-        self.availableVoteLoader.setType(.stories)
+        self.availableVoteLoader.setType(.stories(type: type))
         self.lastRefreshTimestamp = settingsManager.date(for: .lastRefreshTimestamp)
     }
     
@@ -89,16 +89,17 @@ final class StoriesListInteractor: Interactor {
             
             let storyIds = try await apiManager.loadStoryIds(type: self.type, cacheBehavior: .ignore)
             let stories = try await apiManager.loadStories(ids: self.idsForPage(.current, with: storyIds.response), cacheBehavior: .ignore)
-            self.availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: stories.response.count)
+            self.availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: stories.response.count, for: type)
             
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
-            self.availableVoteLoader.clearVotes(for: .stories)
+            self.availableVoteLoader.clearVotes(for: .stories(type: type))
             
             self.completeLoad(with: stories.response,
                               source: .network)
             
         } catch {
+            self.loadingState = .failed
             self.globalErrorStream.addError(StoriesListError.cannotRefresh)
             print(error)
         }
@@ -226,7 +227,7 @@ final class StoriesListInteractor: Interactor {
                 viewModel.vote = vote
             }
         }
-        availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: self.stories.count)
+        availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: self.stories.count, for: type)
         
         /// Handle scoremap (if exists)
         for story in self.stories {
@@ -307,9 +308,7 @@ final class StoriesListInteractor: Interactor {
         /// if they are logged in)
         Publishers.CombineLatest(keychainWrapper.isLoggedInSubject.setFailureType(to: Error.self).removeDuplicates(),
                                  availableVoteLoader.availableVotes)
-            .filter({ isLoggedIn, _ in
-                return isLoggedIn
-            })
+            .filter({ isLoggedIn, _ in return isLoggedIn })
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {

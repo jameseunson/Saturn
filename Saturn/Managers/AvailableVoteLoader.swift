@@ -9,13 +9,15 @@ import Foundation
 import Factory
 import Combine
 
+/// @mockable
 protocol AvailableVoteLoading: AnyObject {
     func evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: Int, for story: StoryRowViewModel)
-    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int)
+    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int, for type: StoryListType)
     func clearVotes(for voteType: VoteType)
     func setType(_ voteType: VoteType)
     
     var availableVotes: AnyPublisher<[String: HTMLAPIVote], Error> { get }
+    var availableStoryVote: AnyPublisher<HTMLAPIVote, Error> { get }
 }
 
 final class AvailableVoteLoader: AvailableVoteLoading {
@@ -24,6 +26,7 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     @Injected(\.globalErrorStream) private var globalErrorStream
     
     lazy var availableVotes: AnyPublisher<[String: HTMLAPIVote], Error> = availableVotesSubject.eraseToAnyPublisher()
+    lazy var availableStoryVote: AnyPublisher<HTMLAPIVote, Error> = availableStoryVoteSubject.compactMap { $0 }.eraseToAnyPublisher()
     
     private var disposeBag = Set<AnyCancellable>()
     deinit {
@@ -35,6 +38,7 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     private var currentVotePage = 1
     
     private var availableVotesSubject = CurrentValueSubject<[String: HTMLAPIVote], Error>([:])
+    private var availableStoryVoteSubject = CurrentValueSubject<HTMLAPIVote?, Error>(nil)
     
     #if DEBUG
     let isDebugLoggingEnabled = true
@@ -58,12 +62,13 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     }
     
     /// Load next page of story votes, if required
-    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int = 0) {
-        evaluate(for: .stories, numberOfItemsLoaded: numberOfStoriesLoaded)
+    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int = 0, for type: StoryListType) {
+        evaluate(for: .stories(type: type), numberOfItemsLoaded: numberOfStoriesLoaded)
     }
     
     func clearVotes(for voteType: VoteType) {
         availableVotesSubject.send([:])
+        availableStoryVoteSubject.send(nil)
         setType(voteType)
     }
     
@@ -87,6 +92,10 @@ final class AvailableVoteLoader: AvailableVoteLoading {
             } receiveValue: { response in
                 let result = response.response
                 
+                if let storyVote = result.storyVote {
+                    self.availableStoryVoteSubject.send(storyVote)
+                }
+                
                 var mutableVotes = self.availableVotesSubject.value
                 result.scoreMap.forEach { mutableVotes[$0] = $1 }
                 self.availableVotesSubject.send(mutableVotes)
@@ -100,8 +109,8 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     
     private func stream(for voteType: VoteType) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         switch voteType {
-        case .stories:
-            return self.htmlApiManager.loadAvailableVotesForStoriesList(page: currentVotePage)
+        case .stories(let type):
+            return self.htmlApiManager.loadAvailableVotesForStoriesList(type: type, page: currentVotePage)
         case .comments(let story):
             return self.htmlApiManager.loadAvailableVotesForComments(page: currentVotePage, storyId: story.id)
         }
@@ -126,13 +135,13 @@ extension AvailableVoteLoading {
     func evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: Int = 0, for story: StoryRowViewModel) {
         evaluateShouldLoadNextCommentsPageAvailableVotes(numberOfCommentsLoaded: numberOfCommentsLoaded, for: story)
     }
-    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int = 0) {
-        evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: numberOfStoriesLoaded)
+    func evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: Int = 0, for type: StoryListType) {
+        evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: numberOfStoriesLoaded, for: type)
     }
 }
 
 enum VoteType {
-    case stories
+    case stories(type: StoryListType)
     case comments(story: StoryRowViewModel)
     
     var description: String {

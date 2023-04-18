@@ -23,3 +23,24 @@ extension SwipeView {
             .swipeEnableTriggerHaptics(true)
     }
 }
+
+extension SwipeAction where Label == Image, Background == Color {
+    static func action(direction: HTMLAPIVoteDirection,
+                       onTapVote: ((HTMLAPIVoteDirection) -> Void)?,
+                       context: SwipeContext) -> some View {
+        
+        let imageName = direction == .upvote ? "arrow.up.square.fill" : "arrow.down.square.fill"
+        let color: Color = direction == .upvote ? .accentColor : .blue
+        
+        return SwipeAction(
+            systemImage: imageName,
+            backgroundColor: color
+        ) {
+            onTapVote?(direction)
+            context.state.wrappedValue = .closed
+        }
+        .allowSwipeToTrigger()
+        .font(.title.weight(.bold))
+        .foregroundColor(.white)
+    }
+}
