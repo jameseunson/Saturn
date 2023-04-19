@@ -12,11 +12,11 @@ import SwipeActions
 
 struct StoryRowView: View {
     @Injected(\.keychainWrapper) private var keychainWrapper
-    @State var image: Image?
+    @Injected(\.apiManager) private var apiManager
+    
+    @Binding var image: Image?
     @State private var dragOffset: CGFloat = 0
     @State private var isLoggedIn = false
-    
-    let apiManager = APIManager()
     
     let formatter = RelativeDateTimeFormatter()
     let story: StoryRowViewModel
@@ -27,6 +27,7 @@ struct StoryRowView: View {
     let context: StoryRowViewContext
     
     init(story: StoryRowViewModel,
+         image: Binding<Image?>,
          onTapArticleLink: ((URL) -> Void)? = nil,
          onTapUser: ((String) -> Void)? = nil,
          onTapVote: ((HTMLAPIVoteDirection) -> Void)? = nil,
@@ -38,6 +39,7 @@ struct StoryRowView: View {
         self.context = context
         self.onTapVote = onTapVote
         self.onTapSheet = onTapSheet
+        _image = image
         _isLoggedIn = .init(initialValue: keychainWrapper.isLoggedIn)
     }
     
@@ -126,6 +128,7 @@ struct StoryRowView: View {
                 }
             }
             .padding([.leading, .trailing], 15)
+            
         } leadingActions: { context in
             if isLoggedIn,
                self.context != .user,
@@ -133,6 +136,7 @@ struct StoryRowView: View {
                vote.directions.contains(.upvote) {
                 SwipeAction.action(direction: .upvote, onTapVote: onTapVote, context: context)
             }
+            
         } trailingActions: { context in
             if isLoggedIn,
                self.context != .user,
@@ -142,14 +146,15 @@ struct StoryRowView: View {
             }
         }
         .swipeDefaults()
-        .onAppear {
-            Task { @MainActor in
-                let storyImage = try? await apiManager.getImage(for: story)
-                withAnimation {
-                    image = storyImage
-                }
-            }
-        }
+//        .task(priority: .userInitiated, {
+//            if let storyImage = story.image {
+//                image = storyImage
+//            } else {
+//                let storyImage = try? await apiManager.getImage(for: story)
+//                story.image = storyImage
+//                image = storyImage
+//            }
+//        })
         .onReceive(keychainWrapper.isLoggedInSubject) { output in
             isLoggedIn = output
         }
@@ -158,7 +163,7 @@ struct StoryRowView: View {
 
 struct StoryRowView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()))
+        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()), image: .constant(nil))
     }
 }
 

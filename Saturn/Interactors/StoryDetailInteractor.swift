@@ -29,6 +29,7 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
     
     @Published private(set) var focusedCommentViewModel: CommentViewModel?
     @Published private(set) var hasPendingExpandedUpdate: Bool = false /// Bypass debounce for comment expand/collapse
+    @Published private(set) var storyFavIcon: Image?
     
     var commentsDebounced: AnyPublisher<Array<CommentViewModel>, Never> = Empty().eraseToAnyPublisher()
     var commentsExpanded = CurrentValueSubject<Dictionary<CommentViewModel, CommentExpandedState>, Never>([:])
@@ -157,6 +158,18 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
         } else if commentChain.isEmpty {
             loadComments()
         }
+        
+        $story
+            .compactMap { $0 }
+            .flatMap {
+                self.apiManager.getImage(for: $0)
+            }
+            .catch { _ in return Empty().eraseToAnyPublisher() }
+            .receive(on: RunLoop.main)
+            .sink { output in
+                self.storyFavIcon = output
+            }
+            .store(in: &disposeBag)
         
         /// Load voting information about each comment, if the user is logged in (as the user can only vote
         /// if they are logged in)
@@ -351,6 +364,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
             .sink { completion in
                 if case let .failure(error) = completion {
                     if case APIManagerError.deleted = error {
+                        // noop
+                    } else if case APIManagerError.dead = error {
                         // noop
                     } else {
                         print(error)

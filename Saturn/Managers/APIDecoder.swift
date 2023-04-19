@@ -29,9 +29,13 @@ final class APIDecoder {
     }
     
     func decodeResponse<T: Codable>(_ response: Any) throws -> T {
-        if let dict = response as? Dictionary<String, Any>,
-           dict.keys.contains("deleted") {
-            throw APIManagerError.deleted
+        if let dict = response as? Dictionary<String, Any> {
+            if dict.keys.contains("deleted") {
+                throw APIManagerError.deleted
+            }
+            if dict.keys.contains("dead") {
+                throw APIManagerError.dead
+            }
         }
         
         if response is NSNull {

@@ -114,4 +114,12 @@ extension Array where Element == SearchResultItem {
         }
         return false
     }
+    func containsStories() -> Bool {
+        for item in self {
+            if case .searchResult(_) = item {
+                return true
+            }
+        }
+        return false
+    }
 }

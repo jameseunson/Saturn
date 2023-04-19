@@ -24,6 +24,7 @@ struct UserView: View {
     @State var selectedStoryToView: StoryRowViewModel?
     @State var selectedCommentToView: CommentViewModel?
     @State var displayingInternalStoryId: Int?
+    @State var favIcons: [String: Image] = [:]
     
     /// NSUserActivity - handoff
     static let userActivity = "au.jameseunson.Saturn.view-user"
@@ -68,51 +69,19 @@ struct UserView: View {
                         ForEach(items) { item in
                             switch item {
                             case let .comment(comment):
-                                CommentView(expanded: .constant(.expanded),
-                                            comment: comment,
-                                            displaysStory: true,
-                                            context: .user) { comment in
-                                    selectedCommentToShare = comment
-                                    
-                                } onTapUser: { _ in
-                                    withAnimation {
-                                        reader.scrollTo("top")
-                                    }
-                                    
-                                } onToggleExpanded: { comment, expanded, commentOnScreen in
-                                    selectedCommentToView = comment
-                                    
-                                } onTapStoryId: { storyId in
-                                    displayingInternalStoryId = storyId
-                                    
-                                } onTapURL: { url in
-                                    self.displayingSafariURL = url
-                                }
-                                VStack(alignment: .leading) {
-                                    if let context = contexts[comment.id],
-                                       let story = context.story {
-                                        StoryRowView(story: StoryRowViewModel(story: story),
-                                                     onTapArticleLink: { url in self.displayingSafariURL = url },
-                                                     context: .user)
-                                            .padding([.top, .bottom], 10)
-                                            .onTapGesture {
-                                                selectedStoryToView = StoryRowViewModel(story: story)
-                                            }
-                                    } else {
-                                        ProgressView()
-                                            .padding()
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .foregroundColor( Color(UIColor.systemGray6) )
-                                }
-                                .padding(10)
-                                .padding(.bottom, 20)
+                                CommentContextView(comment: comment,
+                                                   reader: reader,
+                                                   selectedCommentToShare: $selectedCommentToShare,
+                                                   selectedStoryToView: $selectedStoryToView,
+                                                   selectedCommentToView: $selectedCommentToView,
+                                                   contexts: $contexts,
+                                                   displayingInternalStoryId: $displayingInternalStoryId,
+                                                   displayingSafariURL: $displayingSafariURL,
+                                                   favIcons: $favIcons)
 
                             case let .story(story):
                                 StoryRowView(story: story,
+                                             image: bindingForStoryImage(story: story),
                                              onTapArticleLink: { url in self.displayingSafariURL = url })
                                     .onTapGesture {
                                         selectedStoryToView = story
@@ -194,5 +163,77 @@ struct UserView: View {
                 self.user = UserViewModel(user: output)
             }
         }
+        .onReceive(interactor.$favIcons) { output in
+            self.favIcons = output
+        }
+    }
+    
+    func bindingForStoryImage(story: StoryRowViewModel) -> Binding<Image?> {
+        Binding { return interactor.favIcons[String(story.id)] } set: { _ in }
+    }
+}
+
+struct CommentContextView: View {
+    let comment: CommentViewModel
+    let reader: ScrollViewProxy
+    
+    @Binding var selectedCommentToShare: CommentViewModel?
+    @Binding var selectedStoryToView: StoryRowViewModel?
+    @Binding var selectedCommentToView: CommentViewModel?
+    @Binding var contexts: [Int: CommentLoaderContainer]
+    @Binding var displayingInternalStoryId: Int?
+    @Binding var displayingSafariURL: URL?
+    @Binding var favIcons: [String: Image]
+    
+    var body: some View {
+        VStack {
+            CommentView(expanded: .constant(.expanded),
+                        comment: comment,
+                        displaysStory: true,
+                        context: .user) { comment in
+                selectedCommentToShare = comment
+                
+            } onTapUser: { _ in
+                withAnimation {
+                    reader.scrollTo("top")
+                }
+                
+            } onToggleExpanded: { comment, expanded, commentOnScreen in
+                selectedCommentToView = comment
+                
+            } onTapStoryId: { storyId in
+                displayingInternalStoryId = storyId
+                
+            } onTapURL: { url in
+                self.displayingSafariURL = url
+            }
+            VStack(alignment: .leading) {
+                if let context = contexts[comment.id],
+                   let story = context.story {
+                    StoryRowView(story: StoryRowViewModel(story: story),
+                                 image: bindingForStoryImage(story: StoryRowViewModel(story: story)),
+                                 onTapArticleLink: { url in self.displayingSafariURL = url },
+                                 context: .user)
+                        .padding([.top, .bottom], 10)
+                        .onTapGesture {
+                            selectedStoryToView = StoryRowViewModel(story: story)
+                        }
+                } else {
+                    ProgressView()
+                        .padding()
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background {
+                RoundedRectangle(cornerRadius: 8)
+                    .foregroundColor( Color(UIColor.systemGray6) )
+            }
+            .padding(10)
+            .padding(.bottom, 20)
+        }
+    }
+    
+    func bindingForStoryImage(story: StoryRowViewModel) -> Binding<Image?> {
+        Binding { return favIcons[String(story.id)] } set: { _ in }
     }
 }

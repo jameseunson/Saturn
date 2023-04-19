@@ -80,4 +80,8 @@ extension Container {
         self { GlobalErrorStream() }
             .singleton
     }
+    
+    var favIconLoader: Factory<FavIconLoading> {
+        self { FavIconLoader() }
+    }
 }

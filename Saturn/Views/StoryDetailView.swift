@@ -136,10 +136,10 @@ struct StoryDetailView: View {
         return ScrollViewReader { reader in
             InfiniteScrollView(loader: interactor,
                                readyToLoadMore: $readyToLoadMore,
-                               itemsRemainingToLoad: $commentsRemainingToLoad,
-                               requiresLazy: (story.descendants ?? 0) > 100) { /// More than 100 comments requires a LazyVStack to remain performant
+                               itemsRemainingToLoad: $commentsRemainingToLoad) {
                 
                 StoryRowView(story: story,
+                             image: bindingForStoryImage(),
                              onTapArticleLink: { url in self.displayingSafariURL = url },
                              onTapUser: { user in self.selectedUser = user },
                              onTapVote: { direction in self.interactor.didTapVote(item: story, direction: direction) },
@@ -221,9 +221,6 @@ struct StoryDetailView: View {
                                         }
                                     }
                                 }
-                                
-                                Divider()
-                                    .padding(.leading, CGFloat(comment.indendation) * 20)
                             }
                         }
 
@@ -266,6 +263,10 @@ struct StoryDetailView: View {
         } set: {
             self.commentsExpanded[comment] = $0
         }
+    }
+    
+    func bindingForStoryImage() -> Binding<Image?> {
+        Binding { return interactor.storyFavIcon } set: { _ in }
     }
     
     /// NSUserActivity - handoff

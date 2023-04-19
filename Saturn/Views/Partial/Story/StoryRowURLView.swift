@@ -24,12 +24,14 @@ struct StoryRowURLView: View {
                             .frame(width: 33, height: 33)
                             .aspectRatio(contentMode: .fit)
                     }
+                    
                 } else {
                     Image(systemName: "link")
                         .foregroundColor(.gray)
                         .font(.title3)
                 }
             }
+            .animation(.linear, value: image)
             .frame(width: 44, height: 44)
             .background {
                 Rectangle()

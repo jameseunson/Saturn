@@ -11,6 +11,7 @@ enum APIManagerError: Error {
     case generic
     case deleted
     case noData
+    case dead
 }
 
 struct APIResponse<T>: Codable where T: Codable {

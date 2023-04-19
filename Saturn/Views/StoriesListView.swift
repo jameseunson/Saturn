@@ -12,6 +12,7 @@ struct StoriesListView: View {
     @Environment(\.scenePhase) var scenePhase
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.appRemoteConfig) private var appRemoteConfig
+    @Injected(\.layoutManager) private var layoutManager
     
     @StateObject var interactor: StoriesListInteractor
     
@@ -138,6 +139,9 @@ struct StoriesListView: View {
         .onReceive(interactor.$canLoadNextPage) { output in
             canLoadNextPage = output
         }
+        .background(NavBarAccessor { navBar in
+            layoutManager.navBarHeight = navBar.bounds.height
+         })
     }
     
     func contentScrollView() -> some View {
@@ -149,6 +153,7 @@ struct StoriesListView: View {
                         .padding(.leading, 15)
                     NavigationLink(value: story) {
                         StoryRowView(story: story,
+                                     image: bindingForStoryImage(story: story),
                                      onTapArticleLink: { url in self.displayingSafariURL = url },
                                      onTapUser: { user in self.selectedUser = user },
                                      onTapVote: { direction in self.interactor.didTapVote(item: story, direction: direction) },
@@ -202,6 +207,10 @@ struct StoriesListView: View {
                 }
             }
         }
+    }
+    
+    func bindingForStoryImage(story: StoryRowViewModel) -> Binding<Image?> {
+        Binding { return interactor.favIcons[String(story.id)] } set: { _ in }
     }
 }
 

@@ -34,9 +34,8 @@ struct CommentView: View {
     let isHighlighted: Bool
     let context: CommentViewContext
     
-    static let collapsedHeight: CGFloat = 30
+    static let collapsedHeight: CGFloat = 40
     
-    @State private var navBarHeight: CGFloat = 0
     @State private var commentOnScreen: Bool = true
     @State private var isLoggedIn: Bool = false
     
@@ -69,31 +68,37 @@ struct CommentView: View {
     
     var body: some View {
         SwipeView {
-            HStack {
-                if expanded == .hidden && comment.isAnimating == .none {
-                    EmptyView()
-                } else {
-                    CommentIndentationView(comment: comment)
-                        .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
-                    VStack(alignment: .leading) {
-                        CommentHeaderView(comment: comment,
-                                          onTapOptions: onTapOptions,
-                                          onTapUser: onTapUser,
-                                          onToggleExpanded: onToggleExpanded,
-                                          onTapVote: onTapVote,
-                                          expanded: $expanded,
-                                          commentOnScreen: $commentOnScreen)
-                        Divider()
-                        if expanded == .expanded {
-                            Text(comment.comment.processedText ?? AttributedString())
-                                .font(.body)
-                                .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
-                                                                  onTapStoryId: onTapStoryId,
-                                                                  onTapURL: onTapURL))
-                                .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
+            VStack {
+                HStack {
+                    if expanded == .hidden && comment.isAnimating == .none {
+                        EmptyView()
+                    } else {
+                        CommentIndentationView(comment: comment)
+                            .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
+                        VStack(alignment: .leading) {
+                            CommentHeaderView(comment: comment,
+                                              onTapOptions: onTapOptions,
+                                              onTapUser: onTapUser,
+                                              onToggleExpanded: onToggleExpanded,
+                                              onTapVote: onTapVote,
+                                              expanded: $expanded,
+                                              commentOnScreen: $commentOnScreen)
+                            Divider()
+                            if expanded == .expanded {
+                                Text(comment.comment.processedText ?? AttributedString())
+                                    .font(.body)
+                                    .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                                      onTapStoryId: onTapStoryId,
+                                                                      onTapURL: onTapURL))
+                                    .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
+                                    .drawingGroup()
+                            }
                         }
                     }
                 }
+                Divider()
+                    .padding(.leading, CGFloat(comment.indendation) * 20)
+                    .opacity(context == .user || expanded != .expanded ? 0 : 1)
             }
             .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
             
@@ -136,7 +141,6 @@ struct CommentView: View {
                 })
             }
             Button(action: {
-                // TODO:
                 onTapShare?(comment)
             }, label: {
                 Label("Share", systemImage: "square.and.arrow.up")
@@ -152,7 +156,7 @@ struct CommentView: View {
         .coordinateSpace(name: String(comment.id))
         .background(GeometryReader { proxy -> Color in
             DispatchQueue.main.async {
-                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (layoutManager.statusBarHeight + navBarHeight + 10)
+                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (layoutManager.statusBarHeight + layoutManager.navBarHeight + 10)
             }
             return Color.clear
         })
@@ -160,23 +164,19 @@ struct CommentView: View {
             view.background(GeometryReader { proxy -> Color in
                 DispatchQueue.main.async {
                     let value = proxy.frame(in: .named(String(comment.id))).size.height
-                    if value > CommentView.collapsedHeight { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
+                    if value > (CommentView.collapsedHeight + 10) { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
                         frameHeight = value
                     }
                 }
                 return Color.clear
             })
         })
-        .if(navBarHeight == 0, transform: { view in
-            view.background(NavBarAccessor { navBar in
-                navBarHeight = navBar.bounds.height
-             })
-        })
         .if(frameHeight > 0, transform: { view in
             view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
         })
         .clipped()
-        .padding([.top, .bottom], expanded == .hidden ? 0 : 10)
+        .padding(.top, expanded == .hidden ? 0 : 10)
+        .padding(.bottom, expanded == .hidden ? 0 : 4)
         .modifier(CommentExpandModifier(comment: comment,
                                         onToggleExpanded: onToggleExpanded,
                                         expanded: $expanded,

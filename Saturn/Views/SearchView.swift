@@ -50,18 +50,6 @@ struct SearchView: View {
                 }
             }
         }
-        .navigationDestination(for: SearchResultItem.self) { item in
-            switch item {
-            case let .searchResult(searchItem):
-                let story = StoryRowViewModel(story: Story(searchItem: searchItem))
-                StoryDetailView(interactor: StoryDetailInteractor(itemId: story.id))
-                    .navigationTitle(story.title)
-                
-            case let .user(selectedUser):
-                UserView(interactor: UserInteractor(user: selectedUser))
-                    .navigationTitle(selectedUser.id)
-            }
-        }
         .searchable(text: $searchQuery)
         .autocorrectionDisabled(true)
         .textInputAutocapitalization(.never)

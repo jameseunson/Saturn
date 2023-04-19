@@ -30,6 +30,7 @@ protocol APIManaging: AnyObject {
     func loadUser(id: String, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<User>, Error>
     func loadUser(id: String, cacheBehavior: CacheBehavior) async throws -> APIResponse<User>
     func getImage(for story: StoryRowViewModel) async throws -> Image
+    func getImage(for story: StoryRowViewModel) -> AnyPublisher<Image, Error>
     func hasCachedResponse(for id: Int) -> Bool
 }
 
@@ -141,12 +142,15 @@ final class APIManager: APIManaging {
            case let .json(value) = response.value,
            let (type, _) = try? extractUserItemKeys(response: value) {
             
-            if type == "story" || type == "poll" {
+            if type == "story" || type == "poll" || type == "job" {
                 do {
                     let decodedResponse: Story = try self.decoder.decodeResponse(value)
                     return UserItem.story(decodedResponse)
                     
                 } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                    
+                } catch APIManagerError.dead {
                     return UserItem.deleted
                 }
                 
@@ -157,6 +161,9 @@ final class APIManager: APIManaging {
                     return UserItem.comment(decodedResponse)
                     
                 } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                    
+                } catch APIManagerError.dead {
                     return UserItem.deleted
                 }
                 
@@ -169,12 +176,15 @@ final class APIManager: APIManaging {
             let response = try await retrieve(from: urlString)
             let (type, id) = try extractUserItemKeys(response: response)
             
-            if type == "story" || type == "poll" {
+            if type == "story" || type == "poll" || type == "job"  {
                 do {
                     let story = try await self.loadStory(id: id)
                     return UserItem.story(story.response)
                     
                 } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                    
+                } catch APIManagerError.dead {
                     return UserItem.deleted
                 }
                 
@@ -186,6 +196,9 @@ final class APIManager: APIManaging {
                     return UserItem.comment(comment.response)
                     
                 } catch APIManagerError.deleted {
+                    return UserItem.deleted
+                    
+                }  catch APIManagerError.dead {
                     return UserItem.deleted
                 }
 
@@ -228,6 +241,12 @@ final class APIManager: APIManaging {
     
     func getImage(for story: StoryRowViewModel) async throws -> Image {
         return try await loadImage(for: story, cacheBehavior: .offlineOnly)
+    }
+    
+    func getImage(for story: StoryRowViewModel) -> AnyPublisher<Image, Error> {
+        AsyncTools.publisherForAsync {
+            return try await self.getImage(for: story)
+        }
     }
     
     func hasCachedResponse(for id: Int) -> Bool {

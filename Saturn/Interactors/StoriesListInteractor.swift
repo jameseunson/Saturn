@@ -19,6 +19,7 @@ final class StoriesListInteractor: Interactor {
     @Injected(\.keychainWrapper) private var keychainWrapper
     @Injected(\.availableVoteLoader) private var availableVoteLoader
     @Injected(\.globalErrorStream) private var globalErrorStream
+    @Injected(\.favIconLoader) private var favIconLoader
     
     private let pageLength = 10
     private let type: StoryListType
@@ -32,6 +33,7 @@ final class StoriesListInteractor: Interactor {
     @Published private(set) var loadingState: LoadingState = .initialLoad
     @Published private(set) var canLoadNextPage: Bool = true
     @Published private(set) var availableVotes: [String: HTMLAPIVote] = [:]
+    @Published private(set) var favIcons: [String: Image] = [:]
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -93,7 +95,9 @@ final class StoriesListInteractor: Interactor {
             
             self.storyIds.removeAll(keepingCapacity: true)
             self.stories.removeAll(keepingCapacity: true)
+            
             self.availableVoteLoader.clearVotes(for: .stories(type: type))
+            self.favIconLoader.clearFavIcons()
             
             self.completeLoad(with: stories.response,
                               source: .network)
@@ -228,6 +232,7 @@ final class StoriesListInteractor: Interactor {
             }
         }
         availableVoteLoader.evaluateShouldLoadNextStoriesPageAvailableVotes(numberOfStoriesLoaded: self.stories.count, for: type)
+        favIconLoader.loadFaviconsForStories(viewModels)
         
         /// Handle scoremap (if exists)
         for story in self.stories {
@@ -301,6 +306,15 @@ final class StoriesListInteractor: Interactor {
                 self.canLoadNextPage = canLoadNextPage
             }
             .store(in: &disposeBag)
+        
+        favIconLoader.favIcons
+            .receive(on: RunLoop.main)
+            .sink { _ in }
+            receiveValue: { map in
+                self.favIcons = map
+            }
+            .store(in: &disposeBag)
+
     }
     
     private func subscribeToLoggedInStreams() {

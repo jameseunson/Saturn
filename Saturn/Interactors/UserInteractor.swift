@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 import Factory
+import SwiftUI
 
 final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.apiManager) private var apiManager
@@ -17,11 +18,13 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     @Injected(\.globalErrorStream) private var globalErrorStream
     @Injected(\.networkConnectivityManager) private var networkConnectivityManager
     @Injected(\.commentScoreLoader) private var commentScoreLoader
+    @Injected(\.favIconLoader) private var favIconLoader
     
     @Published private(set) var user: User?
     @Published private(set) var items: LoadableResource<[UserItemViewModel]> = .notLoading
     @Published private(set) var readyToLoadMore: Bool = false
     @Published private(set) var itemsRemainingToLoad: Bool = true
+    @Published private(set) var favIcons: [String: Image] = [:]
     
     private let username: String
     private let pageLength = 10
@@ -40,42 +43,41 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     init(user: User) {
-        self.user = user
         self.username = user.id
     }
     
     override func didBecomeActive() {
         self.items = .loading
         
-        if user == nil {
-            apiManager.loadUser(id: username, cacheBehavior: .offlineOnly)
-                .catch { _ in
-                    return Empty().eraseToAnyPublisher()
+        apiManager.loadUser(id: username, cacheBehavior: .offlineOnly)
+            .catch { _ in
+                /// Ignore errors only for the offline load (it's likely the item won't be available offline),
+                /// as there's a second network load coming immediately after
+                return Empty().eraseToAnyPublisher()
+            }
+            .handleEvents(receiveOutput: { user in
+                DispatchQueue.main.async {
+                    self.user = user.response
                 }
-                .handleEvents(receiveOutput: { user in
-                    DispatchQueue.main.async {
-                        self.user = user.response
-                    }
-                })
-                .flatMap { user -> AnyPublisher<APIResponse<User>, Error> in
-                    if self.networkConnectivityManager.isConnected() {
-                        return self.apiManager.loadUser(id: self.username, cacheBehavior: .default)
-                    } else {
-                        return Just(user).setFailureType(to: Error.self).eraseToAnyPublisher()
-                    }
+            })
+            .flatMap { user -> AnyPublisher<APIResponse<User>, Error> in
+                if self.networkConnectivityManager.isConnected() {
+                    return self.apiManager.loadUser(id: self.username, cacheBehavior: .default)
+                } else {
+                    return Just(user).setFailureType(to: Error.self).eraseToAnyPublisher()
                 }
-                .receive(on: RunLoop.main)
-                .sink { completion in
-                    if case let .failure(error) = completion {
-                        self.globalErrorStream.addError(error)
-                        print(error)
-                    }
-                } receiveValue: { output in
-                    self.user = output.response
-                    self.loadMoreItems()
+            }
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    self.globalErrorStream.addError(error)
+                    print(error)
                 }
-                .store(in: &disposeBag)
-        }
+            } receiveValue: { output in
+                self.user = output.response
+                self.loadMoreItems()
+            }
+            .store(in: &disposeBag)
         
         if shouldLoadCommentScores() {
             commentScoreLoader.scoreMap
@@ -93,6 +95,14 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 }
                 .store(in: &disposeBag)
         }
+        
+        favIconLoader.favIcons
+            .receive(on: RunLoop.main)
+            .sink { _ in }
+            receiveValue: { map in
+                self.favIcons = map
+            }
+            .store(in: &disposeBag)
     }
     
     func loadCommentChain(from comment: CommentViewModel, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
@@ -167,6 +177,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 
                 self.commentContexts.send([:])
                 self.commentScoreLoader.clearScores()
+                self.favIconLoader.clearFavIcons()
             }
             
             if self.shouldLoadCommentScores() {
@@ -205,6 +216,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         if self.shouldLoadCommentScores() {
             self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments(numberOfCommentsLoaded: itemsAccumulator.count)
         }
+        self.favIconLoader.loadFaviconsForUserItemStories(viewModels)
         self.loadContexts(items: viewModels, ignoreCache: ignoreCache)
         
         self.lastRefreshTimestamp = Date()
@@ -251,6 +263,10 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         mutableContexts[commentViewModel.id] = container
 
         self.commentContexts.send(mutableContexts)
+        
+        if let story = container.story {
+            self.favIconLoader.loadFaviconsForStories([StoryRowViewModel(story: story)])
+        }
     }
     
     /// Retrieve context object `CommentLoaderContainer` for each comment
@@ -293,8 +309,12 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     
     /// Calculate page offsets
     private func idsForCurrentPage(with ids: [Int]) -> [Int] {
+        if ids.isEmpty { return [] }
+        
         let pageStart = self.currentPage * self.pageLength
         let pageEnd = min(((self.currentPage + 1) * self.pageLength), self.submittedIds.count)
+        if pageStart > pageEnd { return [] }
+        
         let idsPage = Array(self.submittedIds[pageStart..<pageEnd])
         
         return idsPage

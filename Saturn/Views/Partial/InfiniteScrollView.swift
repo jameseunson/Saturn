@@ -14,7 +14,6 @@ protocol InfiniteScrollViewLoading: AnyObject {
 struct InfiniteScrollView<Content>: View where Content: View {
     private let content: Content
     let loader: InfiniteScrollViewLoading
-    let requiresLazy: Bool
     
     @State private var offset = CGFloat.zero
     @State private var contentHeight = CGFloat.zero
@@ -22,9 +21,8 @@ struct InfiniteScrollView<Content>: View where Content: View {
     @Binding private var readyToLoadMore: Bool
     @Binding private var itemsRemainingToLoad: Bool
     
-    public init(loader: InfiniteScrollViewLoading, readyToLoadMore: Binding<Bool>, itemsRemainingToLoad: Binding<Bool>, requiresLazy: Bool = true, @ViewBuilder content: () -> Content) {
+    public init(loader: InfiniteScrollViewLoading, readyToLoadMore: Binding<Bool>, itemsRemainingToLoad: Binding<Bool>, @ViewBuilder content: () -> Content) {
         self.loader = loader
-        self.requiresLazy = requiresLazy
         _readyToLoadMore = readyToLoadMore
         _itemsRemainingToLoad = itemsRemainingToLoad
         self.content = content()
@@ -32,17 +30,10 @@ struct InfiniteScrollView<Content>: View where Content: View {
     
     var body : some View {
         ScrollView {
-            if requiresLazy {
-                LazyVStack(spacing: 0) {
-                    content
-                }
-                .modifier(InfiniteScrollViewModifier(offset: $offset, contentHeight: $contentHeight))
-            } else {
-                VStack(spacing: 0) {
-                    content
-                }
-                .modifier(InfiniteScrollViewModifier(offset: $offset, contentHeight: $contentHeight))
+            LazyVStack(spacing: 0) {
+                content
             }
+            .modifier(InfiniteScrollViewModifier(offset: $offset, contentHeight: $contentHeight))
         }
         .coordinateSpace(name: "scroll")
         .onChange(of: offset, perform: { _ in evaluateLoadMore() })

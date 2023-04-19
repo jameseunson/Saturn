@@ -29,6 +29,7 @@
 		1A57586A29D166390014FD88 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586929D166390014FD88 /* Container.swift */; };
 		1A57586C29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */; };
 		1A57587529D2D56F0014FD88 /* GlobalErrorStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */; };
+		1A578F6E29EFD889006AD96A /* FavIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A578F6D29EFD889006AD96A /* FavIconLoader.swift */; };
 		1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */; };
 		1A5DBBB7296933BA00D4D86E /* StoriesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */; };
 		1A5DBBB9296933BB00D4D86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A5DBBB8296933BB00D4D86E /* Assets.xcassets */; };
@@ -203,6 +204,7 @@
 		1A57586929D166390014FD88 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
 		1A57586B29D175B50014FD88 /* APIDiskDatabaseResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskDatabaseResponseCache.swift; sourceTree = "<group>"; };
 		1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalErrorStream.swift; sourceTree = "<group>"; };
+		1A578F6D29EFD889006AD96A /* FavIconLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavIconLoader.swift; sourceTree = "<group>"; };
 		1A5DBBB1296933BA00D4D86E /* Saturn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Saturn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5DBBB4296933BA00D4D86E /* SaturnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnApp.swift; sourceTree = "<group>"; };
 		1A5DBBB6296933BA00D4D86E /* StoriesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListView.swift; sourceTree = "<group>"; };
@@ -400,6 +402,16 @@
 			path = Streams;
 			sourceTree = "<group>";
 		};
+		1A578F6C29EFD840006AD96A /* Voting */ = {
+			isa = PBXGroup;
+			children = (
+				1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */,
+				1A32040B29D5317E00CFB4C2 /* VoteManager.swift */,
+				1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */,
+			);
+			path = Voting;
+			sourceTree = "<group>";
+		};
 		1A5DBBA8296933BA00D4D86E = {
 			isa = PBXGroup;
 			children = (
@@ -528,6 +540,7 @@
 		1A873AB8296D444400870A50 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				1A578F6C29EFD840006AD96A /* Voting */,
 				1ACB6C0929B9C45C000A94E0 /* Settings */,
 				1A5DBC032969548E00D4D86E /* APIManager.swift */,
 				1AFD951E29E68F4000E7C086 /* APIManager+Defaults.swift */,
@@ -536,11 +549,9 @@
 				1AE4A9DA29792E5E00D0B0D3 /* NetworkConnectivityManager.swift */,
 				1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */,
 				1AA05D7329D401F200D3013C /* APIDecoder.swift */,
-				1A32040B29D5317E00CFB4C2 /* VoteManager.swift */,
-				1AE288FE29DAC97400E041AA /* AvailableVoteLoader.swift */,
 				1A4890FD29E0252A00BB7022 /* PersistenceManager.swift */,
 				1AFD951C29E689AB00E7C086 /* AsyncTools.swift */,
-				1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */,
+				1A578F6D29EFD889006AD96A /* FavIconLoader.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -907,6 +918,7 @@
 				1A873AC9296FCD1600870A50 /* SettingsView.swift in Sources */,
 				1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */,
 				1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */,
+				1A578F6E29EFD889006AD96A /* FavIconLoader.swift in Sources */,
 				1AE43E9029ED408F00080117 /* SwipeView+StandardConfig.swift in Sources */,
 				1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */,
 				1A4890FE29E0252A00BB7022 /* PersistenceManager.swift in Sources */,
@@ -1137,7 +1149,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1177,7 +1189,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
