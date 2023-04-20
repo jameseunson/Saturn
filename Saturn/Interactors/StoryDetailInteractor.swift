@@ -200,10 +200,13 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                     print(error)
                 }
             } receiveValue: { vote in
-                self.story?.vote = vote
+                if self.story?.vote == nil {
+                    self.story?.vote = vote
+                }
             }
             .store(in: &disposeBag)
             
+            /// Load votes for comment page
             Publishers.CombineLatest($story.compactMap { $0 },
                                      commentsDebounced.filter { !$0.isEmpty }.prefix(1)) /// Ensure only loads once comments are at least partially loaded, avoiding redundant requests
                 .sink { story, _ in
@@ -382,7 +385,8 @@ final class StoryDetailInteractor: Interactor, InfiniteScrollViewLoading {
                                              parent: parent)
             
             if self.keychainWrapper.isLoggedIn,
-               let vote = self.availableVotes[String(viewModel.id)] {
+               let vote = self.availableVotes[String(viewModel.id)],
+               viewModel.vote == nil {
                 viewModel.vote = vote
             }
                

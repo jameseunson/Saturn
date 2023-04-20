@@ -115,6 +115,8 @@
 		1AAFFF5F299B6F8E00D06EF4 /* Color+IndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */; };
 		1ABAD6BE298CE6530072DA14 /* View+CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */; };
 		1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */; };
+		1AC5286529F10EAB00FF3833 /* BaseHTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC5286429F10EAB00FF3833 /* BaseHTMLParser.swift */; };
+		1AC5286729F1230E00FF3833 /* VoteStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC5286629F1230E00FF3833 /* VoteStream.swift */; };
 		1ACB6C0629B86DB4000A94E0 /* StoriesListInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */; };
 		1ACB6C0829B9C0CF000A94E0 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */; };
 		1ACB6C0B29B9C46B000A94E0 /* SettingsIndentationColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */; };
@@ -215,7 +217,7 @@
 		1A5DBBCF296933BB00D4D86E /* SaturnUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITests.swift; sourceTree = "<group>"; };
 		1A5DBBD1296933BB00D4D86E /* SaturnUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaturnUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		1A5DBC032969548E00D4D86E /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
-		1A5DBC05296A892B00D4D86E /* StoriesListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractor.swift; sourceTree = "<group>"; };
+		1A5DBC05296A892B00D4D86E /* StoriesListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractor.swift; sourceTree = "<group>"; wrapsLines = 0; };
 		1A5DBC07296AA67300D4D86E /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		1A5DBC09296AAF6300D4D86E /* StoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailView.swift; sourceTree = "<group>"; };
 		1A5DBC0E296BD43800D4D86E /* StoryDetailInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryDetailInteractor.swift; sourceTree = "<group>"; };
@@ -261,6 +263,8 @@
 		1AAFFF5E299B6F8E00D06EF4 /* Color+IndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+IndentationColor.swift"; sourceTree = "<group>"; };
 		1ABAD6BD298CE6530072DA14 /* View+CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerRadius.swift"; sourceTree = "<group>"; };
 		1ABAD6BF298CF36E0072DA14 /* CommentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentLoader.swift; sourceTree = "<group>"; };
+		1AC5286429F10EAB00FF3833 /* BaseHTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTMLParser.swift; sourceTree = "<group>"; };
+		1AC5286629F1230E00FF3833 /* VoteStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteStream.swift; sourceTree = "<group>"; };
 		1ACB6C0529B86DB4000A94E0 /* StoriesListInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesListInteractorTests.swift; sourceTree = "<group>"; };
 		1ACB6C0729B9C0CF000A94E0 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
 		1ACB6C0A29B9C46B000A94E0 /* SettingsIndentationColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsIndentationColor.swift; sourceTree = "<group>"; };
@@ -398,6 +402,7 @@
 			isa = PBXGroup;
 			children = (
 				1A57587429D2D56F0014FD88 /* GlobalErrorStream.swift */,
+				1AC5286629F1230E00FF3833 /* VoteStream.swift */,
 			);
 			path = Streams;
 			sourceTree = "<group>";
@@ -615,6 +620,7 @@
 				1AAED95E29CAE0E70093CED7 /* CommentScoreHTMLParser.swift */,
 				1AAED96029CAE97A0093CED7 /* VoteHTMLParser.swift */,
 				1ACF31C929E54EB100C99B93 /* LoginLinkHTMLParser.swift */,
+				1AC5286429F10EAB00FF3833 /* BaseHTMLParser.swift */,
 			);
 			path = HTML;
 			sourceTree = "<group>";
@@ -896,6 +902,7 @@
 				1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */,
 				1A873AD12971136200870A50 /* StoryRowViewModel.swift in Sources */,
 				1A7E151229C83D8D008DAB22 /* HTMLAPIManager.swift in Sources */,
+				1AC5286529F10EAB00FF3833 /* BaseHTMLParser.swift in Sources */,
 				1AE4A994297526AB00D0B0D3 /* SettingsManager.swift in Sources */,
 				1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
@@ -949,6 +956,7 @@
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
 				1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */,
 				1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */,
+				1AC5286729F1230E00FF3833 /* VoteStream.swift in Sources */,
 				1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */,
 				1AE4A9CF2979143E00D0B0D3 /* SearchResponse.swift in Sources */,
 				1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */,
@@ -1149,7 +1157,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1189,7 +1197,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;

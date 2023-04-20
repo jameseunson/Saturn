@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct HTMLAPIVote: Codable, Hashable {
+struct HTMLAPIVote: Codable, Hashable, Equatable {
     let id: Int
     let directions: [HTMLAPIVoteDirection]
     let auth: String

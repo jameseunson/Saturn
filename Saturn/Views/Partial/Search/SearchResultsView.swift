@@ -7,8 +7,11 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct SearchResultsView: View {
+    @Injected(\.keychainWrapper) private var keychainWrapper
+    
     let results: Array<SearchResultItem>
     @Binding var searchQuery: String
     @Binding var displayingSafariURL: URL?
@@ -57,16 +60,14 @@ struct SearchResultsView: View {
                                     .navigationTitle(story.title)
                                 
                             } label: {
-                                NavigationLink(value: result) {
-                                    StoryRowView(story: StoryRowViewModel(story: Story(searchItem: searchItem)),
-                                                 image: .constant(nil),
-                                                 onTapArticleLink: { url in
-                                        self.displayingSafariURL = url
-                                    })
-                                    .padding(.bottom, 15)
-                                }
-                                Divider()
+                                StoryRowView(story: StoryRowViewModel(story: Story(searchItem: searchItem)),
+                                             image: .constant(nil), // TODO:
+                                             onTapArticleLink: { url in
+                                    self.displayingSafariURL = url
+                                })
+                                .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 25)
                             }
+                            Divider()
                         }
                     }
                 }

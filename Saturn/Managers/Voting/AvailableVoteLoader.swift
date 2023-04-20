@@ -36,6 +36,7 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     private var hasNextPageAvailableVotes = false
     private var isLoadingNextPageAvailableVotes = false
     private var currentVotePage = 1
+    private var nextPageItemId: Int?
     
     private var availableVotesSubject = CurrentValueSubject<[String: HTMLAPIVote], Error>([:])
     private var availableStoryVoteSubject = CurrentValueSubject<HTMLAPIVote?, Error>(nil)
@@ -102,6 +103,9 @@ final class AvailableVoteLoader: AvailableVoteLoading {
                 
                 self.hasNextPageAvailableVotes = result.hasNextPage
                 self.currentVotePage += 1
+                if let nextPageItemId = result.nextPageItemId { /// Only relevant for 'newest'
+                    self.nextPageItemId = nextPageItemId
+                }
                 self.isLoadingNextPageAvailableVotes = false
             }
             .store(in: &disposeBag)
@@ -110,7 +114,15 @@ final class AvailableVoteLoader: AvailableVoteLoading {
     private func stream(for voteType: VoteType) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         switch voteType {
         case .stories(let type):
-            return self.htmlApiManager.loadAvailableVotesForStoriesList(type: type, page: currentVotePage)
+            let page: StoryListPageType
+            
+            if let nextPageItemId {
+                page = .nextPageItemId(itemId: nextPageItemId, page: currentVotePage)
+            } else {
+                page = .page(currentVotePage)
+            }
+            return self.htmlApiManager.loadAvailableVotesForStoriesList(type: type, page: page)
+            
         case .comments(let story):
             return self.htmlApiManager.loadAvailableVotesForComments(page: currentVotePage, storyId: story.id)
         }

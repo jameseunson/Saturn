@@ -75,12 +75,13 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 }
             } receiveValue: { output in
                 self.user = output.response
-                self.loadMoreItems()
+                self.loadMoreItems(isInitialLoad: true)
             }
             .store(in: &disposeBag)
         
         if shouldLoadCommentScores() {
             commentScoreLoader.scoreMap
+                .filter { !$0.isEmpty }
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case let .failure(error) = completion {
@@ -112,36 +113,60 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     }
     
     func loadMoreItems() {
-        loadItems(cacheBehavior: .offlineOnly)
-            .handleEvents(receiveOutput: { (items: [UserItem], ids: [Int]) in
-                DispatchQueue.main.async { [weak self] in
-                    self?.completeLoad(with: items, idsForPage: ids)
-                }
-            })
-            .flatMap({ (result: ([UserItem], [Int])) in
-                if self.networkConnectivityManager.isConnected() {
-                    return self.loadItems(cacheBehavior: .default)
-                } else {
-                    return Just(result).setFailureType(to: Error.self).eraseToAnyPublisher()
-                }
-            })
-            .receive(on: RunLoop.main)
-            .sink { completion in
-                if case let .failure(error) = completion {
-                    self.globalErrorStream.addError(error)
-                    print(error)
-                }
+        loadMoreItems(isInitialLoad: false)
+    }
+    
+    func loadMoreItems(isInitialLoad: Bool = false) {
+        if isInitialLoad {
+            loadItems(cacheBehavior: .offlineOnly)
+                .handleEvents(receiveOutput: { (items: [UserItem], ids: [Int]) in
+                    DispatchQueue.main.async { [weak self] in
+                        self?.completeLoad(with: items, idsForPage: ids, source: .cache)
+                    }
+                })
+                .flatMap({ (result: ([UserItem], [Int])) in
+                    if self.networkConnectivityManager.isConnected() {
+                        return self.loadItems(cacheBehavior: .default)
+                    } else {
+                        return Just(result).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    }
+                })
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
+                        print(error)
+                    }
 
-            } receiveValue: { items, ids in
-                self.completeLoad(with: items, idsForPage: ids)
-            }
-            .store(in: &disposeBag)
+                } receiveValue: { items, ids in
+                    self.itemsAccumulator.removeAll()
+                    self.currentPage = 0
+                    
+                    self.completeLoad(with: items, idsForPage: ids, source: .network)
+                }
+                .store(in: &disposeBag)
+            
+        } else {
+            self.loadItems()
+                .receive(on: RunLoop.main)
+                .sink { completion in
+                    if case let .failure(error) = completion {
+                        self.globalErrorStream.addError(error)
+                        print(error)
+                    }
+
+                } receiveValue: { items, ids in
+                    self.completeLoad(with: items, idsForPage: ids, source: .network)
+                }
+                .store(in: &disposeBag)
+        }
     }
     
     func getSubmittedIds() -> AnyPublisher<[Int], Never> {
         if self.submittedIds.isEmpty {
             return $user.map { $0?.submitted ?? [] }
                 .handleEvents(receiveOutput: { submitted in
+                    self.submittedIds.removeAll()
                     self.submittedIds.append(contentsOf: submitted)
                 })
                 .eraseToAnyPublisher()
@@ -167,6 +192,9 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             self.user = try await apiManager.loadUser(id: username, cacheBehavior: .ignore).response
             let ids = idsForCurrentPage(with: user.submitted ?? [])
             let items = try await self.apiManager.loadUserItems(ids: ids, cacheBehavior: .ignore)
+            let sortedUserItems = items.sorted { lhs, rhs in
+                return lhs.time > rhs.time
+            }
             
             DispatchQueue.main.async {
                 self.items = .notLoading
@@ -185,13 +213,13 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             }
             
             DispatchQueue.main.async {
-                self.completeLoad(with: items, idsForPage: ids, ignoreCache: true)
+                self.completeLoad(with: sortedUserItems, idsForPage: ids, source: .network, ignoreCache: true)
             }
         }
     }
     
     
-    func completeLoad(with items: [UserItem], idsForPage: [Int], ignoreCache: Bool = false) {
+    func completeLoad(with items: [UserItem], idsForPage: [Int], source: APIResponseLoadSource, ignoreCache: Bool = false) {
         var viewModels = [UserItemViewModel]()
         for item in items {
             switch item {
@@ -207,8 +235,11 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         self.itemsAccumulator.append(contentsOf: viewModels)
         self.items = .loaded(response: itemsAccumulator)
         self.currentPage += 1
+        
         self.itemsLoaded += idsForPage.count
-        self.readyToLoadMore = true
+        if source == .network {
+            self.readyToLoadMore = true
+        }
         
         if self.itemsLoaded == self.submittedIds.count {
             self.itemsRemainingToLoad = false
@@ -216,6 +247,10 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         if self.shouldLoadCommentScores() {
             self.commentScoreLoader.evaluateShouldLoadScoresForLoggedInUserComments(numberOfCommentsLoaded: itemsAccumulator.count)
         }
+        if !self.scoreMap.isEmpty {
+            self.applyScoreMap(scoreMap: scoreMap, items: viewModels)
+        }
+        
         self.favIconLoader.loadFaviconsForUserItemStories(viewModels)
         self.loadContexts(items: viewModels, ignoreCache: ignoreCache)
         
@@ -225,6 +260,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     // MARK: -
     private func loadItems(cacheBehavior: CacheBehavior = .default) -> AnyPublisher<([UserItem], [Int]), Error> {
         return getSubmittedIds()
+            .prefix(1)
             .flatMap { ids -> AnyPublisher<([UserItem], [Int]), Error> in
                 if ids.isEmpty { return Just(([UserItem](), ids)).setFailureType(to: Error.self).eraseToAnyPublisher() }
                 

@@ -10,7 +10,7 @@ import SwiftSoup
 
 /// Extracts which directions each can be voted on (up and/or down),
 /// the auth key required to vote on each comment and the id of each comment
-final class VoteHTMLParser {
+final class VoteHTMLParser: BaseHTMLParser {
     func parseCommentHTML(_ htmlString: String, storyId: Int) throws -> VoteHTMLParserResponse  {
         return try parse(htmlString, mode: .comments(storyId))
     }
@@ -40,7 +40,11 @@ final class VoteHTMLParser {
         
         /// Find whether there's additional pages available for the full comment set
         var hasNextPage = false
-        if let _ = try? doc.select("a.morelink").first() {
+        var nextPageItemId: Int?
+        if let moreLink = try? doc.select("a.morelink").first() {
+            if let id = extractNextPageItemId(element: moreLink) {
+                nextPageItemId = id
+            }
             hasNextPage = true
         }
         
@@ -55,7 +59,8 @@ final class VoteHTMLParser {
 
         return VoteHTMLParserResponse(scoreMap: map,
                                       hasNextPage: hasNextPage,
-                                      storyVote: storyVote)
+                                      storyVote: storyVote,
+                                      nextPageItemId: nextPageItemId)
     }
     
     private func extractVote(from element: Element, mode: VoteHTMLParserMode) throws -> HTMLAPIVote? {
@@ -198,12 +203,16 @@ struct VoteHTMLParserResponse: Codable {
     let scoreMap: [String: HTMLAPIVote]
     let hasNextPage: Bool
     let storyVote: HTMLAPIVote?
+    let nextPageItemId: Int?
     
     var dict: [String: Any] {
         var dict: [String: Any] = ["scoreMap": scoreMap.mapValues { $0.dict },
                                    "hasNextPage": hasNextPage]
         if let storyVote {
             dict["storyVote"] = storyVote.dict
+        }
+        if let nextPageItemId {
+            dict["nextPageItemId"] = nextPageItemId
         }
         return dict
     }

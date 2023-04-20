@@ -20,7 +20,7 @@ struct CommentIndentationView: View {
                 .frame(width: 2)
                 .padding(.trailing, 5)
                 .foregroundColor(Color.indentationColor(for: comment))
-                .brightness((0.2 * Double(comment.indendation - 1)))
+                .brightness((0.1 * Double(comment.indendation - 1)))
             
         } else {
             EmptyView()

@@ -15,6 +15,7 @@ protocol VoteManaging: AnyObject {
 final class VoteManager: VoteManaging {
     private let htmlApiManager = HTMLAPIManager()
     @Injected(\.globalErrorStream) private var globalErrorStream
+    @Injected(\.voteStream) private var voteStream
     
     func vote(item: Votable, direction: HTMLAPIVoteDirection, shouldUpdate: @escaping (() -> ())) {
         guard let info = item.vote else {
@@ -26,8 +27,12 @@ final class VoteManager: VoteManaging {
             do {
                 if stateBeforeVote == nil { /// Perform vote in requested direction
                     item.vote?.state = direction
-                } else { /// Perform unvote
-                    item.vote?.state = nil
+                } else {
+                    if stateBeforeVote == direction { /// Perform unvote
+                        item.vote?.state = nil
+                    } else {
+                        item.vote?.state = direction
+                    }
                 }
                 shouldUpdate()
                 
@@ -35,6 +40,10 @@ final class VoteManager: VoteManaging {
                     try await self.htmlApiManager.vote(direction: direction, info: info)
                 } else { /// Perform unvote
                     try await self.htmlApiManager.unvote(info: info)
+                }
+                
+                if let updatedVote = item.vote {
+                    voteStream.didVote(updatedVote)
                 }
                 
             } catch {

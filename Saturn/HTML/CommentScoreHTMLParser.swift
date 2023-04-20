@@ -11,7 +11,7 @@ import SwiftSoup
 /// Extracts the number of upvotes (score) of each comment
 /// This information is only available to the current user about their own comments,
 /// so we do not attempt to extract scores for comments by other users
-final class CommentScoreHTMLParser {
+final class CommentScoreHTMLParser: BaseHTMLParser {
     func parseHTML(_ htmlString: String, for username: String) throws -> CommentScoreHTMLParserResponse {
         let doc: Document = try SwiftSoup.parse(htmlString)
         let elements = try doc.select("tr.athing.comtr")
@@ -48,26 +48,6 @@ final class CommentScoreHTMLParser {
         } else {
             return CommentScoreHTMLParserResponse(scoreMap: map, nextPageItemId: nil)
         }
-    }
-    
-    func extractNextPageItemId(element: Element) -> Int? {
-        guard let hrefString = try? element.attr("href") else {
-            return nil
-        }
-        guard let url = URL(string: "https://news.ycombinator.com/" + hrefString),
-              let components = URLComponents(string: url.absoluteString),
-              let queryItems = components.queryItems else {
-            return nil
-        }
-        var id: Int?
-        for item in queryItems {
-            if item.name == "next",
-               let value = item.value,
-               let valueInt = Int(value) {
-                id = valueInt
-            }
-        }
-        return id
     }
 }
 

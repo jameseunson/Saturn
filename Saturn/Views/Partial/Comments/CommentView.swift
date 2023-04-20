@@ -67,57 +67,31 @@ struct CommentView: View {
     }
     
     var body: some View {
-        SwipeView {
-            VStack {
-                HStack {
-                    if expanded == .hidden && comment.isAnimating == .none {
-                        EmptyView()
-                    } else {
-                        CommentIndentationView(comment: comment)
-                            .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
-                        VStack(alignment: .leading) {
-                            CommentHeaderView(comment: comment,
-                                              onTapOptions: onTapOptions,
-                                              onTapUser: onTapUser,
-                                              onToggleExpanded: onToggleExpanded,
-                                              onTapVote: onTapVote,
-                                              expanded: $expanded,
-                                              commentOnScreen: $commentOnScreen)
-                            Divider()
-                            if expanded == .expanded {
-                                Text(comment.comment.processedText ?? AttributedString())
-                                    .font(.body)
-                                    .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
-                                                                      onTapStoryId: onTapStoryId,
-                                                                      onTapURL: onTapURL))
-                                    .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
-                                    .drawingGroup()
-                            }
-                        }
+        VStack {
+            if comment.isAnimating == .none {
+                SwipeView {
+                    contentView()
+                    
+                } leadingActions: { context in
+                    if isLoggedIn,
+                       self.context != .user,
+                       let vote = comment.vote,
+                       vote.directions.contains(.upvote) {
+                        SwipeAction.action(direction: .upvote, onTapVote: onTapVote, context: context)
+                    }
+                } trailingActions: { context in
+                    if isLoggedIn,
+                       self.context != .user,
+                       let vote = comment.vote,
+                       vote.directions.contains(.downvote) {
+                        SwipeAction.action(direction: .downvote, onTapVote: onTapVote, context: context)
                     }
                 }
-                Divider()
-                    .padding(.leading, CGFloat(comment.indendation) * 20)
-                    .opacity(context == .user || expanded != .expanded ? 0 : 1)
-            }
-            .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
-            
-        } leadingActions: { context in
-            if isLoggedIn,
-               self.context != .user,
-               let vote = comment.vote,
-               vote.directions.contains(.upvote) {
-                SwipeAction.action(direction: .upvote, onTapVote: onTapVote, context: context)
-            }
-        } trailingActions: { context in
-            if isLoggedIn,
-               self.context != .user,
-               let vote = comment.vote,
-               vote.directions.contains(.downvote) {
-                SwipeAction.action(direction: .downvote, onTapVote: onTapVote, context: context)
+                .swipeDefaults()
+            } else {
+                contentView()
             }
         }
-        .swipeDefaults()
         .transition(.identity)
         .background {
             if isHighlighted {
@@ -125,6 +99,9 @@ struct CommentView: View {
                     .opacity(0.3)
                     .edgesIgnoringSafeArea(.all)
                     .padding(.leading, CGFloat(comment.indendation) * 20)
+            } else {
+                Color(UIColor.systemBackground)
+                    .edgesIgnoringSafeArea(.all)
             }
         }
         .contextMenu(menuItems: {
@@ -184,6 +161,42 @@ struct CommentView: View {
         .onReceive(keychainWrapper.isLoggedInSubject) { output in
             isLoggedIn = output
         }
+    }
+    
+    func contentView() -> some View {
+        VStack {
+            HStack {
+                if expanded == .hidden && comment.isAnimating == .none {
+                    EmptyView()
+                } else {
+                    CommentIndentationView(comment: comment)
+                        .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
+                    VStack(alignment: .leading) {
+                        CommentHeaderView(comment: comment,
+                                          onTapOptions: onTapOptions,
+                                          onTapUser: onTapUser,
+                                          onToggleExpanded: onToggleExpanded,
+                                          onTapVote: onTapVote,
+                                          expanded: $expanded,
+                                          commentOnScreen: $commentOnScreen)
+                        Divider()
+                        if expanded == .expanded {
+                            Text(comment.comment.processedText ?? AttributedString())
+                                .font(.body)
+                                .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                                  onTapStoryId: onTapStoryId,
+                                                                  onTapURL: onTapURL))
+                                .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
+                        }
+                    }
+                }
+            }
+            Divider()
+                .padding(.leading, CGFloat(comment.indendation) * 20)
+                .opacity(context == .user || expanded != .expanded ? 0 : 1)
+        }
+        .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
+        .drawingGroup()
     }
     
     func heightForExpandedState() -> CGFloat {

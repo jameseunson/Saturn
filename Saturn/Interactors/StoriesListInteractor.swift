@@ -20,6 +20,7 @@ final class StoriesListInteractor: Interactor {
     @Injected(\.availableVoteLoader) private var availableVoteLoader
     @Injected(\.globalErrorStream) private var globalErrorStream
     @Injected(\.favIconLoader) private var favIconLoader
+    @Injected(\.voteStream) private var voteStream
     
     private let pageLength = 10
     private let type: StoryListType
@@ -357,6 +358,25 @@ final class StoriesListInteractor: Interactor {
                 Task {
                     await self.refreshStories(source: .autoRefresh)
                     print("StoriesList, USER DID LOGIN, refreshing")
+                }
+            }
+            .store(in: &disposeBag)
+        
+        /// Update story vote if modified on detail page
+        voteStream.voteStream
+            .sink { vote in
+                if let existingVote = self.availableVotes[String(vote.storyId)],
+                   vote != existingVote {
+
+                    self.availableVotes[String(vote.storyId)] = vote
+                    
+                    for story in self.stories {
+                        if story.id == vote.storyId {
+                            story.vote = vote
+                        }
+                    }
+                    
+                    self.objectWillChange.send()
                 }
             }
             .store(in: &disposeBag)

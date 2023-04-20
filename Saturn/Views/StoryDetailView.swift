@@ -221,6 +221,7 @@ struct StoryDetailView: View {
                                         }
                                     }
                                 }
+                                .zIndex(10000.0 - Double(self.comments.firstIndex(of: comment) ?? 0))
                             }
                         }
 

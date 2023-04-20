@@ -84,4 +84,9 @@ extension Container {
     var favIconLoader: Factory<FavIconLoading> {
         self { FavIconLoader() }
     }
+    
+    var voteStream: Factory<VoteStreaming> {
+        self { VoteStream() }
+            .singleton
+    }
 }

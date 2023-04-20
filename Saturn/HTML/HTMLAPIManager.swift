@@ -18,8 +18,8 @@ protocol HTMLAPIManaging: AnyObject {
     func loadScoresForLoggedInUserComments(startFrom: Int?, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<CommentScoreHTMLParserResponse>, Error>
     func loadAvailableVotesForComments(page: Int, storyId: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
     func loadAvailableVotesForComments(page: Int, storyId: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType, cacheBehavior: CacheBehavior) async throws -> APIResponse<VoteHTMLParserResponse>
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType, cacheBehavior: CacheBehavior) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error>
     func vote(direction: HTMLAPIVoteDirection, info: HTMLAPIVote) async throws
     func unvote(info: HTMLAPIVote) async throws
     func flag(info: HTMLAPIVote) async throws
@@ -110,13 +110,22 @@ final class HTMLAPIManager: HTMLAPIManaging {
         }
     }
     
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType = .page(0), cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
         guard var urlComponents = URLComponents(string: "https://news.ycombinator.com/\(type.httpPath)") else {
             throw HTMLAPIManagerError.cannotLoad
         }
-        if page > 0 {
-            urlComponents.queryItems = [URLQueryItem(name: "p", value: String(page))]
+        switch page {
+        case .page(let pageInt):
+            if pageInt > 0 {
+                urlComponents.queryItems = [URLQueryItem(name: "p", value: String(pageInt))]
+            }
+        case .nextPageItemId(let itemId, let pageInt):
+            if pageInt > 0 {
+                urlComponents.queryItems = [URLQueryItem(name: "next", value: String(itemId)),
+                                            URLQueryItem(name: "n", value: String((pageInt * 30) + 1))]
+            }
         }
+        
         guard let url = urlComponents.url else {
             throw HTMLAPIManagerError.cannotLoad
         }
@@ -139,7 +148,7 @@ final class HTMLAPIManager: HTMLAPIManaging {
         return APIResponse(response: voteResponse, source: .network)
     }
     
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType = .page(0), cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         return AsyncTools.publisherForAsync {
             try await self.loadAvailableVotesForStoriesList(type: type, page: page)
         }
@@ -328,10 +337,15 @@ extension HTMLAPIManaging {
     func loadScoresForLoggedInUserComments(startFrom: Int? = nil, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<CommentScoreHTMLParserResponse>, Error> {
         loadScoresForLoggedInUserComments(startFrom: startFrom, cacheBehavior: cacheBehavior)
     }
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int = 0, cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType = .page(0), cacheBehavior: CacheBehavior = .default) async throws -> APIResponse<VoteHTMLParserResponse> {
         try await loadAvailableVotesForStoriesList(type: type, page: page, cacheBehavior: cacheBehavior)
     }
-    func loadAvailableVotesForStoriesList(type: StoryListType, page: Int = 0, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
+    func loadAvailableVotesForStoriesList(type: StoryListType, page: StoryListPageType = .page(0), cacheBehavior: CacheBehavior = .default) -> AnyPublisher<APIResponse<VoteHTMLParserResponse>, Error> {
         loadAvailableVotesForStoriesList(type: type, page: page, cacheBehavior: cacheBehavior)
     }
+}
+
+enum StoryListPageType {
+    case page(Int) /// Standard paging, eg https://news.ycombinator.com/show?p=2
+    case nextPageItemId(itemId: Int, page: Int) /// Enables paging in the form https://news.ycombinator.com/newest?next=35636710&n=31
 }

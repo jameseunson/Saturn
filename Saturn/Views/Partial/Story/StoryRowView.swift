@@ -128,6 +128,7 @@ struct StoryRowView: View {
                 }
             }
             .padding([.leading, .trailing], 15)
+            .drawingGroup()
             
         } leadingActions: { context in
             if isLoggedIn,
@@ -146,15 +147,6 @@ struct StoryRowView: View {
             }
         }
         .swipeDefaults()
-//        .task(priority: .userInitiated, {
-//            if let storyImage = story.image {
-//                image = storyImage
-//            } else {
-//                let storyImage = try? await apiManager.getImage(for: story)
-//                story.image = storyImage
-//                image = storyImage
-//            }
-//        })
         .onReceive(keychainWrapper.isLoggedInSubject) { output in
             isLoggedIn = output
         }
