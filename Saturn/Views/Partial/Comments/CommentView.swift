@@ -16,7 +16,6 @@ struct CommentView: View {
     @Injected(\.layoutManager) private var layoutManager
     @Injected(\.keychainWrapper) private var keychainWrapper
     
-    @State var frameHeight: CGFloat = 0
     @Binding var expanded: CommentExpandedState
     
     let formatter = RelativeDateTimeFormatter()
@@ -34,7 +33,7 @@ struct CommentView: View {
     let isHighlighted: Bool
     let context: CommentViewContext
     
-    static let collapsedHeight: CGFloat = 40
+    static let collapsedHeight: CGFloat = 44
     
     @State private var commentOnScreen: Bool = true
     @State private var isLoggedIn: Bool = false
@@ -92,7 +91,6 @@ struct CommentView: View {
                 contentView()
             }
         }
-        .transition(.identity)
         .background {
             if isHighlighted {
                 Color.indentationColor()
@@ -130,30 +128,6 @@ struct CommentView: View {
                 Label(comment.by, systemImage: "person.circle")
             })
         })
-        .coordinateSpace(name: String(comment.id))
-        .background(GeometryReader { proxy -> Color in
-            DispatchQueue.main.async {
-                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (layoutManager.statusBarHeight + layoutManager.navBarHeight + 10)
-            }
-            return Color.clear
-        })
-        .if(frameHeight == 0, transform: { view in
-            view.background(GeometryReader { proxy -> Color in
-                DispatchQueue.main.async {
-                    let value = proxy.frame(in: .named(String(comment.id))).size.height
-                    if value > (CommentView.collapsedHeight + 10) { /// A value below 30 indicates the view is not yet complete laying out and we should ignore this value (as the header is 30px high alone)
-                        frameHeight = value
-                    }
-                }
-                return Color.clear
-            })
-        })
-        .if(frameHeight > 0, transform: { view in
-            view.modifier(AnimatingCellHeight(height: heightForExpandedState()))
-        })
-        .clipped()
-        .padding(.top, expanded == .hidden ? 0 : 10)
-        .padding(.bottom, expanded == .hidden ? 0 : 4)
         .modifier(CommentExpandModifier(comment: comment,
                                         onToggleExpanded: onToggleExpanded,
                                         expanded: $expanded,
@@ -164,47 +138,63 @@ struct CommentView: View {
     }
     
     func contentView() -> some View {
-        VStack {
-            HStack {
-                if expanded == .hidden && comment.isAnimating == .none {
-                    EmptyView()
-                } else {
-                    CommentIndentationView(comment: comment)
-                        .opacity(comment.isAnimating == .collapsing ? 0.0 : 1.0)
-                    VStack(alignment: .leading) {
-                        CommentHeaderView(comment: comment,
-                                          onTapOptions: onTapOptions,
-                                          onTapUser: onTapUser,
-                                          onToggleExpanded: onToggleExpanded,
-                                          onTapVote: onTapVote,
-                                          expanded: $expanded,
-                                          commentOnScreen: $commentOnScreen)
-                        Divider()
-                        if expanded == .expanded {
-                            Text(comment.comment.processedText ?? AttributedString())
-                                .font(.body)
-                                .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
-                                                                  onTapStoryId: onTapStoryId,
-                                                                  onTapURL: onTapURL))
-                                .frame(height: frameHeight != 0 ? frameHeight - (CommentView.collapsedHeight + 10) : nil)
-                        }
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                CommentIndentationView(comment: comment)
+                Spacer()
+                    .frame(width: 10)
+                VStack(alignment: .leading, spacing: 0) {
+                    CommentHeaderView(comment: comment,
+                                      onTapOptions: onTapOptions,
+                                      onTapUser: onTapUser,
+                                      onToggleExpanded: onToggleExpanded,
+                                      onTapVote: onTapVote,
+                                      expanded: $expanded,
+                                      commentOnScreen: $commentOnScreen)
+                    .frame(height: CommentView.collapsedHeight)
+                    
+                    if expanded == .expanded {
+                        Spacer()
+                            .frame(height: 10)
+                        Text(comment.comment.processedText ?? AttributedString())
+                            .font(.body)
+                            .opacity(expanded == .expanded ? 1 : 0)
+                            .padding(.trailing, 10)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .modifier(TextLinkHandlerModifier(onTapUser: onTapUser,
+                                                              onTapStoryId: onTapStoryId,
+                                                              onTapURL: onTapURL))
                     }
                 }
             }
-            Divider()
-                .padding(.leading, CGFloat(comment.indendation) * 20)
-                .opacity(context == .user || expanded != .expanded ? 0 : 1)
+            if expanded == .expanded,
+               context != .user {
+                Divider()
+                    .padding(.top, 10)
+                    .padding(.bottom, 5)
+                    .padding(.leading, CGFloat(comment.indendation) * 20)
+            }
         }
-        .padding([.leading, .trailing], expanded == .hidden ? 0 : 10)
+        .coordinateSpace(name: String(comment.id))
+        .background(GeometryReader { proxy -> Color in
+            DispatchQueue.main.async {
+                commentOnScreen = proxy.frame(in: .named(String(comment.id))).origin.y > (layoutManager.statusBarHeight + layoutManager.navBarHeight + 10)
+            }
+            return Color.clear
+        })
+        .opacity(expanded == .hidden ? 0 : 1)
+        .scaleEffect(x: 1, y: expanded == .hidden ? 0 : 1, anchor: .top)
+        .frame(height: heightForExpandedState(), alignment: .top)
+        .clipped()
         .drawingGroup()
     }
     
-    func heightForExpandedState() -> CGFloat {
+    func heightForExpandedState() -> CGFloat? {
         switch expanded {
         case .expanded:
-            return frameHeight
+            return nil
         case .collapsed:
-            return CommentView.collapsedHeight
+            return CommentView.collapsedHeight + 10
         case .hidden:
             return 0
         }

@@ -98,7 +98,8 @@ struct StoryRowView: View {
                 if let url = story.url {
                     StoryRowURLView(image: $image,
                                     url: url,
-                                    onTapArticleLink: onTapArticleLink)
+                                    onTapArticleLink: onTapArticleLink,
+                                    context: context)
                     
                 } else if let text = story.text,
                           context == .storiesList {

@@ -12,6 +12,7 @@ struct StoryRowURLView: View {
     @Binding var image: Image?
     let url: URL
     let onTapArticleLink: ((URL) -> Void)?
+    let context: StoryRowViewContext
     
     var body: some View {
         HStack {
@@ -23,6 +24,11 @@ struct StoryRowURLView: View {
                             .resizable()
                             .frame(width: 33, height: 33)
                             .aspectRatio(contentMode: .fit)
+                        
+                        Rectangle()
+                            .foregroundColor(.clear)
+                            .cornerRadius(10, corners: [.topLeft, .bottomLeft])
+                            .border(Color(UIColor.systemGray6), width: 1)
                     }
                     
                 } else {
@@ -52,13 +58,25 @@ struct StoryRowURLView: View {
         .frame(maxWidth: .infinity)
         .frame(height: 44)
         .background {
-            RoundedRectangle(cornerRadius: 8)
-                .foregroundColor( Color(UIColor.systemGray6) )
+            switch context {
+            case .storiesList, .storyDetail:
+                RoundedRectangle(cornerRadius: 8)
+                    .foregroundColor( Color(UIColor.systemGray6) )
+            case .user:
+                RoundedRectangle(cornerRadius: 8)
+                    .foregroundColor( Color(UIColor.systemGray5) )
+            }
         }
         .onTapGesture {
             if let onTapArticleLink {
                 onTapArticleLink(url)
             }
         }
+    }
+}
+
+struct StoryRowURLView_Preview: PreviewProvider {
+    static var previews: some View {
+        StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!), image: .constant(Image("AppIcon")))
     }
 }

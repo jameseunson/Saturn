@@ -66,7 +66,7 @@ struct StoryDetailView: View {
             withAnimation(.easeInOut(duration: 0.3)) {
                 commentsExpanded = output
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(350)) {
                 interactor.expandedUpdateComplete()
             }
         }
@@ -158,18 +158,20 @@ struct StoryDetailView: View {
                 Divider()
                 
                 if let text = story.text {
-                    Text(text)
-                        .modifier(TextLinkHandlerModifier(onTapUser: { user in
-                            selectedUser = user
-                            
-                        }, onTapStoryId: { storyId in
-                            displayingInternalStoryId = storyId
-                            
-                        }, onTapURL: { url in
-                            displayingSafariURL = url
-                        }))
-                        .padding(10)
-                    Divider()
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(text)
+                            .modifier(TextLinkHandlerModifier(onTapUser: { user in
+                                selectedUser = user
+                                
+                            }, onTapStoryId: { storyId in
+                                displayingInternalStoryId = storyId
+                                
+                            }, onTapURL: { url in
+                                displayingSafariURL = url
+                            }))
+                            .padding(10)
+                        Divider()
+                    }
                 }
                 
                 if story.hasComments() {
@@ -227,10 +229,6 @@ struct StoryDetailView: View {
 
                         if interactor.commentsRemainingToLoad {
                             ListLoadingView()
-                                .transition(.identity)
-                                .transaction { transaction in
-                                    transaction.animation = nil
-                                }
                         }
 
                         if interactor.focusedCommentViewModel != nil {

@@ -99,7 +99,6 @@
 		1A888FF82993719A00490A74 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 1A888FF72993719A00490A74 /* FirebaseStorageCombine-Community */; };
 		1A888FFC2994E44E00490A74 /* NavBarAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */; };
 		1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFD2994E76900490A74 /* LayoutManager.swift */; };
-		1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */; };
 		1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */; };
 		1A91BBF729E7D55E001553D9 /* UserCommentsScoreLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */; };
 		1A91BBFA29E8E933001553D9 /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = 1A91BBF929E8E933001553D9 /* SwipeActions */; };
@@ -250,7 +249,6 @@
 		1A888FC02993707B00490A74 /* TextProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextProcessorTests.swift; sourceTree = "<group>"; };
 		1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavBarAccessor.swift; sourceTree = "<group>"; };
 		1A888FFD2994E76900490A74 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
-		1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingCellHeight.swift; sourceTree = "<group>"; };
 		1A8890022999FF2400490A74 /* APIDiskResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDiskResponseCache.swift; sourceTree = "<group>"; };
 		1A91BBF629E7D55E001553D9 /* UserCommentsScoreLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCommentsScoreLoader.swift; sourceTree = "<group>"; };
 		1A98710029CD86DB0022BA2B /* VoteBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteBackdropView.swift; sourceTree = "<group>"; };
@@ -570,7 +568,6 @@
 				1AE4A99E2977D7BF00D0B0D3 /* AppRemoteConfig.swift */,
 				1A888FFB2994E44E00490A74 /* NavBarAccessor.swift */,
 				1A888FFD2994E76900490A74 /* LayoutManager.swift */,
-				1A888FFF2994EAEA00490A74 /* AnimatingCellHeight.swift */,
 				1ADE889C29C010CF00492114 /* UnfairLock.swift */,
 			);
 			path = Utilities;
@@ -988,7 +985,6 @@
 				1A111E04298B7321005B29B6 /* View+Color.swift in Sources */,
 				1A5DBBB5296933BA00D4D86E /* SaturnApp.swift in Sources */,
 				1A5DBC13296BD46600D4D86E /* Story.swift in Sources */,
-				1A8890002994EAEA00490A74 /* AnimatingCellHeight.swift in Sources */,
 				1AE4A9922975250F00D0B0D3 /* RootView.swift in Sources */,
 				1AE4A9962975356200D0B0D3 /* SettingsInteractor.swift in Sources */,
 				1ACF31CA29E54EB100C99B93 /* LoginLinkHTMLParser.swift in Sources */,
@@ -1157,7 +1153,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;
@@ -1197,7 +1193,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_ASSET_PATHS = "\"Saturn/Preview Content\"";
 				DEVELOPMENT_TEAM = P68VLQ6LPN;
 				ENABLE_PREVIEWS = YES;

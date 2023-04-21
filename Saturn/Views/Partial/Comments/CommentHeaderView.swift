@@ -36,89 +36,86 @@ struct CommentHeaderView: View {
     }
     
     var body: some View {
-        if expanded == .hidden {
-            EmptyView()
-        } else {
-            ZStack {
-                HStack {
-                    Text(comment.by)
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.accentColor)
-                        .onTapGesture {
-                            if let onTapUser {
-                                onTapUser(comment.by)
-                            }
-                        }
-                    if let vote = comment.vote {
-                        if vote.directions.contains(.upvote) {
-                            Button {
-                                print("upvote \(comment.id)")
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                                onTapVote?(.upvote)
-                            } label: {
-                                Text(Image(systemName: "arrow.up"))
-                                    .font(.callout)
-                                    .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
-                            }
-                        }
-                        if vote.directions.contains(.downvote) {
-                            Button {
-                                print("downvote \(comment.id)")
-                                onTapVote?(.downvote)
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                            } label: {
-                                Text(Image(systemName: "arrow.down"))
-                                    .font(.callout)
-                                    .foregroundColor(vote.state == .downvote ? .blue : .gray)
-                            }
+        VStack {
+            HStack {
+                Text(comment.by)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(Color.accentColor)
+                    .onTapGesture {
+                        if let onTapUser {
+                            onTapUser(comment.by)
                         }
                     }
-                    if let score = comment.score {
-                        Text(String(score)).foregroundColor(.gray)
-                        + Text(" ")
-                        + Text(Image(systemName: "arrow.up.square.fill")).foregroundColor(.gray)
+                if let vote = comment.vote {
+                    if vote.directions.contains(.upvote) {
+                        Button {
+                            print("upvote \(comment.id)")
+                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                            impactMed.impactOccurred()
+                            onTapVote?(.upvote)
+                        } label: {
+                            Text(Image(systemName: "arrow.up"))
+                                .font(.callout)
+                                .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
+                        }
                     }
-                    Spacer()
-                    Text(comment.relativeTimeString)
+                    if vote.directions.contains(.downvote) {
+                        Button {
+                            print("downvote \(comment.id)")
+                            onTapVote?(.downvote)
+                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                            impactMed.impactOccurred()
+                        } label: {
+                            Text(Image(systemName: "arrow.down"))
+                                .font(.callout)
+                                .foregroundColor(vote.state == .downvote ? .blue : .gray)
+                        }
+                    }
+                }
+                if let score = comment.score {
+                    Text(String(score)).foregroundColor(.gray)
+                    + Text(" ")
+                    + Text(Image(systemName: "arrow.up.square.fill")).foregroundColor(.gray)
+                }
+                Spacer()
+                Text(comment.relativeTimeString)
+                    .font(.body)
+                    .foregroundColor(.gray)
+                if expanded == .expanded {
+                    Image(systemName: "ellipsis")
                         .font(.body)
                         .foregroundColor(.gray)
-                    if expanded == .expanded {
-                        Image(systemName: "ellipsis")
-                            .font(.body)
-                            .foregroundColor(.gray)
-                            .onTapGesture {
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                                if let onTapOptions {
-                                    onTapOptions(comment)
-                                }
+                        .onTapGesture {
+                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                            impactMed.impactOccurred()
+                            if let onTapOptions {
+                                onTapOptions(comment)
                             }
-                        
-                    } else if comment.totalChildCount > 0 {
-                        Text(String(comment.totalChildCount))
-                            .font(.callout)
-                            .foregroundColor(.gray)
-                            .padding([.leading, .trailing], 4)
-                            .padding([.top, .bottom], 0)
-                            .background {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .foregroundColor( Color(UIColor.systemGray6) )
-                            }
-                    }
+                        }
+                    
+                } else if comment.totalChildCount > 0 {
+                    Text(String(comment.totalChildCount))
+                        .font(.callout)
+                        .foregroundColor(.gray)
+                        .padding([.leading, .trailing], 4)
+                        .padding([.top, .bottom], 0)
+                        .background {
+                            RoundedRectangle(cornerRadius: 6)
+                                .foregroundColor( Color(UIColor.systemGray6) )
+                        }
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        toggleExpanded()
-                    }
-                    if let onToggleExpanded {
-                        onToggleExpanded(comment, expanded, commentOnScreen)
-                    }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    toggleExpanded()
                 }
-                
+                if let onToggleExpanded {
+                    onToggleExpanded(comment, expanded, commentOnScreen)
+                }
+            }
+            .overlay {
                 if expanded == .collapsed {
                     Rectangle()
                         .foregroundColor(.clear)
@@ -134,6 +131,8 @@ struct CommentHeaderView: View {
                         }
                 }
             }
+            .padding(.top, 8)
+            Divider()
         }
     }
     
