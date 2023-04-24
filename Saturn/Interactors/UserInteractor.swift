@@ -35,7 +35,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
     private var itemsAccumulator = [UserItemViewModel]()
     private var lastRefreshTimestamp: Date?
     
-    var commentContexts = CurrentValueSubject<[Int: CommentLoaderContainer], Never>([:])
+    var commentContexts = CurrentValueSubject<[Int: UserCommentContextType], Never>([:])
     @Published private var itemsLoaded = 0
     
     init(username: String) {
@@ -106,10 +106,21 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .store(in: &disposeBag)
     }
     
-    func loadCommentChain(from comment: CommentViewModel, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> {
+    func loadCommentChain(from comment: Comment, cacheBehavior: CacheBehavior = .default) -> AnyPublisher<CommentLoaderContainer, Error> {
         AsyncTools.publisherForAsync {
-            return (comment, try await self.commentLoader.traverse(comment.comment, cacheBehavior: cacheBehavior))
+            return try await self.commentLoader.traverse(comment, cacheBehavior: cacheBehavior)
         }
+        .catch { error in
+            if case let CommentLoaderError.deleted(id) = error {
+                DispatchQueue.main.async {
+                    var mutableContexts = self.commentContexts.value
+                    mutableContexts[id] = .failed
+                    self.commentContexts.send(mutableContexts)
+                }
+            }
+            return Empty<CommentLoaderContainer, Error>().eraseToAnyPublisher()
+        }
+        .eraseToAnyPublisher()
     }
     
     func loadMoreItems() {
@@ -277,30 +288,30 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .eraseToAnyPublisher()
     }
     
-    private func publishers(for models: [UserItemViewModel], cacheBehavior: CacheBehavior = .default) -> [AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error>] {
+    private func publishers(for models: [UserItemViewModel], cacheBehavior: CacheBehavior = .default) -> [AnyPublisher<CommentLoaderContainer, Error>] {
         return models.compactMap {
             /// If we already have a chain object for this comment, don't retrieve it
             if self.commentContexts.value.keys.contains($0.id) {
                 return nil
             }
             if case let .comment(comment) = $0 {
-                return comment
+                return comment.comment
             } else {
                 return nil
             }
         }
-        .map { self.loadCommentChain(from: $0, cacheBehavior: cacheBehavior) }
+        .map {
+            return self.loadCommentChain(from: $0, cacheBehavior: cacheBehavior)
+        }
     }
     
-    private func handleCommentContextLoad(_ item: (CommentViewModel, CommentLoaderContainer)) {
+    private func handleCommentContextLoad(_ item: CommentLoaderContainer) {
         var mutableContexts = self.commentContexts.value
 
-        let (commentViewModel, container) = item
-        mutableContexts[commentViewModel.id] = container
-
+        mutableContexts[item.focusedComment.id] = .loaded(item)
         self.commentContexts.send(mutableContexts)
         
-        if let story = container.story {
+        if let story = item.story {
             self.favIconLoader.loadFaviconsForStories([StoryRowViewModel(story: story)])
         }
     }
@@ -311,6 +322,7 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
             .filter { $0.count > 0 }
             .setFailureType(to: Error.self)
             .flatMap { models in
+                /// Firstly try loading comment from cache, if cache exists, and unless explicitly instructed otherwise by `ignoreCache` flag
                 let publishers = self.publishers(for: models, cacheBehavior: ignoreCache ? .ignore : .offlineOnly)
                 if publishers.count > 0 {
                     return Publishers.MergeMany(publishers).eraseToAnyPublisher()
@@ -319,16 +331,16 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
                 }
             }
             .handleEvents(receiveOutput: { item in
-                if ignoreCache { return }
+                if ignoreCache { return } /// If we're ignoring cache, don't attempt to load from cache
                 DispatchQueue.main.async { [weak self] in
                     self?.handleCommentContextLoad(item)
                 }
             })
-            .flatMap { (item: (CommentViewModel, CommentLoaderContainer)) -> AnyPublisher<(CommentViewModel, CommentLoaderContainer), Error> in
+            .flatMap { (item: CommentLoaderContainer) -> AnyPublisher<CommentLoaderContainer, Error> in
                 if ignoreCache {
                     return Just(item).setFailureType(to: Error.self).eraseToAnyPublisher()
                 } else {
-                    return self.loadCommentChain(from: item.0)
+                    return self.loadCommentChain(from: item.focusedComment)
                 }
             }
             .receive(on: RunLoop.main)
@@ -384,4 +396,9 @@ final class UserInteractor: Interactor, InfiniteScrollViewLoading {
         }
         return false
     }
+}
+
+enum UserCommentContextType {
+    case loaded(CommentLoaderContainer)
+    case failed
 }

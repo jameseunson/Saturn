@@ -16,9 +16,9 @@ actor CommentLoader: CommentLoading {
     let apiManager = APIManager()
     private var activeTasks = [Int: Task<UserItem, Error>]()
     
-    func traverse(_ comment: Comment, cacheBehavior: CacheBehavior) async throws -> CommentLoaderContainer {
-        var currentComment = comment
-        var loaderContainer = CommentLoaderContainer()
+    func traverse(_ focusedComment: Comment, cacheBehavior: CacheBehavior) async throws -> CommentLoaderContainer {
+        var currentComment = focusedComment
+        var loaderContainer = CommentLoaderContainer(focusedComment: focusedComment)
         
         while(loaderContainer.story == nil) {
             let item = try await traverseAux(currentComment, cacheBehavior: cacheBehavior)
@@ -33,7 +33,7 @@ actor CommentLoader: CommentLoading {
                 loaderContainer.commentViewModels = self.processComments(commentChain: loaderContainer.commentChain)
                 
             case .deleted:
-                continue
+                throw CommentLoaderError.deleted(focusedComment.id)
             }
         }
         
@@ -68,6 +68,7 @@ actor CommentLoader: CommentLoading {
 }
 
 struct CommentLoaderContainer {
+    let focusedComment: Comment /// Comment from which we traverse upwards to the story
     var commentChain: [Comment] = []
     var commentViewModels: [CommentViewModel] = []
     var story: Story?
@@ -77,4 +78,8 @@ extension CommentLoading {
     func traverse(_ comment: Comment, cacheBehavior: CacheBehavior = .default) async throws -> CommentLoaderContainer {
         try await traverse(comment, cacheBehavior: cacheBehavior)
     }
+}
+
+enum CommentLoaderError: Error {
+    case deleted(Int)
 }

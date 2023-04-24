@@ -12,7 +12,7 @@ struct UserView: View {
     @StateObject var interactor: UserInteractor
     @State var user: UserViewModel?
     
-    @State var contexts: [Int: CommentLoaderContainer] = [:]
+    @State var contexts: [Int: UserCommentContextType] = [:]
     
     /// Infinite scroll
     @State private var readyToLoadMore = false
@@ -134,7 +134,8 @@ struct UserView: View {
         }
         .navigationDestination(isPresented: createBoolBinding(from: $selectedCommentToView)) {
             if let selectedCommentToView,
-               let thread = contexts[selectedCommentToView.id] {
+               let container = contexts[selectedCommentToView.id],
+               case let .loaded(thread) = container {
                 StoryDetailView(interactor: StoryDetailInteractor(comment: selectedCommentToView, thread: thread))
                     .navigationTitle(thread.story?.title ?? "")
             } else {
@@ -180,7 +181,7 @@ struct CommentContextView: View {
     @Binding var selectedCommentToShare: CommentViewModel?
     @Binding var selectedStoryToView: StoryRowViewModel?
     @Binding var selectedCommentToView: CommentViewModel?
-    @Binding var contexts: [Int: CommentLoaderContainer]
+    @Binding var contexts: [Int: UserCommentContextType]
     @Binding var displayingInternalStoryId: Int?
     @Binding var displayingSafariURL: URL?
     @Binding var favIcons: [String: Image]
@@ -199,7 +200,10 @@ struct CommentContextView: View {
                 }
                 
             } onToggleExpanded: { comment, expanded, commentOnScreen in
-                selectedCommentToView = comment
+                if let context = contexts[comment.id],
+                   case .loaded(_) = context {
+                    selectedCommentToView = comment
+                }
                 
             } onTapStoryId: { storyId in
                 displayingInternalStoryId = storyId
@@ -208,16 +212,28 @@ struct CommentContextView: View {
                 self.displayingSafariURL = url
             }
             VStack(alignment: .leading) {
-                if let context = contexts[comment.id],
-                   let story = context.story {
-                    StoryRowView(story: StoryRowViewModel(story: story),
-                                 image: bindingForStoryImage(story: StoryRowViewModel(story: story)),
-                                 onTapArticleLink: { url in self.displayingSafariURL = url },
-                                 context: .user)
-                        .padding([.top, .bottom], 10)
-                        .onTapGesture {
-                            selectedStoryToView = StoryRowViewModel(story: story)
+                if let context = contexts[comment.id] {
+                    if case let .loaded(thread) = context,
+                       let story = thread.story {
+                        StoryRowView(story: StoryRowViewModel(story: story),
+                                     image: bindingForStoryImage(story: StoryRowViewModel(story: story)),
+                                     onTapArticleLink: { url in self.displayingSafariURL = url },
+                                     context: .user)
+                            .padding([.top, .bottom], 10)
+                            .onTapGesture {
+                                selectedStoryToView = StoryRowViewModel(story: story)
+                            }
+                    } else if case .failed = context {
+                        HStack {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                            Text("Could not load context thread")
+                                .foregroundColor(.gray)
+                                .font(.body)
                         }
+                        .padding()
+                    }
+
                 } else {
                     ProgressView()
                         .padding()
