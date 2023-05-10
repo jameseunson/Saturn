@@ -11,13 +11,13 @@ import Factory
 
 struct SearchHistoryView: View {
     @Injected(\.settingsManager) private var settingsManager
-    @Binding var searchQuery: String
     
     @State var historyItemToDelete: SettingSearchHistoryItem?
     @State var showClearAllConfirmation = false
     
     let onDeleteSearchHistoryItem: ((SettingSearchHistoryItem) -> Void)
     let onClearSearchHistory: (() -> Void)
+    let onSelectSearchHistoryItem: ((SettingSearchHistoryItem) -> Void)
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -56,7 +56,7 @@ struct SearchHistoryView: View {
                     .padding([.top, .bottom], 5)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        searchQuery = item.query
+                        onSelectSearchHistoryItem(item)
                     }
                 }
             }

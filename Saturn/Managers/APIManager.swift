@@ -354,9 +354,14 @@ final class APIManager: APIManaging {
                 
                 lock.lock {
                     if didComplete.pointee { return }; didComplete.pointee = true
-                    continuation.resume(with: .success(value))
                     if !self.networkConnectivityManager.isConnected() {
                         self.networkConnectivityManager.updateConnected(with: true)
+                    }
+                    
+                    if value is NSNull {
+                        continuation.resume(throwing: APIManagerError.noData)
+                    } else {
+                        continuation.resume(with: .success(value))
                     }
                 }
             }

@@ -59,7 +59,7 @@ final class SearchAPIManager: SearchAPIManaging {
         if query.components(separatedBy: CharacterSet.whitespaces).count == 1 {
             return Publishers.Zip(publisherForQuery(request: mutableRequest), publisherForUser(query: query))
                 .map { results, user in
-                    return results + [user]
+                    return results + user
                 }
                 .eraseToAnyPublisher()
             
@@ -72,9 +72,8 @@ final class SearchAPIManager: SearchAPIManaging {
     private func publisherForQuery(request: URLRequest) -> AnyPublisher<[SearchResultItem], Error> {
         return URLSession.DataTaskPublisher(request: request, session: .shared)
             .mapError { _ in APIManagerError.generic }
-            .tryMap { (data: Data, urlResponse: URLResponse) -> SearchResponse in
-                let decoder = JSONDecoder()
-                return try decoder.decode(SearchResponse.self, from: data)
+            .tryMap { (data: Data, _: URLResponse) -> SearchResponse in
+                return try JSONDecoder().decode(SearchResponse.self, from: data)
             }
             .map({ (response: SearchResponse) -> [SearchResultItem] in
                 response.hits.map { SearchResultItem.searchResult($0) }
@@ -82,9 +81,13 @@ final class SearchAPIManager: SearchAPIManaging {
             .eraseToAnyPublisher()
     }
     
-    private func publisherForUser(query: String) -> AnyPublisher<SearchResultItem, Error> {
+    private func publisherForUser(query: String) -> AnyPublisher<[SearchResultItem], Error> {
         return apiManager.loadUser(id: query)
-            .map { SearchResultItem.user($0.response) }
+            .map { apiResponse -> [SearchResultItem] in
+                return [SearchResultItem.user(apiResponse.response)]
+            }
+            .replaceError(with: [])
+            .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
 }

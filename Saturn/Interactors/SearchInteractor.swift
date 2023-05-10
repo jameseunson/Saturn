@@ -26,7 +26,6 @@ final class SearchInteractor: Interactor {
     override func didBecomeActive() {
         querySubject
             .filter { $0.count > 0 }
-            .debounce(for: .milliseconds(750), scheduler: RunLoop.main)
             .flatMap { query in
                 self.apiManager.search(query: query)
                     .catch { error in
@@ -51,7 +50,7 @@ final class SearchInteractor: Interactor {
             .store(in: &disposeBag)
     }
     
-    func searchQueryChanged(_ query: String) {
+    func submit(_ query: String) {
         switch results {
         case .loading:
             break

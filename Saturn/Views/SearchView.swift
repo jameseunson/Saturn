@@ -15,6 +15,9 @@ struct SearchView: View {
     
     @State var searchQuery: String = ""
     @State var displayingSafariURL: URL?
+    @State var selectedShareItem: StoryDetailShareItem?
+    @State var selectedUser: String?
+    @State var displayingConfirmSheetForStory: StoryRowViewModel?
     
     var body: some View {
         ZStack {
@@ -23,46 +26,76 @@ struct SearchView: View {
             
             GeometryReader { reader in
                 ScrollView {
-                    VStack(alignment: .leading) {
-                        if case .loading = interactor.results {
-                            LoadingView()
+                    if case .loading = interactor.results {
+                        LoadingView()
+                            .frame(width: reader.size.width, height: reader.size.height)
+                        
+                    } else if case let .loaded(results) = interactor.results {
+                        if results.isEmpty {
+                            Text("No results for '\(searchQuery)'")
+                                .foregroundColor(.gray)
                                 .frame(width: reader.size.width, height: reader.size.height)
-                            
-                        } else if case let .loaded(results) = interactor.results {
+                        } else {
                             SearchResultsView(results: results,
                                               searchQuery: $searchQuery,
-                                              displayingSafariURL: $displayingSafariURL)
-                            
-                        } else if case .notLoading = interactor.results {
-                            EmptyView()
+                                              displayingSafariURL: $displayingSafariURL,
+                                              selectedUser: $selectedUser,
+                                              displayingConfirmSheetForStory: $displayingConfirmSheetForStory)
                         }
+                        
+                    } else if case .notLoading = interactor.results {
+                        EmptyView()
                     }
                 }
             }
             
             if case .notLoading = interactor.results,
                settingsManager.searchHistory().history.count > 0 {
-                SearchHistoryView(searchQuery: $searchQuery) { item in
+                SearchHistoryView() { item in
                     interactor.deleteSearchHistoryItem(item: item)
                     
                 } onClearSearchHistory: {
                     interactor.clearSearchHistory()
+                    
+                } onSelectSearchHistoryItem: { item in
+                    searchQuery = item.query
+                    interactor.submit(item.query)
                 }
             }
         }
         .searchable(text: $searchQuery)
         .autocorrectionDisabled(true)
         .textInputAutocapitalization(.never)
+        .submitLabel(.search)
+        .onSubmit(of: .search, {
+            interactor.submit(searchQuery)
+        })
         .onAppear {
             interactor.activate()
-        }
-        .onChange(of: searchQuery) { newValue in
-            interactor.searchQueryChanged(newValue)
         }
         .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
             if let displayingSafariURL {
                 SafariView(url: displayingSafariURL)
                     .ignoresSafeArea()
+            }
+        }
+        .modifier(StoryContextSheetModifier(displayingConfirmSheetForStory: $displayingConfirmSheetForStory,
+                                            selectedShareItem: $selectedShareItem,
+                                            selectedUser: $selectedUser,
+                                            onTapVote: nil))
+        .sheet(isPresented: createBoolBinding(from: $selectedShareItem), content: {
+            if let url = selectedShareItem {
+                let sheet = ActivityViewController(itemsToShare: [url])
+                    .ignoresSafeArea()
+                sheet.presentationDetents([.medium])
+            }
+        })
+        .navigationDestination(isPresented: createBoolBinding(from: $selectedUser)) {
+            if let selectedUser {
+                UserView(interactor: UserInteractor(username: selectedUser))
+                    .navigationTitle(selectedUser)
+            } else {
+                EmptyView()
             }
         }
     }
