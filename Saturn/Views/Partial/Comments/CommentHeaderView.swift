@@ -59,6 +59,7 @@ struct CommentHeaderView: View {
                                 .font(.callout)
                                 .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
                         }
+                        .buttonStyle(StoryLoggedInOptionsButtonStyle())
                     }
                     if vote.directions.contains(.downvote) {
                         Button {
@@ -71,6 +72,7 @@ struct CommentHeaderView: View {
                                 .font(.callout)
                                 .foregroundColor(vote.state == .downvote ? .blue : .gray)
                         }
+                        .buttonStyle(StoryLoggedInOptionsButtonStyle())
                     }
                 }
                 if let score = comment.score {
@@ -83,16 +85,18 @@ struct CommentHeaderView: View {
                     .font(.body)
                     .foregroundColor(.gray)
                 if expanded == .expanded {
-                    Image(systemName: "ellipsis")
-                        .font(.body)
-                        .foregroundColor(.gray)
-                        .onTapGesture {
-                            let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                            impactMed.impactOccurred()
-                            if let onTapOptions {
-                                onTapOptions(comment)
-                            }
+                    Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                        impactMed.impactOccurred()
+                        if let onTapOptions {
+                            onTapOptions(comment)
                         }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(StoryLoggedInOptionsButtonStyle())
                     
                 } else if comment.totalChildCount > 0 {
                     Text(String(comment.totalChildCount))

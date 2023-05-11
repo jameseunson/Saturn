@@ -155,8 +155,6 @@ struct StoryDetailView: View {
                         }
                     }
                 
-                Divider()
-                
                 if let text = story.text {
                     VStack(alignment: .leading, spacing: 0) {
                         Text(text)

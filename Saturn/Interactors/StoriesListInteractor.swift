@@ -116,18 +116,18 @@ final class StoriesListInteractor: Interactor {
         }
     }
     
-    func evaluateRefreshContent() {
+    func evaluateRefreshContent(triggerEvent: StoriesListEvaluateRefreshTriggerEvent) {
         print("evaluateRefreshContent")
         guard self.networkConnectivityManager.isConnected() else {
             return
         }
          
-         /// If last refresh was within 10 minutes, do not refresh
-         if let lastRefreshTimestamp = self.lastRefreshTimestamp,
-            let thresholdTimestamp = Calendar.current.date(byAdding: .minute, value: -10, to: Date()),
-            lastRefreshTimestamp > thresholdTimestamp {
-             return
-         }
+        /// If last refresh was within 10 minutes, do not refresh
+        if let lastRefreshTimestamp = self.lastRefreshTimestamp,
+           let thresholdTimestamp = Calendar.current.date(byAdding: .minute, value: -10, to: Date()),
+           lastRefreshTimestamp > thresholdTimestamp {
+            return
+        }
         
         /// Conditions are met to refresh, begin refresh
         Task {
@@ -400,4 +400,9 @@ enum StoriesListError: LocalizedError {
             )
         }
     }
+}
+
+enum StoriesListEvaluateRefreshTriggerEvent {
+    case foreground
+    case appear
 }

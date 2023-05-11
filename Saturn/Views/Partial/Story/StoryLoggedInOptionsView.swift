@@ -15,43 +15,53 @@ struct StoryLoggedInOptionsView: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            Image(systemName: "ellipsis")
-                .contentShape(Rectangle())
-                .font(.body)
-                .foregroundColor(.gray)
-                .frame(width: 30, height: 30)
-                .onTapGesture {
+            Button {
+                let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                impactMed.impactOccurred()
+                
+                onTapSheet?(story)
+            } label: {
+                HStack {
+                    Image(systemName: "ellipsis")
+                        .foregroundColor(.gray)
+                    Spacer()
+                }
+                .frame(height: 30)
+            }
+            .padding(.leading, 15)
+            .frame(width: 66, height: 30)
+            .contentShape(Rectangle())
+            .buttonStyle(StoryLoggedInOptionsButtonStyle())
+            
+            Spacer()
+            if let vote = story.vote,
+               vote.directions.contains(.upvote) {
+                Button {
                     let impactMed = UIImpactFeedbackGenerator(style: .medium)
                     impactMed.impactOccurred()
-                    
-                    onTapSheet?(story)
+                    onTapVote?(.upvote)
+                } label: {
+                    Text(Image(systemName: "arrow.up"))
+                        .font(.body)
+                        .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
                 }
-            Spacer()
-            if let vote = story.vote {
-                if vote.directions.contains(.upvote) {
-                    Button {
-                        let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                        impactMed.impactOccurred()
-                        onTapVote?(.upvote)
-                    } label: {
-                        Text(Image(systemName: "arrow.up"))
-                            .font(.body)
-                            .foregroundColor(vote.state == .upvote ? .accentColor : .gray)
-                    }
-                }
-                if vote.directions.contains(.downvote) {
-                    Button {
-                        let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                        impactMed.impactOccurred()
-                        onTapVote?(.downvote)
-                    } label: {
-                        Text(Image(systemName: "arrow.down"))
-                            .font(.body)
-                            .foregroundColor(vote.state == .downvote ? .blue : .gray)
-                    }
-                }
+                .buttonStyle(StoryLoggedInOptionsButtonStyle())
             }
         }
         .frame(minHeight: 33)
+    }
+}
+
+struct StoryLoggedInOptionsButtonStyle: ButtonStyle {
+    public func makeBody(configuration: StoriesListButtonStyle.Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.8 : 1)
+        
+    }
+}
+
+struct StoryLoggedInOptionsView_Previews: PreviewProvider {
+    static var previews: some View {
+        StoryLoggedInOptionsView(story: StoryRowViewModel(story: Story.fakeStory()!), onTapVote: { _ in }, onTapSheet: { _ in })
     }
 }

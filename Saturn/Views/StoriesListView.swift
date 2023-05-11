@@ -124,13 +124,13 @@ struct StoriesListView: View {
         .onAppear {
             interactor.activate()
             if case .loaded = interactor.loadingState {
-                interactor.evaluateRefreshContent()
+                interactor.evaluateRefreshContent(triggerEvent: .appear)
             }
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active,
                case .loaded = interactor.loadingState {
-                interactor.evaluateRefreshContent()
+                interactor.evaluateRefreshContent(triggerEvent: .appear)
             }
         }
         .onReceive(interactor.$loadingState) { output in
@@ -148,9 +148,6 @@ struct StoriesListView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(interactor.stories) { story in
-                    Divider()
-                        .padding(.bottom, 10)
-                        .padding(.leading, 15)
                     NavigationLink(value: story) {
                         StoryRowView(story: story,
                                      image: bindingForStoryImage(story: story),
@@ -197,7 +194,6 @@ struct StoriesListView: View {
                                 Label(story.author, systemImage: "person.circle")
                             })
                         }
-                        .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 25)
                     }
                     .buttonStyle(StoriesListButtonStyle())
                 }
@@ -216,7 +212,8 @@ struct StoriesListView: View {
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListView(interactor: StoriesListInteractor(type: .top, stories: [StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!)]))
+        StoriesListView(interactor: StoriesListInteractor(type: .top,
+                                                          stories: [0...10].map { _ in StoryRowViewModel(story: Story.fakeStory()!) }))
     }
 }
 
@@ -224,5 +221,6 @@ struct StoriesListButtonStyle: ButtonStyle {
     public func makeBody(configuration: StoriesListButtonStyle.Configuration) -> some View {
         configuration.label
             .opacity(configuration.isPressed ? 1 : 1)
+            .background(configuration.isPressed ? Color(uiColor: UIColor.systemGray3) : Color.clear)
     }
 }

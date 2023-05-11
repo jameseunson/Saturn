@@ -66,9 +66,8 @@ struct SearchResultsView: View {
                                          onTapArticleLink: { url in self.displayingSafariURL = url },
                                          onTapUser: { user in self.selectedUser = user },
                                          onTapSheet: { story in self.displayingConfirmSheetForStory = story })
-                            .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 25)
                         }
-                        Divider()
+                        .buttonStyle(StoriesListButtonStyle())
                     }
                 }
             }

@@ -26,11 +26,8 @@ struct SearchView: View {
             
             GeometryReader { reader in
                 ScrollView {
-                    if case .loading = interactor.results {
-                        LoadingView()
-                            .frame(width: reader.size.width, height: reader.size.height)
-                        
-                    } else if case let .loaded(results) = interactor.results {
+                    switch interactor.results {
+                    case let .loaded(response: results):
                         if results.isEmpty {
                             Text("No results for '\(searchQuery)'")
                                 .foregroundColor(.gray)
@@ -42,8 +39,11 @@ struct SearchView: View {
                                               selectedUser: $selectedUser,
                                               displayingConfirmSheetForStory: $displayingConfirmSheetForStory)
                         }
+                    case .loading:
+                        LoadingView()
+                            .frame(width: reader.size.width, height: reader.size.height)
                         
-                    } else if case .notLoading = interactor.results {
+                    case .notLoading, .failed:
                         EmptyView()
                     }
                 }

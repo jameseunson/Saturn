@@ -211,39 +211,41 @@ struct CommentContextView: View {
             } onTapURL: { url in
                 self.displayingSafariURL = url
             }
-            VStack(alignment: .leading) {
-                if let context = contexts[comment.id] {
-                    if case let .loaded(thread) = context,
+            Button {
+                if let context = contexts[comment.id],
+                    case let .loaded(thread) = context,
                        let story = thread.story {
-                        StoryRowView(story: StoryRowViewModel(story: story),
-                                     image: bindingForStoryImage(story: StoryRowViewModel(story: story)),
-                                     onTapArticleLink: { url in self.displayingSafariURL = url },
-                                     context: .user)
-                            .padding([.top, .bottom], 10)
-                            .onTapGesture {
-                                selectedStoryToView = StoryRowViewModel(story: story)
-                            }
-                    } else if case .failed = context {
-                        HStack {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
-                            Text("Could not load context thread")
-                                .foregroundColor(.gray)
-                                .font(.body)
-                        }
-                        .padding()
-                    }
-
-                } else {
-                    ProgressView()
-                        .padding()
+                    selectedStoryToView = StoryRowViewModel(story: story)
                 }
+            } label: {
+                VStack(alignment: .leading) {
+                    if let context = contexts[comment.id] {
+                        if case let .loaded(thread) = context,
+                           let story = thread.story {
+                            StoryRowView(story: StoryRowViewModel(story: story),
+                                         image: bindingForStoryImage(story: StoryRowViewModel(story: story)),
+                                         onTapArticleLink: { url in self.displayingSafariURL = url },
+                                         context: .user)
+                                .padding([.top, .bottom], 10)
+                        } else if case .failed = context {
+                            HStack {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                Text("Could not load context thread")
+                                    .foregroundColor(.gray)
+                                    .font(.body)
+                            }
+                            .padding()
+                        }
+
+                    } else {
+                        ProgressView()
+                            .padding()
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
-            .background {
-                RoundedRectangle(cornerRadius: 8)
-                    .foregroundColor( Color(UIColor.systemGray6) )
-            }
+            .buttonStyle(UserContextStoryButtonStyle())
             .padding(10)
             .padding(.bottom, 20)
         }
@@ -251,5 +253,21 @@ struct CommentContextView: View {
     
     func bindingForStoryImage(story: StoryRowViewModel) -> Binding<Image?> {
         Binding { return favIcons[String(story.id)] } set: { _ in }
+    }
+}
+
+struct UserContextStoryButtonStyle: ButtonStyle {
+    public func makeBody(configuration: StoriesListButtonStyle.Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 1 : 1)
+            .background {
+                if configuration.isPressed {
+                    RoundedRectangle(cornerRadius: 8)
+                        .foregroundColor( Color(uiColor: UIColor.systemGray3) )
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .foregroundColor( Color(UIColor.systemGray6) )
+                }
+            }
     }
 }
