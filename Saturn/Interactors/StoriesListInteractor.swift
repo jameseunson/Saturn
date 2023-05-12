@@ -35,6 +35,7 @@ final class StoriesListInteractor: Interactor {
     @Published private(set) var canLoadNextPage: Bool = true
     @Published private(set) var availableVotes: [String: HTMLAPIVote] = [:]
     @Published private(set) var favIcons: [String: Image] = [:]
+    @Published private(set) var showPromptToManuallyRefresh: Bool = false
     
     #if DEBUG
     private var displayingSwiftUIPreview = false
@@ -84,6 +85,8 @@ final class StoriesListInteractor: Interactor {
             if source == .pullToRefresh,
                let lastRefreshTimestamp,
                lastRefreshTimestamp > Date().addingTimeInterval(-60) {
+                    /// Fake wait time to ensure it doesn't immediately return, which is unsatisfying
+                    try await Task.sleep(for: .seconds(1))
                     return
             }
             
@@ -129,7 +132,19 @@ final class StoriesListInteractor: Interactor {
             return
         }
         
-        /// Conditions are met to refresh, begin refresh
+        switch triggerEvent {
+        case .foreground:
+            /// Conditions are met to refresh, begin refresh
+            Task {
+                await refreshStories(source: .autoRefresh)
+            }
+        case .appear:
+            showPromptToManuallyRefresh = true
+        }
+    }
+    
+    func didTapManualRefreshPrompt() {
+        showPromptToManuallyRefresh = false
         Task {
             await refreshStories(source: .autoRefresh)
         }

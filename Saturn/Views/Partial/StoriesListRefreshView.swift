@@ -9,13 +9,32 @@ import Foundation
 import SwiftUI
 
 struct StoriesListRefreshView: View {
+    var type: StoriesListRefreshViewType = .refreshing
+    
     var body: some View {
         HStack {
-            ProgressView()
-                .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
-                .padding([.leading, .trailing], 30)
-                .padding([.top, .bottom], 15)
-                .tint(.white)
+            switch type {
+            case .refreshing:
+                ProgressView()
+                    .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
+                    .padding([.leading, .trailing], 30)
+                    .padding([.top, .bottom], 15)
+                    .tint(.white)
+                
+            case .prompt(let onTapRefreshButton):
+                Button {
+                    onTapRefreshButton()
+                    
+                } label: {
+                    Image(systemName: "arrow.clockwise.circle.fill")
+                        .padding([.leading], 30)
+                        .foregroundColor(.white)
+                    Text("Refresh")
+                        .padding([.trailing], 30)
+                        .padding([.top, .bottom], 15)
+                        .foregroundColor(.white)
+                }
+            }
         }
         .background(.ultraThinMaterial)
         .mask {
@@ -25,8 +44,13 @@ struct StoriesListRefreshView: View {
     }
 }
 
+enum StoriesListRefreshViewType {
+    case refreshing
+    case prompt(onTapRefreshButton: (() -> Void))
+}
+
 struct StoriesListRefreshView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListRefreshView()
+        StoriesListRefreshView(type: .refreshing)
     }
 }

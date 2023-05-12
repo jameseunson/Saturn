@@ -47,6 +47,11 @@ struct StoriesListView: View {
                     if case .refreshing(let source) = interactor.loadingState,
                        source == .autoRefresh {
                         StoriesListRefreshView()
+                        
+                    } else if interactor.showPromptToManuallyRefresh {
+                        StoriesListRefreshView(type: .prompt(onTapRefreshButton: {
+                            interactor.didTapManualRefreshPrompt()
+                        }))
                     }
                 }
                 .navigationDestination(for: StoryRowViewModel.self) { viewModel in
