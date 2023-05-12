@@ -24,6 +24,8 @@ enum SettingValue: Codable, Hashable {
             return lhsValue == rhsValue
         case (.date(let lhsValue), .date(let rhsValue)):
             return lhsValue == rhsValue
+        case (.searchDateFilter(let lhsValue), .searchDateFilter(let rhsValue)):
+            return lhsValue == rhsValue
         default:
             return false
         }
@@ -43,6 +45,8 @@ enum SettingValue: Codable, Hashable {
             hasher.combine(value)
         case let .date(value):
             hasher.combine(value)
+        case let .searchDateFilter(value):
+            hasher.combine(value)
         }
     }
     
@@ -52,4 +56,5 @@ enum SettingValue: Codable, Hashable {
     case color(Color)
     case searchHistory(SettingSearchHistory)
     case date(Date)
+    case searchDateFilter(SearchDateFilter)
 }

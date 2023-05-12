@@ -11,6 +11,8 @@ import Factory
 
 struct SearchView: View {
     @Injected(\.settingsManager) private var settingsManager
+    @Environment(\.isSearching) private var isSearching: Bool
+    
     @ObservedObject var interactor = SearchInteractor()
     
     @State var searchQuery: String = ""
@@ -19,59 +21,78 @@ struct SearchView: View {
     @State var selectedUser: String?
     @State var displayingConfirmSheetForStory: StoryRowViewModel?
     
+    @State var displayingFilter: Bool = false
+    @State var selectedFilter: SearchDateFilter = .anyTime
+    
     var body: some View {
-        ZStack {
-            Color(UIColor.systemBackground)
-                .edgesIgnoringSafeArea(.all)
+        VStack {
+            SearchFilterView(displayingFilter: $displayingFilter,
+                             selectedFilter: $selectedFilter)
             
-            GeometryReader { reader in
-                ScrollView {
-                    switch interactor.results {
-                    case let .loaded(response: results):
-                        if results.isEmpty {
-                            Text("No results for '\(searchQuery)'")
-                                .foregroundColor(.gray)
-                                .frame(width: reader.size.width, height: reader.size.height)
-                        } else {
-                            SearchResultsView(results: results,
-                                              searchQuery: $searchQuery,
-                                              displayingSafariURL: $displayingSafariURL,
-                                              selectedUser: $selectedUser,
-                                              displayingConfirmSheetForStory: $displayingConfirmSheetForStory)
-                        }
-                    case .loading:
-                        LoadingView()
-                            .frame(width: reader.size.width, height: reader.size.height)
-                        
-                    case .notLoading, .failed:
-                        EmptyView()
+            switch interactor.results {
+            case let .loaded(response: results):
+                if results.isEmpty {
+                    Text("No results for '\(searchQuery)'")
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                } else {
+                    ScrollView {
+                        SearchResultsView(results: results,
+                                          searchQuery: $searchQuery,
+                                          displayingSafariURL: $displayingSafariURL,
+                                          selectedUser: $selectedUser,
+                                          displayingConfirmSheetForStory: $displayingConfirmSheetForStory)
                     }
                 }
-            }
-            
-            if case .notLoading = interactor.results,
-               settingsManager.searchHistory().history.count > 0 {
-                SearchHistoryView() { item in
-                    interactor.deleteSearchHistoryItem(item: item)
-                    
-                } onClearSearchHistory: {
-                    interactor.clearSearchHistory()
-                    
-                } onSelectSearchHistoryItem: { item in
-                    searchQuery = item.query
-                    interactor.submit(item.query)
+            case .loading:
+                LoadingView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+            case .failed:
+                EmptyView()
+                
+            case .notLoading:
+                if settingsManager.searchHistory().history.count > 0 {
+                    SearchHistoryView() { item in
+                        interactor.deleteSearchHistoryItem(item: item)
+                        
+                    } onClearSearchHistory: {
+                        interactor.clearSearchHistory()
+                        
+                    } onSelectSearchHistoryItem: { item in
+                        searchQuery = item.query
+                        interactor.submit(item.query, with: selectedFilter)
+                    }
+                } else {
+                    EmptyView()
                 }
             }
         }
-        .searchable(text: $searchQuery)
+        .searchable(text: $searchQuery, prompt: "Search stories or users")
         .autocorrectionDisabled(true)
         .textInputAutocapitalization(.never)
         .submitLabel(.search)
         .onSubmit(of: .search, {
-            interactor.submit(searchQuery)
+            interactor.submit(searchQuery, with: selectedFilter)
         })
         .onAppear {
+            if selectedFilter != settingsManager.searchDateFilter() {
+                selectedFilter = settingsManager.searchDateFilter()
+            }
             interactor.activate()
+        }
+        .onChange(of: searchQuery) { value in
+            if searchQuery.isEmpty && !isSearching {
+                interactor.clearActiveSearch()
+            }
+        }
+        .onChange(of: selectedFilter, perform: { newFilter in
+            if searchQuery.isEmpty { return }
+            interactor.submit(searchQuery, with: newFilter)
+        })
+        .onDisappear {
+            interactor.clearActiveSearch()
         }
         .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
             if let displayingSafariURL {
@@ -98,6 +119,16 @@ struct SearchView: View {
                 EmptyView()
             }
         }
+        .confirmationDialog("Select date filter", isPresented: $displayingFilter) {
+            ForEach(SearchDateFilter.allCases) { f in
+                Button(f == selectedFilter ? f.rawValue + "   ✓" : f.rawValue) {
+                    selectedFilter = f
+                    settingsManager.set(value: .searchDateFilter(f), for: .searchDateFilter)
+                }
+            }
+        } message: {
+            Text("Select date filter")
+        }
     }
 }
 
@@ -107,5 +138,33 @@ struct SearchView_Previews: PreviewProvider {
         SearchView(interactor: SearchInteractor(results: .loaded(response: [SearchResultItem.searchResult(SearchItem.createFakeSearchItem()), SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
             SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
             SearchResultItem.user(User.createFakeUser())])))
+    }
+}
+
+enum SearchDateFilter: String, CaseIterable, Identifiable, Codable {
+    var id: Self {
+        return self
+    }
+    
+    case anyTime = "Any time"
+    case past24h = "Past 24h"
+    case pastWeek = "Past Week"
+    case pastMonth = "Past Month"
+    case pastYear = "Past Year"
+    
+    func startDate() -> Date? {
+        let calendar = Calendar.current
+        switch self {
+        case .anyTime:
+            return nil
+        case .past24h:
+            return calendar.date(byAdding: .day, value: -1, to: Date())
+        case .pastWeek:
+            return calendar.date(byAdding: .weekOfYear, value: -1, to: Date())
+        case .pastMonth:
+            return calendar.date(byAdding: .month, value: -1, to: Date())
+        case .pastYear:
+            return calendar.date(byAdding: .year, value: -1, to: Date())
+        }
     }
 }

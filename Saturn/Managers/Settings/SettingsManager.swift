@@ -18,6 +18,7 @@ protocol SettingsManaging: AnyObject {
     func searchHistory() -> SettingSearchHistory
     func date(for key: SettingKey) -> Date?
     func int(for key: SettingKey) -> Int
+    func searchDateFilter() -> SearchDateFilter
     var settings: CurrentValueSubject<[SettingKey: SettingValue], Never> { get }
 }
 
@@ -38,7 +39,8 @@ class SettingsManager: SettingsManaging {
         .entersReader: .bool(false),
         .indentationColor: .indentationColor(.default),
         .numberOfLaunches: .int(0),
-        .hasSeenReviewPrompt: .bool(false)
+        .hasSeenReviewPrompt: .bool(false),
+        .searchDateFilter: .searchDateFilter(.anyTime)
     ]
     
     init() {
@@ -102,6 +104,13 @@ class SettingsManager: SettingsManaging {
     func int(for key: SettingKey) -> Int {
         guard case let .int(value) = settingsMap[key] else {
             return 0
+        }
+        return value
+    }
+    
+    func searchDateFilter() -> SearchDateFilter {
+        guard case let .searchDateFilter(value) = settingsMap[.searchDateFilter] else {
+            return .anyTime
         }
         return value
     }

@@ -282,7 +282,7 @@ final class StoriesListInteractor: Interactor {
                     guard response.source == .cache else {
                         return
                     }
-                    self.evaluateRefreshContent()
+                    self.evaluateRefreshContent(triggerEvent: .foreground)
                 })
                 .store(in: &disposeBag)
         }

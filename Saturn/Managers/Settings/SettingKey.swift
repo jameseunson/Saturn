@@ -16,12 +16,13 @@ enum SettingKey: String, CaseIterable, Codable {
     case lastRefreshTimestamp = "Last Refresh Timestamp"
     case numberOfLaunches = "Number of Launches"
     case hasSeenReviewPrompt = "Has Seen Review Prompt"
+    case searchDateFilter = "Search Date Filter"
     
     func isUserConfigurable() -> Bool {
         switch self {
         case .entersReader, .indentationColor:
             return true
-        case .lastUserSelectedColor, .searchHistory, .lastRefreshTimestamp, .numberOfLaunches, .hasSeenReviewPrompt:
+        case .lastUserSelectedColor, .searchHistory, .lastRefreshTimestamp, .numberOfLaunches, .hasSeenReviewPrompt, .searchDateFilter:
             return false
         }
     }

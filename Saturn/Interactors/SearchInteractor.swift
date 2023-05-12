@@ -15,7 +15,7 @@ final class SearchInteractor: Interactor {
     @Injected(\.globalErrorStream) private var globalErrorStream
     
     @Published var results: LoadableResource<[SearchResultItem]> = .notLoading
-    private let querySubject = PassthroughSubject<String, Never>()
+    private let querySubject = PassthroughSubject<(query: String, filter: SearchDateFilter), Never>()
     
     private var resultsAccumulator = [SearchResultItem]()
     
@@ -23,16 +23,24 @@ final class SearchInteractor: Interactor {
         self.results = results
     }
     
-    override func didBecomeActive() {
-        querySubject
-            .filter { $0.count > 0 }
-            .flatMap { query in
-                self.apiManager.search(query: query)
-                    .catch { error in
-                        return Just([])
-                    }
-                    .map { (query, $0) }
+    func submit(_ query: String, with dateFilter: SearchDateFilter) {
+        guard query.count > 0 else {
+            return
+        }
+        switch results {
+        case .loading:
+            break
+            
+        default:
+            self.results = .loading
+            self.resultsAccumulator.removeAll()
+        }
+        
+        self.apiManager.search(query: query, filter: dateFilter)
+            .catch { error in
+                return Just([])
             }
+            .map { (query, $0) }
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case let .failure(error) = completion {
@@ -48,20 +56,6 @@ final class SearchInteractor: Interactor {
                 self.updateSearchHistory(with: query)
             }
             .store(in: &disposeBag)
-    }
-    
-    func submit(_ query: String) {
-        switch results {
-        case .loading:
-            break
-        default:
-            if query.count > 0 {
-                self.results = .loading
-            }
-            self.resultsAccumulator.removeAll()
-        }
-        
-        querySubject.send(query)
     }
     
     func deleteSearchHistoryItem(item: SettingSearchHistoryItem) {
@@ -80,6 +74,10 @@ final class SearchInteractor: Interactor {
     func clearSearchHistory() {
         settingsManager.set(value: .searchHistory(SettingSearchHistory()),
                              for: .searchHistory)
+    }
+    
+    func clearActiveSearch() {
+        results = .notLoading
     }
     
     // MARK: -

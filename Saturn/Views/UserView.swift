@@ -259,7 +259,6 @@ struct CommentContextView: View {
 struct UserContextStoryButtonStyle: ButtonStyle {
     public func makeBody(configuration: StoriesListButtonStyle.Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? 1 : 1)
             .background {
                 if configuration.isPressed {
                     RoundedRectangle(cornerRadius: 8)

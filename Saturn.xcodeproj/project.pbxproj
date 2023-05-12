@@ -10,6 +10,7 @@
 		1A050D7F2981076400C26F12 /* TextLinkHandlerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */; };
 		1A050D812982088500C26F12 /* CommentHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D802982088500C26F12 /* CommentHeaderView.swift */; };
 		1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A050D8229820E2000C26F12 /* SearchResultItem.swift */; };
+		1A0524C22A0E1A37005416C0 /* SearchFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0524C12A0E1A37005416C0 /* SearchFilterView.swift */; };
 		1A111DF9298899DD005B29B6 /* CommentIndentationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */; };
 		1A111DFB29889C44005B29B6 /* UserItemViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFA29889C44005B29B6 /* UserItemViewModel.swift */; };
 		1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */; };
@@ -52,7 +53,6 @@
 		1A7E151229C83D8D008DAB22 /* HTMLAPIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */; };
 		1A7E5B3F2982691E00C6BBC0 /* SpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */; };
 		1A7E5B412982695500C6BBC0 /* ListLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */; };
-		1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */; };
 		1A7E5B452982697C00C6BBC0 /* SettingsNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */; };
 		1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */; };
 		1A873ABB296D667600870A50 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A873ABA296D667500870A50 /* ActivityViewController.swift */; };
@@ -187,6 +187,7 @@
 		1A050D7E2981076400C26F12 /* TextLinkHandlerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLinkHandlerModifier.swift; sourceTree = "<group>"; };
 		1A050D802982088500C26F12 /* CommentHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentHeaderView.swift; sourceTree = "<group>"; };
 		1A050D8229820E2000C26F12 /* SearchResultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultItem.swift; sourceTree = "<group>"; };
+		1A0524C12A0E1A37005416C0 /* SearchFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilterView.swift; sourceTree = "<group>"; };
 		1A111DF8298899DD005B29B6 /* CommentIndentationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentIndentationView.swift; sourceTree = "<group>"; };
 		1A111DFA29889C44005B29B6 /* UserItemViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserItemViewModel.swift; sourceTree = "<group>"; };
 		1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAllCommentsButton.swift; sourceTree = "<group>"; };
@@ -230,7 +231,6 @@
 		1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIManager.swift; sourceTree = "<group>"; };
 		1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerView.swift; sourceTree = "<group>"; };
 		1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListLoadingView.swift; sourceTree = "<group>"; };
-		1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchNavigationView.swift; sourceTree = "<group>"; };
 		1A7E5B442982697C00C6BBC0 /* SettingsNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationView.swift; sourceTree = "<group>"; };
 		1A7E5B4629826CAB00C6BBC0 /* CommentExpandModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentExpandModifier.swift; sourceTree = "<group>"; };
 		1A873ABA296D667500870A50 /* ActivityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
@@ -638,6 +638,7 @@
 			children = (
 				1ACB6C1129BB042B000A94E0 /* SearchResultsView.swift */,
 				1ACB6C1329BB0437000A94E0 /* SearchHistoryView.swift */,
+				1A0524C12A0E1A37005416C0 /* SearchFilterView.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -694,7 +695,6 @@
 				1AE4A99729765CF800D0B0D3 /* InfiniteScrollView.swift */,
 				1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */,
 				1A7E5B402982695500C6BBC0 /* ListLoadingView.swift */,
-				1A7E5B422982696800C6BBC0 /* SearchNavigationView.swift */,
 				1A111DFC298B5A32005B29B6 /* ViewAllCommentsButton.swift */,
 				1ACB6C1929BB0F83000A94E0 /* StoriesListRefreshView.swift */,
 			);
@@ -904,7 +904,6 @@
 				1ADE889D29C010CF00492114 /* UnfairLock.swift in Sources */,
 				1A5DBC06296A892B00D4D86E /* StoriesListInteractor.swift in Sources */,
 				1ABAD6C0298CF36E0072DA14 /* CommentLoader.swift in Sources */,
-				1A7E5B432982696800C6BBC0 /* SearchNavigationView.swift in Sources */,
 				1AA05D7229D3FD3100D3013C /* URL+CacheKey.swift in Sources */,
 				1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */,
 				1A873ACB296FCD4800870A50 /* TextProcessor.swift in Sources */,
@@ -952,6 +951,7 @@
 				1A050D8329820E2000C26F12 /* SearchResultItem.swift in Sources */,
 				1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */,
 				1AD1287029C447B300096DE7 /* LoginAuthenticationInteractor.swift in Sources */,
+				1A0524C22A0E1A37005416C0 /* SearchFilterView.swift in Sources */,
 				1A888FFE2994E76900490A74 /* LayoutManager.swift in Sources */,
 				1AC5286729F1230E00FF3833 /* VoteStream.swift in Sources */,
 				1A111DFD298B5A32005B29B6 /* ViewAllCommentsButton.swift in Sources */,

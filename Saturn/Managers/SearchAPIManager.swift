@@ -10,7 +10,7 @@ import Combine
 import Factory
 
 protocol SearchAPIManaging: AnyObject {
-    func search(query: String) -> AnyPublisher<[SearchResultItem], Error>
+    func search(query: String, filter: SearchDateFilter) -> AnyPublisher<[SearchResultItem], Error>
 }
 
 final class SearchAPIManager: SearchAPIManaging {
@@ -27,10 +27,12 @@ final class SearchAPIManager: SearchAPIManaging {
     let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
     
     let postBody = """
-    {"query":"%s","analyticsTags":["web"],"page":0,"hitsPerPage":30,"minWordSizefor1Typo":4,"minWordSizefor2Typos":8,"advancedSyntax":true,"ignorePlurals":false,"clickAnalytics":true,"minProximity":7,"numericFilters":[],"tagFilters":["story",[]],"typoTolerance":true,"queryType":"prefixNone","restrictSearchableAttributes":["title","comment_text","url","story_text","author"],"getRankingInfo":true}:
+    {"query":"%@","analyticsTags":["web"],"page":0,"hitsPerPage":30,"minWordSizefor1Typo":4,"minWordSizefor2Typos":8,"advancedSyntax":true,"ignorePlurals":false,"clickAnalytics":true,"minProximity":7,"numericFilters":[%@],"tagFilters":["story",[]],"typoTolerance":true,"queryType":"prefixNone","restrictSearchableAttributes":["title","comment_text","url","story_text","author"],"getRankingInfo":true}:
     """
     
-    func search(query: String) -> AnyPublisher<[SearchResultItem], Error> {
+    let dateFilterFormat = "\"created_at_i>%.3f\""
+    
+    func search(query: String, filter: SearchDateFilter) -> AnyPublisher<[SearchResultItem], Error> {
         guard var urlComponents = URLComponents(string: baseURLString) else {
             return Fail(error: APIManagerError.generic).eraseToAnyPublisher()
         }
@@ -53,7 +55,12 @@ final class SearchAPIManager: SearchAPIManaging {
         mutableRequest.addValue(userAgent, forHTTPHeaderField: "User-Agent")
         mutableRequest.addValue(contentType, forHTTPHeaderField: "Content-Type")
 
-        let queryPostBody = postBody.replacingOccurrences(of: "%s", with: query)
+        var dateFilterBody: String = ""
+        if let filterStartDate = filter.startDate() {
+            dateFilterBody = String(format: dateFilterFormat, filterStartDate.timeIntervalSince1970)
+        }
+        
+        let queryPostBody = String(format: postBody, query, dateFilterBody)
         mutableRequest.httpBody = queryPostBody.data(using: .utf8)
         
         if query.components(separatedBy: CharacterSet.whitespaces).count == 1 {

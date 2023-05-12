@@ -17,7 +17,6 @@ struct StoriesListView: View {
     @StateObject var interactor: StoriesListInteractor
     
     @State var isSettingsVisible: Bool = false
-    @State var isSearchVisible: Bool = false
     @State var selectedShareItem: StoryDetailShareItem?
     @State var selectedUser: String?
     @State var displayingSafariURL: URL?
@@ -61,30 +60,26 @@ struct StoriesListView: View {
                     }
                 }
                 
-                if isSearchVisible {
-                    SearchNavigationView(isSearchVisible: $isSearchVisible)
-                }
-                
             case .initialLoad:
                 LoadingView(isFailed: .constant(false))
             }
         }
         .toolbar {
-            if !isSearchVisible {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button {
-                        isSettingsVisible = true
-                    } label: {
-                        Image(systemName: "gear")
-                    }
+            ToolbarItemGroup(placement: .navigationBarLeading) {
+                Button {
+                    isSettingsVisible = true
+                } label: {
+                    Image(systemName: "gear")
                 }
-                if appRemoteConfig.isSearchEnabled() {
-                    ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        Button {
-                            isSearchVisible = true
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                        }
+            }
+            if appRemoteConfig.isSearchEnabled() {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    NavigationLink {
+                        SearchView()
+                            .navigationTitle("Search")
+                            .navigationBarTitleDisplayMode(.inline)
+                    } label: {
+                        Image(systemName: "magnifyingglass")
                     }
                 }
             }

@@ -58,6 +58,13 @@ struct SearchHistoryView: View {
                     .onTapGesture {
                         onSelectSearchHistoryItem(item)
                     }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            onDeleteSearchHistoryItem(item)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
                 }
             }
             .listStyle(.plain)
