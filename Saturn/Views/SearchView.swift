@@ -65,7 +65,7 @@ struct SearchView: View {
                         interactor.submit(item.query, with: selectedFilter)
                     }
                 } else {
-                    EmptyView()
+                    Spacer()
                 }
             }
         }
@@ -131,6 +131,7 @@ struct SearchView: View {
 
 struct SearchView_Previews: PreviewProvider {
     static var previews: some View {
+        SearchView(interactor: SearchInteractor(results: .notLoading))
         SearchView(interactor: SearchInteractor(results: .loaded(response: [])))
         SearchView(interactor: SearchInteractor(results: .loaded(response: [SearchResultItem.searchResult(SearchItem.createFakeSearchItem()), SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
             SearchResultItem.searchResult(SearchItem.createFakeSearchItem()),
