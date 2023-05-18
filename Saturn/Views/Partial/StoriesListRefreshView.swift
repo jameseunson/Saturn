@@ -19,7 +19,7 @@ struct StoriesListRefreshView: View {
                     .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
                     .padding([.leading, .trailing], 30)
                     .padding([.top, .bottom], 15)
-                    .tint(.white)
+                    .tint(.primary)
                 
             case .prompt(let onTapRefreshButton):
                 Button {
@@ -28,11 +28,11 @@ struct StoriesListRefreshView: View {
                 } label: {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .padding([.leading], 30)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                     Text("Refresh")
                         .padding([.trailing], 30)
                         .padding([.top, .bottom], 15)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                 }
             }
         }
@@ -52,5 +52,6 @@ enum StoriesListRefreshViewType {
 struct StoriesListRefreshView_Previews: PreviewProvider {
     static var previews: some View {
         StoriesListRefreshView(type: .refreshing)
+        StoriesListRefreshView(type: .prompt(onTapRefreshButton: {}))
     }
 }

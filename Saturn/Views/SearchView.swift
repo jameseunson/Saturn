@@ -69,7 +69,7 @@ struct SearchView: View {
                 }
             }
         }
-        .searchable(text: $searchQuery, prompt: "Search stories or users")
+        .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search stories or users")
         .autocorrectionDisabled(true)
         .textInputAutocapitalization(.never)
         .submitLabel(.search)
@@ -91,9 +91,6 @@ struct SearchView: View {
             if searchQuery.isEmpty { return }
             interactor.submit(searchQuery, with: newFilter)
         })
-        .onDisappear {
-            interactor.clearActiveSearch()
-        }
         .sheet(isPresented: createBoolBinding(from: $displayingSafariURL)) {
             if let displayingSafariURL {
                 SafariView(url: displayingSafariURL)

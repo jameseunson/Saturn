@@ -147,6 +147,8 @@ struct StoriesListView: View {
     func contentScrollView() -> some View {
         ScrollView {
             LazyVStack(spacing: 0) {
+                Divider()
+                    .padding(.leading, 15)
                 ForEach(interactor.stories) { story in
                     NavigationLink(value: story) {
                         StoryRowView(story: story,
@@ -212,8 +214,10 @@ struct StoriesListView: View {
 
 struct StoriesView_Previews: PreviewProvider {
     static var previews: some View {
-        StoriesListView(interactor: StoriesListInteractor(type: .top,
-                                                          stories: [0...10].map { _ in StoryRowViewModel(story: Story.fakeStory()!) }))
+        NavigationStack {
+            StoriesListView(interactor: StoriesListInteractor(type: .top,
+                                                              stories: [StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!), StoryRowViewModel(story: Story.fakeStory()!)]))
+        }
     }
 }
 

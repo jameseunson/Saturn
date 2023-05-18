@@ -43,7 +43,7 @@ struct StoryRowView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             SwipeView {
                 VStack(alignment: .leading) {
                     HStack(alignment: .top) {
@@ -120,7 +120,7 @@ struct StoryRowView: View {
                                                  onTapSheet: onTapSheet)
                     }
                 }
-                .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 25)
+                .padding(.bottom, keychainWrapper.isLoggedIn ? 0 : 15)
                 .padding(.trailing, 15)
                 .padding(.top, context == .storiesList ? 10 : 0)
                 .drawingGroup()
@@ -158,6 +158,7 @@ struct StoryRowView: View {
 
 struct StoryRowView_Previews: PreviewProvider {
     static var previews: some View {
+        let _ = Container.shared.keychainWrapper.register { SaturnKeychainWrapper(loginOverride: true) }
         StoryRowView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()), image: .constant(nil))
     }
 }

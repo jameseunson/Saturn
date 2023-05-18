@@ -108,6 +108,12 @@ struct SettingsView: View {
                         UIApplication.shared.open(url)
                     }
                 }
+                HStack {
+                    Text("Version")
+                    Spacer()
+                    Text("1.1.1")
+                        .foregroundColor(.gray)
+                }
                 
             } header: {
                 Text("About")

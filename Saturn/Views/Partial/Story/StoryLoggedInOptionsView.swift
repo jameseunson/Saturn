@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Factory
 
 struct StoryLoggedInOptionsView: View {
     let story: StoryRowViewModel
@@ -62,6 +63,6 @@ struct StoryLoggedInOptionsButtonStyle: ButtonStyle {
 
 struct StoryLoggedInOptionsView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryLoggedInOptionsView(story: StoryRowViewModel(story: Story.fakeStory()!), onTapVote: { _ in }, onTapSheet: { _ in })
+        StoryLoggedInOptionsView(story: StoryRowViewModel(story: Story.fakeStory()!, vote: HTMLAPIVote.fakeVote()), onTapVote: { _ in }, onTapSheet: { _ in })
     }
 }
