@@ -27,36 +27,20 @@ struct RootView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                StoriesListView(interactor: StoriesListInteractor(type: .top))
-                    .navigationTitle("Top")
+                StoriesCategoriesView()
+                    .navigationTitle("Stories")
                     .navigationBarTitleDisplayMode(.inline)
             }
             .tabItem {
-                Label("Top", systemImage: "list.dash")
+                Label("Stories", systemImage: "list.dash")
             }
             NavigationStack {
-                StoriesListView(interactor: StoriesListInteractor(type: .new))
-                    .navigationTitle("New")
+                SearchView()
+                    .navigationTitle("Search")
                     .navigationBarTitleDisplayMode(.inline)
             }
             .tabItem {
-                Label("New", systemImage: "chart.line.uptrend.xyaxis")
-            }
-            NavigationStack {
-                StoriesListView(interactor: StoriesListInteractor(type: .show))
-                    .navigationTitle("Show")
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            .tabItem {
-                Label("Show", systemImage: "binoculars")
-            }
-            NavigationStack {
-                StoriesListView(interactor: StoriesListInteractor(type: .ask))
-                    .navigationTitle("Ask")
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            .tabItem {
-                Label("Ask", systemImage: "text.bubble")
+                Label("Search", systemImage: "magnifyingglass")
             }
             if appRemoteConfig.isLoggedInEnabled() {
                 NavigationStack {
@@ -67,6 +51,14 @@ struct RootView: View {
                 .tabItem {
                     Label("User", systemImage: "person")
                 }
+            }
+            NavigationStack {
+                SettingsView()
+                    .navigationTitle("Settings")
+                    .navigationBarTitleDisplayMode(.inline)
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gear")
             }
         }
         .onAppear {

@@ -69,26 +69,6 @@ struct StoriesListView: View {
                 LoadingView(isFailed: .constant(false))
             }
         }
-        .toolbar {
-            ToolbarItemGroup(placement: .navigationBarLeading) {
-                Button {
-                    isSettingsVisible = true
-                } label: {
-                    Image(systemName: "gear")
-                }
-            }
-            if appRemoteConfig.isSearchEnabled() {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SearchView()
-                            .navigationTitle("Search")
-                            .navigationBarTitleDisplayMode(.inline)
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
-            }
-        }
         .navigationDestination(isPresented: createBoolBinding(from: $selectedUser)) {
             if let selectedUser {
                 UserView(interactor: UserInteractor(username: selectedUser))

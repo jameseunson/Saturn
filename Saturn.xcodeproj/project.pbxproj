@@ -48,6 +48,7 @@
 		1A5DBC19296BF8A200D4D86E /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC18296BF8A200D4D86E /* SafariView.swift */; };
 		1A5DBC1B296BFA1700D4D86E /* StoryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */; };
 		1A5DBC1D296D0C8C00D4D86E /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */; };
+		1A68DFAE2A174F3A00DC1562 /* StoriesCategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A68DFAD2A174F3A00DC1562 /* StoriesCategoriesView.swift */; };
 		1A7E150D29C83671008DAB22 /* LoginAuthenticationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E150C29C83671008DAB22 /* LoginAuthenticationButton.swift */; };
 		1A7E151029C83CFD008DAB22 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7E150F29C83CFD008DAB22 /* SwiftSoup */; };
 		1A7E151229C83D8D008DAB22 /* HTMLAPIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */; };
@@ -227,6 +228,7 @@
 		1A5DBC18296BF8A200D4D86E /* SafariView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		1A5DBC1A296BFA1700D4D86E /* StoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryRowView.swift; sourceTree = "<group>"; };
 		1A5DBC1C296D0C8C00D4D86E /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
+		1A68DFAD2A174F3A00DC1562 /* StoriesCategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesCategoriesView.swift; sourceTree = "<group>"; };
 		1A7E150C29C83671008DAB22 /* LoginAuthenticationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAuthenticationButton.swift; sourceTree = "<group>"; };
 		1A7E151129C83D8D008DAB22 /* HTMLAPIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLAPIManager.swift; sourceTree = "<group>"; };
 		1A7E5B3E2982691E00C6BBC0 /* SpinnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerView.swift; sourceTree = "<group>"; };
@@ -503,6 +505,7 @@
 				1A873ABC296E767B00870A50 /* UserView.swift */,
 				1A873ACC296FCD5B00870A50 /* SearchView.swift */,
 				1AE4A9912975250F00D0B0D3 /* RootView.swift */,
+				1A68DFAD2A174F3A00DC1562 /* StoriesCategoriesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -963,6 +966,7 @@
 				1A873ABD296E767B00870A50 /* UserView.swift in Sources */,
 				1ACB6C0B29B9C46B000A94E0 /* SettingsIndentationColor.swift in Sources */,
 				1AD1286C29C4298A00096DE7 /* LoginAuthenticationView.swift in Sources */,
+				1A68DFAE2A174F3A00DC1562 /* StoriesCategoriesView.swift in Sources */,
 				1A873AD329713BB300870A50 /* UserInteractor.swift in Sources */,
 				1A7E5B4729826CAB00C6BBC0 /* CommentExpandModifier.swift in Sources */,
 				1A8890032999FF2400490A74 /* APIDiskResponseCache.swift in Sources */,
@@ -1175,6 +1179,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;
@@ -1215,6 +1220,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = au.jameseunson.Saturn;
 				PRODUCT_NAME = Saturn;

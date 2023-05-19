@@ -71,6 +71,7 @@ struct StoryRowView: View {
                                     .font(.callout)
                                     .foregroundColor(.gray)
                                     .multilineTextAlignment(.leading)
+                                    .opacity(0.6)
                             }
                         }
                         Spacer()
